@@ -4,3 +4,4 @@
 urlはhttps://seijinakata.github.io/3Dgamebox
 です。
 javascriptのみです。
+一か所外しました。この方が動きがよくわかるかもしれません。
