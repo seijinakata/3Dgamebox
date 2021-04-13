@@ -110,7 +110,7 @@ function mainLoop(){
   let paintcounter = 0;
 
   //前面
-  Polygones.push(new Polygon(dotMovePos[0],dotMovePos[1],dotMovePos[2],dotMovePos[3],"rgb(0,0,255)"));
+  //Polygones.push(new Polygon(dotMovePos[0],dotMovePos[1],dotMovePos[2],dotMovePos[3],"rgb(0,0,255)"));
   //後面
   Polygones.push(new Polygon(dotMovePos[4],dotMovePos[5],dotMovePos[6],dotMovePos[7],"rgb(0,255,255)"));
   //左側面
@@ -122,12 +122,12 @@ function mainLoop(){
   //下面
   Polygones.push(new Polygon(dotMovePos[1],dotMovePos[5],dotMovePos[6],dotMovePos[2],"rgb(255,255,255)"));
   while(true){
-    for(let i=0;i<6;i++){
+    for(let i=0;i<5;i++){
       if(!(Polygones[i].isdraw) && Polygones[i].ZPosition>=tempZposition){
         tempZposition = Polygones[i].ZPosition;
       }
     }
-    for(let i=0;i<6;i++){
+    for(let i=0;i<5;i++){
       if(!(Polygones[i].isdraw) && Polygones[i].ZPosition>=tempZposition){
         Polygones[i].isdraw = true;
         Polygones[i].draw(); 
@@ -136,7 +136,7 @@ function mainLoop(){
           break;
       }
     }
-    if(paintcounter>=6){
+    if(paintcounter>=5){
       console.log(1);
       break;
     }
