@@ -3,3 +3,4 @@
 3Dではなく2Dです。
 urlはhttps://seijinakata.github.io/3Dgamebox/index.html
 です。
+javascriptのみです。
