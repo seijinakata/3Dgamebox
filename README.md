@@ -7,3 +7,4 @@ javascriptのみです。
 方向キーがＹ方向、Ｘ方向、Ｕ、ＤキーでＺ方向へ動くようにしました。
 Ｚ方向に動かしすぎるとバクってしまいます。
 classを使って複数cubeを作れるようにしました。
+youtubeのEijo TakagiさんのＣ言語をjavascriptに変換しました。
