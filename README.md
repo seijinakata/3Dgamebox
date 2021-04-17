@@ -1,6 +1,8 @@
 3Dゲームの製作ソフトで一番最初に見るあいつですね。
 テクスチャは貼れません。
 3Dではなく2Dです。
+当たり判定を付けてみました。
+AABBです。コンソールに出しました。
 urlはhttps://seijinakata.github.io/3Dgamebox
 です。
 javascriptのみです。
