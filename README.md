@@ -3,7 +3,7 @@
 3Dではなく2Dです。
 当たり判定を付けてみました。
 AABBです。コンソールに出して、ボックスに入らないようにしましたが、大きいですね。
-urlはhttps://seijinakata.github.io/3Dgamebox/index
+urlはhttps://seijinakata.github.io/3Dgamebox/
 です。
 方向キーがＹ方向、Ｘ方向、Ｕ、ＤキーでＺ方向へ動くようにしました。
 Ｚ方向に動かしすぎるとバクってしまいます。
