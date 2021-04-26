@@ -75,8 +75,8 @@ class Cube{
   this.tempDotMovePosZ = [];
   this.collision = false;
     
-  let s = Math.cos(this.deg*Math.PI/180);
-	let c = Math.sin(this.deg*Math.PI/180);
+  let c = Math.cos(this.deg*Math.PI/180);
+  let s = Math.sin(this.deg*Math.PI/180);
   this.deg++;
   if(this.deg>360){
     this.deg = 0;
