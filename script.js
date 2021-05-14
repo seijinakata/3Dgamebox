@@ -1,4 +1,4 @@
-import {M22, drawTriangle} from 'texture.js';
+import {M22, drawTriangle} from '/texture.js';
 
 const SCREEN_SIZE_W = 1000;
 const SCREEN_SIZE_H = 1000;
