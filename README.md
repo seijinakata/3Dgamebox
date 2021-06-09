@@ -10,6 +10,6 @@ cameraを実装しました。
 Zソート法と背面カリングの陰面処理です。
 Zバッファは無理です。
 ポリゴンをラスタライズして、さらにテクスチャを貼れません。
-urlはhttps://seijinakata.github.io/3Dgamebox
+urlはhttps://seijinakata.github.io/3Dgamebox/index
 です。
 youtubeのEijo TakagiさんのＣ言語をjavascriptに変換しました。
