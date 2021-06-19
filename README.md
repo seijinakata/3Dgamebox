@@ -1,6 +1,7 @@
 3Dに見えるかもしれませんが2Dです。
 テクスチャ貼りました。
 cameraを実装しました。
+回転のバグが消えたと思います。
 1,2キーが上回転、2,3キーが横回転,4,5キーがZ回転します。
 ＵとＤでＺ方向に動きます。
 方向キーがX,Y方向です。
@@ -15,3 +16,4 @@ Zバッファは無理です。
 urlはhttps://seijinakata.github.io/3Dgamebox/index
 です。
 youtubeのEijo TakagiさんのＣ言語をjavascriptに変換しました。
+Daniel Kreuterさんのコードも参考にさせていただきました。
