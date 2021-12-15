@@ -25,3 +25,4 @@ urlはhttps://seijinakata.github.io/3Dgamebox/index
 です。
 youtubeのEijo TakagiさんのＣ言語をjavascriptに変換しました。
 Daniel Kreuterさん、だえうさんのコードも参考にさせていただきました。
+頂点の登録はㇵの字で、下へのベクトルが先、横が後です。
