@@ -83,7 +83,7 @@ export class pixel{
 
 export class M22
 {
-  constroctor(){
+  constructor(){
     this._11 = 1;  //a
     this._12 = 0;  //b
     this._21 = 0;  //c
