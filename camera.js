@@ -15,7 +15,84 @@ var backCtx = canvas.getContext('2d');
 canvas.width = SCREEN_SIZE_W*5;
 canvas.height = SCREEN_SIZE_H*7;
 
-
+class Matrix{
+	constructor(){
+    this._11 = 1,this._12 = 0, this._13 = 0,this._14 = 0,
+    this._21 = 0,this._22 = 1, this._23 = 0,this._24 = 0,
+    this._31 = 0,this._32 = 0, this._33 = 1,this._34 = 0,
+    this._41 = 0,this._42 = 0, this._43 = 0,this._44 = 1;
+ 	}
+ 	identity(){
+    this._11 = 1,this._12 = 0, this._13 = 0,this._14 = 0,
+    this._21 = 0,this._22 = 1, this._23 = 0,this._24 = 0,
+    this._31 = 0,this._32 = 0, this._33 = 1,this._34 = 0,
+    this._41 = 0,this._42 = 0, this._43 = 0,this._44 = 1;
+ 	
+ 	}
+ 	mulTranslate(x,y,z){
+		this._14 += this._11 * x + this._12 * y + this._13 * z;
+		this._24 += this._21 * x + this._22 * y + this._23 * z;
+		this._34 += this._31 * x + this._32 * y + this._33 * z;
+	}
+	mulScaling(x,y,z){
+		this._11 *= x;    this._12 *= y;    this._13 *= z;
+		this._21 *= x;    this._22 *= y;    this._23 *= z;
+		this._31 *= x;    this._32 *= y;    this._33 *= z;
+	}
+	mulRotateX(r) {
+    let c = Math.cos(r);
+    let s = Math.sin(r);
+    let tmp;
+    //1行目
+    tmp = this._12 * c + this._13 * s;
+    _13 = this._12 * -s + this._13 * c;
+    _12 = tmp;
+    //2行目
+    tmp = this._22 * c + this._23 * s;
+    _23 = this._22 * -s + this._23 * c;
+    _22 = tmp;
+    //3行目
+    tmp = this._32 * c + this._33 * s;
+    _33 = this._32 * -s + this._33 * c;
+    _32 = tmp;
+	}
+	mulRotateY(r) {
+    let c = Math.cos(r);
+    let s = Math.sin(r);
+    let tmp;
+    //1行目
+    tmp = this._11 * c - this._13 * s;
+    this._13 = this._11 * s + this._13 * c;
+    this._11 = tmp;
+    //2行目
+    tmp = this._21 * c - this._23 * s;
+    this._23 = this._21 * s + this._23 * c;
+    this._21 = tmp;
+    //3行目
+    tmp = this._31 * c - this._33 * s;
+    this._33 = this._31 * s + this._33 * c;
+    this._31 = tmp;
+	}
+	mulRotateZ(r) {
+    let c = Math.cos(r);
+    let s = Math.sin(r);
+    let tmp;
+    //1行目
+    tmp = this._11 * c + this._12 * s;
+    this._12 = this._11 * -s + this._12 * c;
+    this._11 = tmp;
+    //2行目
+    tmp = this._21 * c + this._22 * s;
+    this._22 = this._21 * -s + this._22 * c;
+    this._21 = tmp;
+    //3行目
+    tmp = this._31 * c + this._32 * s;
+    this._32 = this._31 * -s + this._32 * c;
+    this._31 = tmp;
+	}
+}
+let m = new Matrix();
+console.log(m);
 // Camera
 let CRotX = 0,
     CRotY = .0,
