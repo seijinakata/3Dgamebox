@@ -39,9 +39,9 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(1,-1,-4);
+let cameraPos = setVector3(3,-3,-4);
 let lookat = setVector3(0.0,-1,1);
-let sunPos = setVector3(0,-4,-4);
+let sunPos = setVector3(0,-3,-4);
 let sunLookat = setVector3(0.0,-0.0,0);
 let up = setVector3(0,1,0);
 let lookatIndex = 0;
@@ -217,7 +217,7 @@ function setShadowPolygon(Pos1,Pos2,Pos3){
   polygonElement.crossZ = culVecCrossZ(Va,Vb);
   return polygonElement;
 }
-function objectPolygonPush(objects,worldMatrix,objectNumber,moveObjects,viewMatrix){
+function objectPolygonPush(objects,worldMatrix,objectNumber,projectedObjects,viewMatrix){
   let worldVerts = [];
   let projectedVerts = [];
   let object = objects[objectNumber];
@@ -259,7 +259,7 @@ function objectPolygonPush(objects,worldMatrix,objectNumber,moveObjects,viewMatr
   }
 
   let tempMoveObject = new moveObject(object,worldMatrix,Poly);
-  moveObjects.push(tempMoveObject);
+  projectedObjects.push(tempMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
     if(moveCubeInfo.backGroundFlag == true){
@@ -268,7 +268,7 @@ function objectPolygonPush(objects,worldMatrix,objectNumber,moveObjects,viewMatr
     */
 }
 //シャドウマップ用ポリゴン格納
-function objectShadowMapPolygonPush(objects,worldMatrix,objectNumber,moveObjects,viewMatrix){
+function objectShadowMapPolygonPush(objects,worldMatrix,objectNumber,projectedObjects,viewMatrix){
   let projectedVerts = [];
   let object = objects[objectNumber];
   let worldViewMatrix = matMul(viewMatrix,worldMatrix);
@@ -289,7 +289,7 @@ function objectShadowMapPolygonPush(objects,worldMatrix,objectNumber,moveObjects
     Poly.push(setShadowPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]]));
   }
   let tempMoveObject = new moveObject(object,worldMatrix,Poly);
-  moveObjects.push(tempMoveObject);
+  projectedObjects.push(tempMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
     if(moveCubeInfo.backGroundFlag == true){
@@ -476,9 +476,6 @@ cubeImage.addEventListener("load", function() {
   //head
   bodys.push(new Object(headVerts,0.0,0,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
 
-
-  cubes.push(new Object(orgCubeVerts,0,-1,2,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
-  cubes.push(new Object(orgCubeVerts,0.-1,0,3,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
 	cubes.push(new Object(orgCubeVerts,-0.6,-0.90,1.0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
 	cubes.push(new Object(orgCubeVerts,0.6,-0.90,1,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
 	cubes.push(new Object(orgCubeVerts,1.5,-1.35,0.5,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
@@ -527,8 +524,9 @@ if( skyPixelImage.length == 0  || cubePixelImage.length == 0 ||
  	ctx.fillText("now loding", SCREEN_SIZE_W/2, SCREEN_SIZE_H/2);
 	return 0;
 }
-
-//lookat = setVector3(moveObjects[lookatIndex].orgObject.centerObjX,moveObjects[lookatIndex].orgObject.centerObjY,moveObjects[lookatIndex].orgObject.centerObjZ);
+let newDate = new Date();
+let newsecond = newDate.getMilliseconds();
+//lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
   viewMatrix = matIdentity();
   matCamera(viewMatrix,cameraPos,lookat,up);
   matRound4X4(viewMatrix);
@@ -541,11 +539,11 @@ if( skyPixelImage.length == 0  || cubePixelImage.length == 0 ||
   matCamera(sunViewMatrix,sunPos,sunLookat,up);
   matRound4X4(sunViewMatrix);
 
-  let backGroundCounter = 0;
+  //シャドウの投影後の情報格納
+  let shadowProjectedObjects = [];
+  //投影後の情報格納
+  let projectedObjects = [];
 
-  //移動後の情報格納
-  let moveObjects = [];
-    
   //sphereregister
   for(let num =0;num<spheres.length;num++){
     /*
@@ -577,7 +575,7 @@ if( skyPixelImage.length == 0  || cubePixelImage.length == 0 ||
       Poly.push(new Polygon(moveSphereInfo[j],moveSphereInfo[p],moveSphereInfo[k],downUV,moveSphereInfo.image));
     }
     let movesphere = new moveObject(moveSphereInfo,Poly);
-    moveObjects.push(movesphere);
+    shadowProjectedObjects.push(movesphere);
     */
   }  
 
@@ -589,8 +587,10 @@ if( skyPixelImage.length == 0  || cubePixelImage.length == 0 ||
     mulMatRotateY(worldMatrix,monkeys[num].objRotY);
     mulMatRotateZ(worldMatrix,monkeys[num].objRotZ); 
     mulMatScaling(worldMatrix,monkeys[num].scaleX,monkeys[num].scaleY,monkeys[num].scaleZ);
-    objectShadowMapPolygonPush(monkeys,worldMatrix,num,moveObjects,sunViewMatrix);	
+    objectShadowMapPolygonPush(monkeys,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
+    objectPolygonPush(monkeys,worldMatrix,num,projectedObjects,viewMatrix);	
   }
+
   bodys[0].objRotX = 0;
   bodys[0].centerObjY  = -0.5;
   let waistMatrix = matIdentity();
@@ -601,7 +601,9 @@ if( skyPixelImage.length == 0  || cubePixelImage.length == 0 ||
   mulMatRotateY(waistMatrix,bodys[0].objRotY);
   mulMatRotateZ(waistMatrix,bodys[0].objRotZ); 
   mulMatScaling(waistMatrix,bodys[0].scaleX,bodys[0].scaleY,bodys[0].scaleZ);
-  objectShadowMapPolygonPush(bodys,waistMatrix,0,moveObjects,sunViewMatrix);
+  objectShadowMapPolygonPush(bodys,waistMatrix,0,shadowProjectedObjects,sunViewMatrix);
+  objectPolygonPush(bodys,waistMatrix,0,projectedObjects,viewMatrix);
+
   let s = Math.sin(theta);
   let ns = s<0 ? 0 : s;
   //bodys[0].objRotY = -45;
@@ -617,14 +619,16 @@ if( skyPixelImage.length == 0  || cubePixelImage.length == 0 ||
   mulMatRotateZ(spainMatrix,bodys[1].objRotZ); 
   mulMatScaling(spainMatrix,bodys[1].scaleX,bodys[1].scaleY,bodys[1].scaleZ);
   let waistspainMatrix = matMul(waistMatrix,spainMatrix);
-  objectShadowMapPolygonPush(bodys,waistspainMatrix,1,moveObjects,sunViewMatrix);
+  objectShadowMapPolygonPush(bodys,waistspainMatrix,1,shadowProjectedObjects,sunViewMatrix);
+  objectPolygonPush(bodys,waistspainMatrix,1,projectedObjects,viewMatrix);
 
-  mulMatRotateX(headMatrix,bodys[1].objRotX);
-  mulMatRotateY(headMatrix,bodys[1].objRotY);
-  mulMatRotateZ(headMatrix,bodys[1].objRotZ); 
-  mulMatScaling(headMatrix,bodys[1].scaleX,bodys[1].scaleY,bodys[1].scaleZ);
+  mulMatRotateX(headMatrix,bodys[2].objRotX);
+  mulMatRotateY(headMatrix,bodys[2].objRotY);
+  mulMatRotateZ(headMatrix,bodys[2].objRotZ); 
+  mulMatScaling(headMatrix,bodys[2].scaleX,bodys[2].scaleY,bodys[2].scaleZ);
   let waistspainHeadMatrix = matMul(waistspainMatrix,headMatrix);
-  objectShadowMapPolygonPush(bodys,waistspainHeadMatrix,1,moveObjects,sunViewMatrix);
+  objectShadowMapPolygonPush(bodys,waistspainHeadMatrix,1,shadowProjectedObjects,sunViewMatrix);
+  objectPolygonPush(bodys,waistspainHeadMatrix,2,projectedObjects,viewMatrix);
 
 	//cuberegister
 	for(let num=0;num<cubes.length;num++){
@@ -634,7 +638,8 @@ if( skyPixelImage.length == 0  || cubePixelImage.length == 0 ||
     mulMatRotateY(worldMatrix,cubes[num].objRotY);
     mulMatRotateZ(worldMatrix,cubes[num].objRotZ); 
     mulMatScaling(worldMatrix,cubes[num].scaleX,cubes[num].scaleY,cubes[num].scaleZ);
-    objectShadowMapPolygonPush(cubes,worldMatrix,num,moveObjects,sunViewMatrix);
+    objectShadowMapPolygonPush(cubes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
+    objectPolygonPush(cubes,worldMatrix,num,projectedObjects,viewMatrix);
 	}
 	//planesregister
 	for(let num=0;num<planes.length;num++){
@@ -644,128 +649,68 @@ if( skyPixelImage.length == 0  || cubePixelImage.length == 0 ||
     mulMatRotateY(worldMatrix,planes[num].objRotY);
     mulMatRotateZ(worldMatrix,planes[num].objRotZ); 
     mulMatScaling(worldMatrix,planes[num].scaleX,planes[num].scaleY,planes[num].scaleZ);
-    objectShadowMapPolygonPush(planes,worldMatrix,num,moveObjects,sunViewMatrix);
+    objectShadowMapPolygonPush(planes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
+    objectPolygonPush(planes,worldMatrix,num,projectedObjects,viewMatrix);
   }
   /*
-  lookat = setVector3(moveObjects[lookatIndex].orgObject.centerObjX,moveObjects[lookatIndex].orgObject.centerObjY,moveObjects[lookatIndex].orgObject.centerObjZ);
+  lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
   for(let i = spheres.length;i<spheres.length+monkeys.length+cubes.length;i++){
-  	let currentObject = moveObjects[i];
+  	let currentObject = shadowProjectedObjects[i];
   	let currentMaxMinCenter = vertsCulAABBMaxMinCenter(currentObject.orgObject,currentObject.worldMatrix,0,gravity,0);
   	for(let j = spheres.length;j<spheres.length+monkeys.length+cubes.length+planes.length;j++){
-  		let gravityUnderMaxMinCenter = vertsCulAABBMaxMinCenter(moveObjects[j].orgObject,moveObjects[j].worldMatrix,0,0,0);
-  	  if(AABBcollision(currentMaxMinCenter,gravityUnderMaxMinCenter) == true && (currentObject.orgObject.centerObjY<moveObjects[j].orgObject.centerObjY)){
+  		let gravityUnderMaxMinCenter = vertsCulAABBMaxMinCenter(shadowProjectedObjects[j].orgObject,shadowProjectedObjects[j].worldMatrix,0,0,0);
+  	  if(AABBcollision(currentMaxMinCenter,gravityUnderMaxMinCenter) == true && (currentObject.orgObject.centerObjY<shadowProjectedObjects[j].orgObject.centerObjY)){
         currentObject.gravityCollision = true;
         break;
 	    }
 	  }
   }
   for(let i = spheres.length;i<spheres.length+monkeys.length+cubes.length;i++){
-  	if(moveObjects[i].gravityCollision == false){
-  		moveObjects[i].orgObject.centerObjY += gravity;
+  	if(shadowProjectedObjects[i].gravityCollision == false){
+  		shadowProjectedObjects[i].orgObject.centerObjY += gravity;
   	}
   }*/
 let shadowMap = [];
 renderbufferInit(shadowMap,SCREEN_SIZE_H,SCREEN_SIZE_W);
-for(let j=0;j<moveObjects.length;j++){
-	for(let i=0;i<moveObjects[j].polygonNum;i++){
+for(let j=0;j<shadowProjectedObjects.length;j++){
+	for(let i=0;i<shadowProjectedObjects[j].polygonNum;i++){
 	  //-の方がこちらに近くなる座標軸だから
-	  if(moveObjects[j].orgObject.backCullingFlag == true){
-	    if(moveObjects[j].polygonList[i].crossZ<0){
+	  if(shadowProjectedObjects[j].orgObject.backCullingFlag == true){
+	    if(shadowProjectedObjects[j].polygonList[i].crossZ<0){
         let image = null;
         let crossWorldVector3 = null;
         let UV = null;
-       triangleToBuffer(shadowMap,null,1,image,moveObjects[j].polygonList[i].moveVertices,crossWorldVector3,UV);
+       triangleToBuffer(shadowMap,null,1,image,shadowProjectedObjects[j].polygonList[i].moveVertices,crossWorldVector3,UV);
         } 
 	  }else{
       let image = null;
       let crossWorldVector3 = null;
       let UV = null;
-     triangleToBuffer(shadowMap,null,1,image,moveObjects[j].polygonList[i].moveVertices,crossWorldVector3,UV);
+     triangleToBuffer(shadowMap,null,1,image,shadowProjectedObjects[j].polygonList[i].moveVertices,crossWorldVector3,UV);
 	  }
 	}
 }
-moveObjects = [];
-
-	//blender2.7xjsonload
-	for(let num=0;num<monkeys.length;num++){
-    let worldMatrix = matIdentity();
-    mulMatTranslate(worldMatrix,monkeys[num].centerObjX,monkeys[num].centerObjY,monkeys[num].centerObjZ);  
-    mulMatRotateX(worldMatrix,monkeys[num].objRotX);
-    mulMatRotateY(worldMatrix,monkeys[num].objRotY);
-    mulMatRotateZ(worldMatrix,monkeys[num].objRotZ); 
-    mulMatScaling(worldMatrix,monkeys[num].scaleX,monkeys[num].scaleY,monkeys[num].scaleZ);
-    objectPolygonPush(monkeys,worldMatrix,num,moveObjects,viewMatrix);	
-  }
-  //ボーンアニメーション
-  waistMatrix = matIdentity();
-      spainMatrix = matIdentity();
-          headMatrix = matIdentity();
-
-  mulMatTranslate(waistMatrix,bodys[0].centerObjX,bodys[0].centerObjY,bodys[0].centerObjZ);  
-  mulMatRotateX(waistMatrix,bodys[0].objRotX);
-  mulMatRotateY(waistMatrix,bodys[0].objRotY);
-  mulMatRotateZ(waistMatrix,bodys[0].objRotZ); 
-  mulMatScaling(waistMatrix,bodys[0].scaleX,bodys[0].scaleY,bodys[0].scaleZ);
-  objectPolygonPush(bodys,waistMatrix,0,moveObjects,viewMatrix);
-
-  mulMatRotateX(spainMatrix,bodys[1].objRotX);
-  mulMatRotateY(spainMatrix,bodys[1].objRotY);
-  mulMatRotateZ(spainMatrix,bodys[1].objRotZ); 
-  mulMatScaling(spainMatrix,bodys[1].scaleX,bodys[1].scaleY,bodys[1].scaleZ);
-  waistspainMatrix = matMul(waistMatrix,spainMatrix);
-  objectPolygonPush(bodys,waistspainMatrix,1,moveObjects,viewMatrix);
-
-  mulMatRotateX(headMatrix,bodys[2].objRotX);
-  mulMatRotateY(headMatrix,bodys[2].objRotY);
-  mulMatRotateZ(headMatrix,bodys[2].objRotZ); 
-  mulMatScaling(headMatrix,bodys[2].scaleX,bodys[2].scaleY,bodys[2].scaleZ);
-  waistspainHeadMatrix = matMul(waistspainMatrix,headMatrix);
-  objectPolygonPush(bodys,waistspainHeadMatrix,2,moveObjects,viewMatrix);
-	//cuberegister
-	for(let num=0;num<cubes.length;num++){
-    let worldMatrix = matIdentity();
-    mulMatTranslate(worldMatrix,cubes[num].centerObjX,cubes[num].centerObjY,cubes[num].centerObjZ);  
-    mulMatRotateX(worldMatrix,cubes[num].objRotX);
-    mulMatRotateY(worldMatrix,cubes[num].objRotY);
-    mulMatRotateZ(worldMatrix,cubes[num].objRotZ); 
-    mulMatScaling(worldMatrix,cubes[num].scaleX,cubes[num].scaleY,cubes[num].scaleZ);
-    objectPolygonPush(cubes,worldMatrix,num,moveObjects,viewMatrix);
-	}
-	//planesregister
-	for(let num=0;num<planes.length;num++){
-    let worldMatrix = matIdentity();
-    mulMatTranslate(worldMatrix,planes[num].centerObjX,planes[num].centerObjY,planes[num].centerObjZ);  
-    mulMatRotateX(worldMatrix,planes[num].objRotX);
-    mulMatRotateY(worldMatrix,planes[num].objRotY);
-    mulMatRotateZ(worldMatrix,planes[num].objRotZ); 
-    mulMatScaling(worldMatrix,planes[num].scaleX,planes[num].scaleY,planes[num].scaleZ);
-    objectPolygonPush(planes,worldMatrix,num,moveObjects,viewMatrix);
-  }
-
 let zBuffering = [];
 renderbufferInit(zBuffering,SCREEN_SIZE_H,SCREEN_SIZE_W);
-let newDate = new Date();
-let newsecond = newDate.getMilliseconds();
-
-for(let j=0;j<moveObjects.length;j++){
-	for(let i=0;i<moveObjects[j].polygonNum;i++){
+for(let j=0;j<projectedObjects.length;j++){
+	for(let i=0;i<projectedObjects[j].polygonNum;i++){
 	  //-の方がこちらに近くなる座標軸だから
-	  if(moveObjects[j].orgObject.backCullingFlag == true){
-	    if(moveObjects[j].polygonList[i].crossZ<0){
-        triangleToBuffer(zBuffering,shadowMap,1,moveObjects[j].polygonList[i].image,moveObjects[j].polygonList[i].moveVertices,moveObjects[j].polygonList[i].crossWorldVector3,
+	  if(projectedObjects[j].orgObject.backCullingFlag == true){
+	    if(projectedObjects[j].polygonList[i].crossZ<0){
+        triangleToBuffer(zBuffering,shadowMap,1,projectedObjects[j].polygonList[i].image,projectedObjects[j].polygonList[i].moveVertices,projectedObjects[j].polygonList[i].crossWorldVector3,
           [
-            moveObjects[j].polygonList[i].UV[0], moveObjects[j].polygonList[i].UV[1],
-            moveObjects[j].polygonList[i].UV[2], moveObjects[j].polygonList[i].UV[3],
-            moveObjects[j].polygonList[i].UV[4], moveObjects[j].polygonList[i].UV[5]
+            projectedObjects[j].polygonList[i].UV[0], projectedObjects[j].polygonList[i].UV[1],
+            projectedObjects[j].polygonList[i].UV[2], projectedObjects[j].polygonList[i].UV[3],
+            projectedObjects[j].polygonList[i].UV[4], projectedObjects[j].polygonList[i].UV[5]
           ]
            );
 	    } 
 	  }else{
-      triangleToBuffer(zBuffering,shadowMap,1,moveObjects[j].polygonList[i].image,moveObjects[j].polygonList[i].moveVertices,moveObjects[j].polygonList[i].crossWorldVector3,
+      triangleToBuffer(zBuffering,shadowMap,1,projectedObjects[j].polygonList[i].image,projectedObjects[j].polygonList[i].moveVertices,projectedObjects[j].polygonList[i].crossWorldVector3,
         [
-          moveObjects[j].polygonList[i].UV[0], moveObjects[j].polygonList[i].UV[1],
-          moveObjects[j].polygonList[i].UV[2], moveObjects[j].polygonList[i].UV[3],
-          moveObjects[j].polygonList[i].UV[4], moveObjects[j].polygonList[i].UV[5]
+          projectedObjects[j].polygonList[i].UV[0], projectedObjects[j].polygonList[i].UV[1],
+          projectedObjects[j].polygonList[i].UV[2], projectedObjects[j].polygonList[i].UV[3],
+          projectedObjects[j].polygonList[i].UV[4], projectedObjects[j].polygonList[i].UV[5]
         ]
          );
 	  }
