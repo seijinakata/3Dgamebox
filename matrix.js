@@ -155,9 +155,9 @@ export function mulMatRotateX(m,r) {
         let c = 0;
         let s = 0;
         if(r<0){
-            r *= -1;
-            c = -1*cosLut[r];
-            s = -1*sinLut[r];        
+            r = 360 + r;
+            c = cosLut[r];
+            s = sinLut[r];        
         }else{
         c = cosLut[r];
         s = sinLut[r]; 
@@ -180,9 +180,9 @@ export function mulMatRotatePointX(m,r,x,y,z) {
     let c = 0;
     let s = 0;
     if(r<0){
-        r *= -1;
-        c = -1*cosLut[r];
-        s = -1*sinLut[r];        
+        r = 360 + r;
+        c = cosLut[r];
+        s = sinLut[r];        
     }else{
     c = cosLut[r];
     s = sinLut[r]; 
@@ -211,9 +211,9 @@ export function mulMatRotateY(m,r) {
         let c = 0;
         let s = 0;
         if(r<0){
-            r *= -1;
-            c = -1*cosLut[r];
-            s = -1*sinLut[r];        
+            r = 360 + r;
+            c = cosLut[r];
+            s = sinLut[r];        
         }else{
         c = cosLut[r];
         s = sinLut[r]; 
@@ -236,9 +236,9 @@ export function mulMatRotatePointY(m,r,x,y,z) {
     let c = 0;
     let s = 0;
     if(r<0){
-        r *= -1;
-        c = -1*cosLut[r];
-        s = -1*sinLut[r];        
+        r = 360 + r;
+        c = cosLut[r];
+        s = sinLut[r];        
     }else{
     c = cosLut[r];
     s = sinLut[r]; 
@@ -268,9 +268,9 @@ export function mulMatRotateZ(m,r) {
         let c = 0;
         let s = 0;
         if(r<0){
-            r360 *= -1;
-            c = -1*cosLut[r];
-            s = -1*sinLut[r];        
+            r = 360 + r;
+            c = cosLut[r];
+            s = sinLut[r];        
         }else{
         c = cosLut[r];
         s = sinLut[r]; 
@@ -293,9 +293,9 @@ export function mulMatRotatePointZ(m,r,x,y,z) {
     let c = 0;
     let s = 0;
     if(r<0){
-        r360 *= -1;
-        c = -1*cosLut[r];
-        s = -1*sinLut[r];        
+        r = 360 + r;
+        c = cosLut[r];
+        s = sinLut[r];        
     }else{
     c = cosLut[r];
     s = sinLut[r]; 

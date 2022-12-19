@@ -39,7 +39,7 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(3,-3,-4);
+let cameraPos = setVector3(1,-3,-4);
 let lookat = setVector3(0.0,-1,1);
 let sunPos = setVector3(0,-3,-4);
 let sunLookat = setVector3(0.0,-0.0,0);
@@ -470,11 +470,11 @@ let bodys = [];
 cubeImage.addEventListener("load", function() {
 	cubePixelImage = pictureToPixelMap(backCtx,cubeImage);
   //waist
-	bodys.push(new Object(waistVerts,0,0,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+	bodys.push(new Object(waistVerts,0,-0.5,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
   //spine
-  bodys.push(new Object(spineVerts,0.0,0,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+	bodys.push(new Object(spineVerts,0,-0.25,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
   //head
-  bodys.push(new Object(headVerts,0.0,0,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+	bodys.push(new Object(headVerts,0,-0.75,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
 
 	cubes.push(new Object(orgCubeVerts,-0.6,-0.90,1.0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
 	cubes.push(new Object(orgCubeVerts,0.6,-0.90,1,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
@@ -591,8 +591,6 @@ let newsecond = newDate.getMilliseconds();
     objectPolygonPush(monkeys,worldMatrix,num,projectedObjects,viewMatrix);	
   }
 
-  bodys[0].objRotX = 0;
-  bodys[0].centerObjY  = -0.5;
   let waistMatrix = matIdentity();
       let spainMatrix = matIdentity();
         let headMatrix = matIdentity();
@@ -607,28 +605,33 @@ let newsecond = newDate.getMilliseconds();
   let s = Math.sin(theta);
   let ns = s<0 ? 0 : s;
   //bodys[0].objRotY = -45;
-  bodys[1].objRotX = Math.floor(45 * ns);
+  bodys[1].objRotX =  Math.floor(45 * ns);
   theta += 0.4;
+  //bodys[0].objRotZ += 10;
+
+  bodys[2].objRotX =  Math.floor(45 * ns);
   //bodys[0].objRotZ += 10;
 
   if(theta >=2000){
     theta = 0;
   }
-  mulMatRotateX(spainMatrix,bodys[1].objRotX);
-  mulMatRotateY(spainMatrix,bodys[1].objRotY);
-  mulMatRotateZ(spainMatrix,bodys[1].objRotZ); 
+  let waintPoint = setVector3(bodys[1].centerObjX,bodys[1].centerObjY,bodys[1].centerObjZ);
+  mulMatRotatePointX(spainMatrix,bodys[1].objRotX,waintPoint[0],waintPoint[1],waintPoint[2]);
+  mulMatRotateY(spainMatrix,bodys[1].objRotY,waintPoint[0],waintPoint[1],waintPoint[2]);
+  mulMatRotateZ(spainMatrix,bodys[1].objRotZ,waintPoint[0],waintPoint[1],waintPoint[2]);
   mulMatScaling(spainMatrix,bodys[1].scaleX,bodys[1].scaleY,bodys[1].scaleZ);
-  let waistspainMatrix = matMul(waistMatrix,spainMatrix);
-  objectShadowMapPolygonPush(bodys,waistspainMatrix,1,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,waistspainMatrix,1,projectedObjects,viewMatrix);
+  let waistSpainMatrix = matMul(waistMatrix,spainMatrix);
+  objectShadowMapPolygonPush(bodys,waistSpainMatrix,1,shadowProjectedObjects,sunViewMatrix);
+  objectPolygonPush(bodys,waistSpainMatrix,1,projectedObjects,viewMatrix);
 
-  mulMatRotateX(headMatrix,bodys[2].objRotX);
-  mulMatRotateY(headMatrix,bodys[2].objRotY);
-  mulMatRotateZ(headMatrix,bodys[2].objRotZ); 
+  waintPoint = setVector3(bodys[2].centerObjX,bodys[2].centerObjY,bodys[2].centerObjZ);
+  mulMatRotatePointX(headMatrix,bodys[2].objRotX,waintPoint[0],waintPoint[1],waintPoint[2]);
+  mulMatRotateY(headMatrix,bodys[2].objRotY,waintPoint[0],waintPoint[1],waintPoint[2]);
+  mulMatRotateZ(headMatrix,bodys[2].objRotZ,waintPoint[0],waintPoint[1],waintPoint[2]);
   mulMatScaling(headMatrix,bodys[2].scaleX,bodys[2].scaleY,bodys[2].scaleZ);
-  let waistspainHeadMatrix = matMul(waistspainMatrix,headMatrix);
-  objectShadowMapPolygonPush(bodys,waistspainHeadMatrix,1,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,waistspainHeadMatrix,2,projectedObjects,viewMatrix);
+  let waistSpainHeadMatrix = matMul(waistSpainMatrix,headMatrix);
+  objectShadowMapPolygonPush(bodys,waistSpainHeadMatrix,2,shadowProjectedObjects,sunViewMatrix);
+  objectPolygonPush(bodys,waistSpainHeadMatrix,2,projectedObjects,viewMatrix);
 
 	//cuberegister
 	for(let num=0;num<cubes.length;num++){
