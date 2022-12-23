@@ -39,7 +39,7 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(1,-3,-4);
+let cameraPos = setVector3(1,-1,-4);
 let lookat = setVector3(0.0,-1,1);
 let sunPos = setVector3(0,-3,-4);
 let sunLookat = setVector3(0.0,-0.0,0);
@@ -594,10 +594,12 @@ let newsecond = newDate.getMilliseconds();
   let waistMatrix = matIdentity();
       let spainMatrix = matIdentity();
         let headMatrix = matIdentity();
-  mulMatTranslate(waistMatrix,bodys[0].centerObjX,bodys[0].centerObjY,bodys[0].centerObjZ);  
+  //body全体の移動のために2を掛ける
+  mulMatTranslate(waistMatrix,bodys[0].centerObjX*2,bodys[0].centerObjY*2,bodys[0].centerObjZ*2);  
   mulMatRotateX(waistMatrix,bodys[0].objRotX);
   mulMatRotateY(waistMatrix,bodys[0].objRotY);
-  mulMatRotateZ(waistMatrix,bodys[0].objRotZ); 
+  mulMatRotateZ(waistMatrix,bodys[0].objRotZ);
+  mulMatTranslate(waistMatrix,-bodys[0].centerObjX,-bodys[0].centerObjY,-bodys[0].centerObjZ);  
   mulMatScaling(waistMatrix,bodys[0].scaleX,bodys[0].scaleY,bodys[0].scaleZ);
   objectShadowMapPolygonPush(bodys,waistMatrix,0,shadowProjectedObjects,sunViewMatrix);
   objectPolygonPush(bodys,waistMatrix,0,projectedObjects,viewMatrix);
@@ -609,29 +611,33 @@ let newsecond = newDate.getMilliseconds();
   theta += 0.4;
   //bodys[0].objRotZ += 10;
 
-  bodys[2].objRotX =  Math.floor(45 * ns);
+  //bodys[2].objRotX =  Math.floor(45 * ns);
+  bodys[2].objRotY =  Math.floor(45 * ns);
+
   //bodys[0].objRotZ += 10;
 
   if(theta >=2000){
     theta = 0;
   }
-  let waintPoint = setVector3(bodys[1].centerObjX,bodys[1].centerObjY,bodys[1].centerObjZ);
-  mulMatRotatePointX(spainMatrix,bodys[1].objRotX,waintPoint[0],waintPoint[1],waintPoint[2]);
-  mulMatRotateY(spainMatrix,bodys[1].objRotY,waintPoint[0],waintPoint[1],waintPoint[2]);
-  mulMatRotateZ(spainMatrix,bodys[1].objRotZ,waintPoint[0],waintPoint[1],waintPoint[2]);
+  mulMatTranslate(spainMatrix,bodys[1].centerObjX,bodys[1].centerObjY,bodys[1].centerObjZ);  
+  mulMatRotateX(spainMatrix,bodys[1].objRotX);
+  mulMatRotateY(spainMatrix,bodys[1].objRotY);
+  mulMatRotateZ(spainMatrix,bodys[1].objRotZ);
+  mulMatTranslate(spainMatrix,-bodys[1].centerObjX,-bodys[1].centerObjY,-bodys[1].centerObjZ);  
   mulMatScaling(spainMatrix,bodys[1].scaleX,bodys[1].scaleY,bodys[1].scaleZ);
-  let waistSpainMatrix = matMul(waistMatrix,spainMatrix);
-  objectShadowMapPolygonPush(bodys,waistSpainMatrix,1,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,waistSpainMatrix,1,projectedObjects,viewMatrix);
+  let spainWaistMatrix = matMul(waistMatrix,spainMatrix);
+  objectShadowMapPolygonPush(bodys,spainWaistMatrix,1,shadowProjectedObjects,sunViewMatrix);
+  objectPolygonPush(bodys,spainWaistMatrix,1,projectedObjects,viewMatrix);
 
-  waintPoint = setVector3(bodys[2].centerObjX,bodys[2].centerObjY,bodys[2].centerObjZ);
-  mulMatRotatePointX(headMatrix,bodys[2].objRotX,waintPoint[0],waintPoint[1],waintPoint[2]);
-  mulMatRotateY(headMatrix,bodys[2].objRotY,waintPoint[0],waintPoint[1],waintPoint[2]);
-  mulMatRotateZ(headMatrix,bodys[2].objRotZ,waintPoint[0],waintPoint[1],waintPoint[2]);
+  mulMatTranslate(headMatrix,bodys[2].centerObjX,bodys[2].centerObjY,bodys[2].centerObjZ);  
+  mulMatRotateX(headMatrix,bodys[2].objRotX);
+  mulMatRotateY(headMatrix,bodys[2].objRotY);
+  mulMatRotateZ(headMatrix,bodys[2].objRotZ);
+  mulMatTranslate(headMatrix,-bodys[2].centerObjX,-bodys[2].centerObjY,-bodys[2].centerObjZ);  
   mulMatScaling(headMatrix,bodys[2].scaleX,bodys[2].scaleY,bodys[2].scaleZ);
-  let waistSpainHeadMatrix = matMul(waistSpainMatrix,headMatrix);
-  objectShadowMapPolygonPush(bodys,waistSpainHeadMatrix,2,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,waistSpainHeadMatrix,2,projectedObjects,viewMatrix);
+  let spainWaistHeadMatrix = matMul(spainWaistMatrix,headMatrix);
+  objectShadowMapPolygonPush(bodys,spainWaistHeadMatrix,2,shadowProjectedObjects,sunViewMatrix);
+  objectPolygonPush(bodys,spainWaistHeadMatrix,2,projectedObjects,viewMatrix);
 
 	//cuberegister
 	for(let num=0;num<cubes.length;num++){
