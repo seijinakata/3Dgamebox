@@ -481,9 +481,9 @@ cubeImage.addEventListener("load", function() {
 	bodys.push(new Object(LeftLeg2Verts,0,-0.5,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
 
   //spine
-	bodys.push(new Object(spineVerts,0,-0.25,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+	bodys.push(new Object(spineVerts,0,-1.5,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
   //head
-	bodys.push(new Object(headVerts,0,-0.75,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+	bodys.push(new Object(headVerts,0,-2,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
 
 	cubes.push(new Object(orgCubeVerts,-0.6,-0.90,1.0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
 	cubes.push(new Object(orgCubeVerts,0.6,-0.90,1,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
@@ -603,19 +603,15 @@ let newsecond = newDate.getMilliseconds();
   
   let s = Math.sin(theta);
   let ns = s<0 ? 0 : s;
-  //bodys[0].objRotY = -45;
   bodys[1].objRotX =  Math.floor(-60 * ns);
-  
-  //bodys[0].objRotZ += 10;
-
-  //bodys[2].objRotX =  Math.floor(45 * ns);
   bodys[2].objRotX =  Math.floor(60 * ns);
-  bodys[3].objRotX =  Math.floor(60 * ns);
-  
-  //bodys[0].objRotZ += 10;
 
-  //bodys[2].objRotX =  Math.floor(45 * ns);
-  bodys[4].objRotX =  Math.floor(-60 * ns);
+  bodys[3].objRotX =  Math.floor(60 * ns);
+  bodys[4].objRotX =  Math.floor(60 * ns);
+
+  bodys[5].objRotX =  Math.floor(60 * ns);
+  bodys[6].objRotY =  Math.floor(60 * ns);
+
   //bodys[0].objRotZ += 10;
   theta += 0.4;
   if(theta >=2000){
@@ -631,9 +627,9 @@ let newsecond = newDate.getMilliseconds();
         let spainMatrix = matIdentity();
           let headMatrix = matIdentity();
   //body全体の移動のために2を掛ける
-  let masterXYZ = setVector3(0,-0.25,0);
+  let masterXYZ = setVector3(0,-0.2,0);
   let masterRotXYZ = setVector3(0,0,0);
-  let masterScalingXYZ = setVector3(1,1,1);
+  let masterScalingXYZ = setVector3(1,0.8,1);
   mulMatTranslate(masterMatrix,masterXYZ[0],masterXYZ[1],masterXYZ[2]);  
   mulMatRotateX(masterMatrix,masterRotXYZ[0]);
   mulMatRotateY(masterMatrix,masterRotXYZ[1]);
@@ -689,7 +685,7 @@ let newsecond = newDate.getMilliseconds();
   let waistleftLeg12Matrix = matMul(waistleftLeg1Matrix,leftLeg2Matrix);
   objectShadowMapPolygonPush(bodys,waistleftLeg12Matrix,4,shadowProjectedObjects,sunViewMatrix);
   objectPolygonPush(bodys,waistleftLeg12Matrix,4,projectedObjects,viewMatrix);
-  /*
+
   mulMatTranslate(spainMatrix,bodys[5].centerObjX,bodys[5].centerObjY,bodys[5].centerObjZ);  
   mulMatRotateX(spainMatrix,bodys[5].objRotX);
   mulMatRotateY(spainMatrix,bodys[5].objRotY);
@@ -709,7 +705,7 @@ let newsecond = newDate.getMilliseconds();
   let spainWaistHeadMatrix = matMul(spainWaistMatrix,headMatrix);
   objectShadowMapPolygonPush(bodys,spainWaistHeadMatrix,6,shadowProjectedObjects,sunViewMatrix);
   objectPolygonPush(bodys,spainWaistHeadMatrix,6,projectedObjects,viewMatrix);
-  */
+
 	//cuberegister
 	for(let num=0;num<cubes.length;num++){
     let worldMatrix = matIdentity();
