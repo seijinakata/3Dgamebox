@@ -387,7 +387,6 @@ function vertsCulAABBMaxMinCenter(orgObject,worldMatrix,offsetX,offsetY,offsetZ)
   maxminCenterObject.centerObjZ = centerZ;
   return maxminCenterObject;
 }
-/*
 //blenderLoad
 let monkeys = [];
 let monkeysImage = new Image();
@@ -397,7 +396,8 @@ let monkeyLoad = [];
 let monkeyLoad1 = [];
 monkeysImage.addEventListener("load", function() {
 	monkeyPixelImage = pictureToPixelMap(backCtx,monkeysImage);
-	let monkeyVerts = [];
+	let monkeyVerts = {};
+  monkeyVerts.vertsPosition = [];
 	let faceIndex = [];
 	let uv = [];
 	let faceUV = [];
@@ -405,7 +405,6 @@ monkeysImage.addEventListener("load", function() {
 	monkeyLoad.push(new ModelLoadData(monkeys[0]));
 	monkeyLoad[0].JSONLoader("cube.json", (() => monkeyLoad[0].onJSONLoaded()));	
 }, true);	
-*/
 //sky
 let sphereVerts8 = makeSphereVerts(16,10);
 let spheres = [];
@@ -537,7 +536,7 @@ let theta = 0;
 var mainLoopId = setInterval(function(){
 
 if( skyPixelImage.length == 0  || cubePixelImage.length == 0 ||
-	roadPixelImage.length == 0 || sandPixelImage.length == 0 /*|| monkeyLoad[0].getLoadFinish() != true*/){
+	roadPixelImage.length == 0 || sandPixelImage.length == 0 || monkeyLoad[0].getLoadFinish() != true){
 	ctx.font = '50pt Arial';
  	ctx.fillStyle = 'rgba(0, 0, 255)';
  	ctx.fillText("now loding", SCREEN_SIZE_W/2, SCREEN_SIZE_H/2);
@@ -599,7 +598,6 @@ let newsecond = newDate.getMilliseconds();
   }  
 
 	//blender2.7xjsonload
-  /*
 	for(let num=0;num<monkeys.length;num++){
     let worldMatrix = matIdentity();
     mulMatTranslate(worldMatrix,monkeys[num].centerObjX,monkeys[num].centerObjY,monkeys[num].centerObjZ);  
@@ -610,7 +608,6 @@ let newsecond = newDate.getMilliseconds();
     objectShadowMapPolygonPush(monkeys,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     objectPolygonPush(monkeys,worldMatrix,num,projectedObjects,viewMatrix);	
   }
-  */
   
   let s = Math.sin(theta);
   let ns = s<0 ? -s : s;
