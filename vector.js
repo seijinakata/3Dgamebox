@@ -12,6 +12,15 @@ export function setVector2(x,y){
     let vector2 = [x,y];
     return vector2;
 }
+export function setVector3(x,y,z){
+    let vector3 = [x,y,z];
+    return vector3;
+}
+export function setVector4(x,y,z,w){
+    let vector4 = [x,y,z,w];
+    return vector4;
+    }
+    
 export function vec2Plus(Va,Vb){
     let vx = Va[0] + Vb[0];
     let vy = Va[1] + Vb[1];
@@ -36,10 +45,7 @@ export function vec2Div(Va,Vb){
     let vector2 = setVector2(vx,vy);
     return vector2;
 }
-export function setVector3(x,y,z){
-    let vector3 = [x,y,z];
-    return vector3;
-    }
+
 export function vecMul(Va,Vb){
     let vx = Va[0] * Vb[0];
     let vy = Va[1] * Vb[1];
