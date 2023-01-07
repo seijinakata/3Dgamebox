@@ -144,7 +144,7 @@ class Object{
     this.backCullingFlag = backCullingFlag;
     
     //文字列になってる
-    this.verts = JSON.parse(JSON.stringify(verts));
+    this.verts = JSON.parse(JSON.stringify(verts.vertsPosition));
     this.faceIndex = faceIndex;
     this.UV = uv;
     this.faceUV = faceUV;
@@ -187,6 +187,7 @@ function setPolygon(Pos1,Pos2,Pos3,worldPos1,worldPos2,worldPos3,UV,image){
   let Va = vecMinus(Pos1,Pos2);
   let Vb = vecMinus(Pos3,Pos1);
   polygonElement.crossZ = culVecCrossZ(Va,Vb);
+  //ライトシミュレーション用
   Va = vecMinus(worldPos1,worldPos2);
   Vb = vecMinus(worldPos3,worldPos1);
   polygonElement.crossWorldVector3 = culVecNormalize(culVecCross(Va,Vb));
@@ -386,6 +387,7 @@ function vertsCulAABBMaxMinCenter(orgObject,worldMatrix,offsetX,offsetY,offsetZ)
   maxminCenterObject.centerObjZ = centerZ;
   return maxminCenterObject;
 }
+/*
 //blenderLoad
 let monkeys = [];
 let monkeysImage = new Image();
@@ -403,7 +405,7 @@ monkeysImage.addEventListener("load", function() {
 	monkeyLoad.push(new ModelLoadData(monkeys[0]));
 	monkeyLoad[0].JSONLoader("cube.json", (() => monkeyLoad[0].onJSONLoaded()));	
 }, true);	
-
+*/
 //sky
 let sphereVerts8 = makeSphereVerts(16,10);
 let spheres = [];
@@ -535,7 +537,7 @@ let theta = 0;
 var mainLoopId = setInterval(function(){
 
 if( skyPixelImage.length == 0  || cubePixelImage.length == 0 ||
-	roadPixelImage.length == 0 || sandPixelImage.length == 0 || monkeyLoad[0].getLoadFinish() != true){
+	roadPixelImage.length == 0 || sandPixelImage.length == 0 /*|| monkeyLoad[0].getLoadFinish() != true*/){
 	ctx.font = '50pt Arial';
  	ctx.fillStyle = 'rgba(0, 0, 255)';
  	ctx.fillText("now loding", SCREEN_SIZE_W/2, SCREEN_SIZE_H/2);
@@ -597,6 +599,7 @@ let newsecond = newDate.getMilliseconds();
   }  
 
 	//blender2.7xjsonload
+  /*
 	for(let num=0;num<monkeys.length;num++){
     let worldMatrix = matIdentity();
     mulMatTranslate(worldMatrix,monkeys[num].centerObjX,monkeys[num].centerObjY,monkeys[num].centerObjZ);  
@@ -607,7 +610,7 @@ let newsecond = newDate.getMilliseconds();
     objectShadowMapPolygonPush(monkeys,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     objectPolygonPush(monkeys,worldMatrix,num,projectedObjects,viewMatrix);	
   }
-
+  */
   
   let s = Math.sin(theta);
   let ns = s<0 ? -s : s;
