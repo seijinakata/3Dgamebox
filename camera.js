@@ -1,7 +1,7 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //classをjsonに置き換え中インスタンス製造じゃなくてただの文字列になるため軽くなると思われるから。
 import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round, roundVector2} from './vector.js';
-import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4} from './matrix.js';
+import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixelZ,setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch} from './paint.js';
 
@@ -39,7 +39,7 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(2,-1,-4);
+let cameraPos = setVector3(3,-1,-2);
 let lookat = setVector3(0.0,-1,1);
 let sunPos = setVector3(0,-3,-4);
 let sunLookat = setVector3(0.0,-0.0,0);
@@ -145,6 +145,8 @@ class Object{
     
     //文字列になってる
     this.verts = JSON.parse(JSON.stringify(verts.vertsPosition));
+    this.bonesIndex = verts.bonesIndex;
+    console.log( this.boneIndex);
     this.faceIndex = faceIndex;
     this.UV = uv;
     this.faceUV = faceUV;
@@ -218,18 +220,23 @@ function setShadowPolygon(Pos1,Pos2,Pos3){
   polygonElement.crossZ = culVecCrossZ(Va,Vb);
   return polygonElement;
 }
-function objectPolygonPush(objects,worldMatrix,objectNumber,projectedObjects,viewMatrix){
+function objectPolygonPush(objects,worldMatrix,plusMatrix,objectNumber,projectedObjects,viewMatrix){
   let worldVerts = [];
   let projectedVerts = [];
   let object = objects[objectNumber];
   for (var i = 0; i < object.verts.length; i++) {
     roundVector2(object.verts[i][0],object.verts[i][1]);
     object.verts[i][2] = round(object.verts[i][2]);
+    if(object.bonesIndex[i][0] == 0){
+      let verts = matVecMul(worldMatrix,object.verts[i])
+      worldVerts.push(verts);
+      projectedVerts.push(matVecMul(viewMatrix,verts));
+    }else{
+      let verts = matVecMul(plusMatrix,object.verts[i])
+      worldVerts.push(verts);
+      projectedVerts.push(matVecMul(viewMatrix,verts));
+    }
 
-    let verts = matVecMul(worldMatrix,object.verts[i])
-    worldVerts.push(verts);
-
-    projectedVerts.push(matVecMul(viewMatrix,verts));
     let projectionMatrix =  matPers(projectedVerts[i][2]);
     protMatVecMul(projectionMatrix,projectedVerts[i]);
     //projectedVerts[i] = matVecMul(viewPortMatrix,projectedVerts[i]);
@@ -596,7 +603,7 @@ let newsecond = newDate.getMilliseconds();
     shadowProjectedObjects.push(movesphere);
     */
   }  
-
+  /*
 	//blender2.7xjsonload
 	for(let num=0;num<monkeys.length;num++){
     let worldMatrix = matIdentity();
@@ -608,7 +615,7 @@ let newsecond = newDate.getMilliseconds();
     objectShadowMapPolygonPush(monkeys,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     objectPolygonPush(monkeys,worldMatrix,num,projectedObjects,viewMatrix);	
   }
-  
+  */
   let s = Math.sin(theta);
   let ns = s<0 ? -s : s;
   bodys[1].objRotX =  Math.floor(60 * s);
@@ -617,7 +624,7 @@ let newsecond = newDate.getMilliseconds();
   bodys[3].objRotX =  Math.floor(-60 * s);
   bodys[4].objRotX =  Math.floor(60 * s);
 
-  bodys[5].objRotX =  Math.floor(60 * ns);
+  bodys[5].objRotZ =  Math.floor(-60 * s);
 
   bodys[6].objRotY =  Math.floor(-60 * s);
   bodys[7].objRotY =  Math.floor(-60 * s);
@@ -662,12 +669,24 @@ let newsecond = newDate.getMilliseconds();
 
   //これが原点移動のボーンオフセット行列
   mulMatTranslate(waistMatrix,-bodys[0].centerObjX,-bodys[0].centerObjY,-bodys[0].centerObjZ);  
-
   mulMatScaling(waistMatrix,bodys[0].scaleX,bodys[0].scaleY,bodys[0].scaleZ);
   waistMatrix = matMul(masterMatrix,waistMatrix);
-  objectShadowMapPolygonPush(bodys,waistMatrix,0,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,waistMatrix,0,projectedObjects,viewMatrix);
 
+  let waistSkinMatrix = matWaight(waistMatrix,0.5);
+
+  mulMatTranslate(spainMatrix,bodys[5].centerObjX,bodys[5].centerObjY,bodys[5].centerObjZ);  
+  mulMatRotateX(spainMatrix,bodys[5].objRotX);
+  mulMatRotateY(spainMatrix,bodys[5].objRotY);
+  mulMatRotateZ(spainMatrix,bodys[5].objRotZ);
+  mulMatTranslate(spainMatrix,-bodys[5].centerObjX,-bodys[5].centerObjY,-bodys[5].centerObjZ);  
+  mulMatScaling(spainMatrix,bodys[5].scaleX,bodys[5].scaleY,bodys[5].scaleZ);
+  let spainWaistMatrix = matMul(waistMatrix,spainMatrix);
+  let spainWaistSkinMatrix = matWaight(spainWaistMatrix,0.5);
+
+  let plusMatrix = matPlus(spainWaistSkinMatrix,waistSkinMatrix);
+  //objectShadowMapPolygonPush(bodys,waistMatrix,0,shadowProjectedObjects,sunViewMatrix);
+  objectPolygonPush(bodys,waistMatrix,plusMatrix,0,projectedObjects,viewMatrix);
+  /*
   //rightLeg
   mulMatTranslate(rightLeg1Matrix,bodys[1].centerObjX,bodys[1].centerObjY,bodys[1].centerObjZ);  
   mulMatRotateX(rightLeg1Matrix,bodys[1].objRotX);
@@ -709,18 +728,12 @@ let newsecond = newDate.getMilliseconds();
   let waistleftLeg12Matrix = matMul(waistleftLeg1Matrix,leftLeg2Matrix);
   objectShadowMapPolygonPush(bodys,waistleftLeg12Matrix,4,shadowProjectedObjects,sunViewMatrix);
   objectPolygonPush(bodys,waistleftLeg12Matrix,4,projectedObjects,viewMatrix);
-
+  */
   //spain
-  mulMatTranslate(spainMatrix,bodys[5].centerObjX,bodys[5].centerObjY,bodys[5].centerObjZ);  
-  mulMatRotateX(spainMatrix,bodys[5].objRotX);
-  mulMatRotateY(spainMatrix,bodys[5].objRotY);
-  mulMatRotateZ(spainMatrix,bodys[5].objRotZ);
-  mulMatTranslate(spainMatrix,-bodys[5].centerObjX,-bodys[5].centerObjY,-bodys[5].centerObjZ);  
-  mulMatScaling(spainMatrix,bodys[5].scaleX,bodys[5].scaleY,bodys[5].scaleZ);
-  let spainWaistMatrix = matMul(waistMatrix,spainMatrix);
-  objectShadowMapPolygonPush(bodys,spainWaistMatrix,5,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,spainWaistMatrix,5,projectedObjects,viewMatrix);
 
+  //objectShadowMapPolygonPush(bodys,spainWaistMatrix,5,shadowProjectedObjects,sunViewMatrix);
+  objectPolygonPush(bodys,spainWaistMatrix,plusMatrix,5,projectedObjects,viewMatrix);
+  /*
   //rightArm
   mulMatTranslate(rightArm1Matrix,bodys[6].centerObjX,bodys[6].centerObjY,bodys[6].centerObjZ);  
   mulMatRotateX(rightArm1Matrix,bodys[6].objRotX);
@@ -870,9 +883,9 @@ for(let j=0;j<SCREEN_SIZE_H;j++){
       let getPixel = zBuffering[j][i][0];
       let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
       let sunCosin = culVecDot(sunVec,zBuffering[j][i][0].crossWorldVector3);
-      getPixel.r = getPixel.r*sunCosin*1.2;
-      getPixel.g = getPixel.g*sunCosin*1.2;
-      getPixel.b = getPixel.b*sunCosin*1.2;
+      //getPixel.r = getPixel.r*sunCosin*1.2;
+      //getPixel.g = getPixel.g*sunCosin*1.2;
+      //getPixel.b = getPixel.b*sunCosin*1.2;
     }
   }
 }
