@@ -220,7 +220,7 @@ function setShadowPolygon(Pos1,Pos2,Pos3){
   polygonElement.crossZ = culVecCrossZ(Va,Vb);
   return polygonElement;
 }
-function objectPolygonPush(objects,worldMatrix,plusMatrix,objectNumber,projectedObjects,viewMatrix){
+function objectPolygonPush(objects,worldMatrix,plusMatrix,spainWaistHeadSkinMatrix,objectNumber,projectedObjects,viewMatrix){
   let worldVerts = [];
   let projectedVerts = [];
   let object = objects[objectNumber];
@@ -231,8 +231,12 @@ function objectPolygonPush(objects,worldMatrix,plusMatrix,objectNumber,projected
       let verts = matVecMul(worldMatrix,object.verts[i])
       worldVerts.push(verts);
       projectedVerts.push(matVecMul(viewMatrix,verts));
-    }else{
+    }else if(object.bonesIndex[i][0] == 1){
       let verts = matVecMul(plusMatrix,object.verts[i])
+      worldVerts.push(verts);
+      projectedVerts.push(matVecMul(viewMatrix,verts));
+    }else if(object.bonesIndex[i][0] == 2){
+      let verts = matVecMul(spainWaistHeadSkinMatrix,object.verts[i])
       worldVerts.push(verts);
       projectedVerts.push(matVecMul(viewMatrix,verts));
     }
@@ -632,6 +636,9 @@ let newsecond = newDate.getMilliseconds();
   bodys[8].objRotY =  Math.floor(-60 * s);
   bodys[9].objRotY =  Math.floor(-60 * s);
 
+  bodys[10].objRotZ =  Math.floor(60 * s);
+
+
 
   //bodys[0].objRotZ += 10;
   theta += 0.4;
@@ -661,31 +668,54 @@ let newsecond = newDate.getMilliseconds();
   mulMatRotateY(masterMatrix,masterRotXYZ[1]);
   mulMatRotateZ(masterMatrix,masterRotXYZ[2]);
   mulMatScaling(masterMatrix,masterScalingXYZ[0],masterScalingXYZ[1],masterScalingXYZ[2]);
-
+  //waist
   mulMatTranslate(waistMatrix,bodys[0].centerObjX,bodys[0].centerObjY,bodys[0].centerObjZ);  
   mulMatRotateX(waistMatrix,bodys[0].objRotX);
   mulMatRotateY(waistMatrix,bodys[0].objRotY);
   mulMatRotateZ(waistMatrix,bodys[0].objRotZ);
-
+  mulMatScaling(waistMatrix,bodys[0].scaleX,bodys[0].scaleY,bodys[0].scaleZ);
   //これが原点移動のボーンオフセット行列
   mulMatTranslate(waistMatrix,-bodys[0].centerObjX,-bodys[0].centerObjY,-bodys[0].centerObjZ);  
-  mulMatScaling(waistMatrix,bodys[0].scaleX,bodys[0].scaleY,bodys[0].scaleZ);
+  
   waistMatrix = matMul(masterMatrix,waistMatrix);
 
   let waistSkinMatrix = matWaight(waistMatrix,0.5);
 
+  //spain
   mulMatTranslate(spainMatrix,bodys[5].centerObjX,bodys[5].centerObjY,bodys[5].centerObjZ);  
   mulMatRotateX(spainMatrix,bodys[5].objRotX);
   mulMatRotateY(spainMatrix,bodys[5].objRotY);
   mulMatRotateZ(spainMatrix,bodys[5].objRotZ);
-  mulMatTranslate(spainMatrix,-bodys[5].centerObjX,-bodys[5].centerObjY,-bodys[5].centerObjZ);  
   mulMatScaling(spainMatrix,bodys[5].scaleX,bodys[5].scaleY,bodys[5].scaleZ);
+  mulMatTranslate(spainMatrix,-bodys[5].centerObjX,-bodys[5].centerObjY,-bodys[5].centerObjZ);  
+  
   let spainWaistMatrix = matMul(waistMatrix,spainMatrix);
-  let spainWaistSkinMatrix = matWaight(spainWaistMatrix,0.5);
+  let spainWaistWaightMatrix = matWaight(spainWaistMatrix,0.5);
 
-  let plusMatrix = matPlus(spainWaistSkinMatrix,waistSkinMatrix);
+  let spainWaistSkinMatrix = matPlus(spainWaistWaightMatrix,waistSkinMatrix);
+
+  //head
+  mulMatTranslate(headMatrix,bodys[10].centerObjX,bodys[10].centerObjY,bodys[10].centerObjZ);  
+  mulMatRotateX(headMatrix,bodys[10].objRotX);
+  mulMatRotateY(headMatrix,bodys[10].objRotY);
+  mulMatRotateZ(headMatrix,bodys[10].objRotZ);
+  mulMatTranslate(headMatrix,-bodys[10].centerObjX,-bodys[10].centerObjY,-bodys[10].centerObjZ);  
+  mulMatScaling(headMatrix,bodys[10].scaleX,bodys[10].scaleY,bodys[10].scaleZ);
+  let spainWaistHeadMatrix = matMul(spainWaistMatrix,headMatrix);
+  let spainWaistHeadWaightMatrix = matWaight(spainWaistHeadMatrix,0.5)
+  let spainWaistHeadSkinMatrix = matPlus(spainWaistHeadWaightMatrix,spainWaistWaightMatrix);
+  //waist
   //objectShadowMapPolygonPush(bodys,waistMatrix,0,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,waistMatrix,plusMatrix,0,projectedObjects,viewMatrix);
+  objectPolygonPush(bodys,waistMatrix,spainWaistSkinMatrix,spainWaistHeadSkinMatrix,0,projectedObjects,viewMatrix);
+
+  //spain
+  //objectShadowMapPolygonPush(bodys,spainWaistMatrix,5,shadowProjectedObjects,sunViewMatrix);
+  objectPolygonPush(bodys,spainWaistMatrix,spainWaistSkinMatrix,spainWaistHeadSkinMatrix,5,projectedObjects,viewMatrix);
+
+  //head
+  //objectShadowMapPolygonPush(bodys,spainWaistHeadMatrix,10,shadowProjectedObjects,sunViewMatrix);
+  objectPolygonPush(bodys,spainWaistHeadMatrix,spainWaistHeadSkinMatrix,spainWaistHeadSkinMatrix,10,projectedObjects,viewMatrix);
+
   /*
   //rightLeg
   mulMatTranslate(rightLeg1Matrix,bodys[1].centerObjX,bodys[1].centerObjY,bodys[1].centerObjZ);  
@@ -729,10 +759,6 @@ let newsecond = newDate.getMilliseconds();
   objectShadowMapPolygonPush(bodys,waistleftLeg12Matrix,4,shadowProjectedObjects,sunViewMatrix);
   objectPolygonPush(bodys,waistleftLeg12Matrix,4,projectedObjects,viewMatrix);
   */
-  //spain
-
-  //objectShadowMapPolygonPush(bodys,spainWaistMatrix,5,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,spainWaistMatrix,plusMatrix,5,projectedObjects,viewMatrix);
   /*
   //rightArm
   mulMatTranslate(rightArm1Matrix,bodys[6].centerObjX,bodys[6].centerObjY,bodys[6].centerObjZ);  
@@ -775,16 +801,7 @@ let newsecond = newDate.getMilliseconds();
   let spainWaistLeftArm12Matrix = matMul(spainWaistLeftArm1Matrix,leftArm2Matrix);
   objectShadowMapPolygonPush(bodys,spainWaistLeftArm12Matrix,9,shadowProjectedObjects,sunViewMatrix);
   objectPolygonPush(bodys,spainWaistLeftArm12Matrix,9,projectedObjects,viewMatrix);
-  
-  mulMatTranslate(headMatrix,bodys[10].centerObjX,bodys[10].centerObjY,bodys[10].centerObjZ);  
-  mulMatRotateX(headMatrix,bodys[10].objRotX);
-  mulMatRotateY(headMatrix,bodys[10].objRotY);
-  mulMatRotateZ(headMatrix,bodys[10].objRotZ);
-  mulMatTranslate(headMatrix,-bodys[10].centerObjX,-bodys[10].centerObjY,-bodys[10].centerObjZ);  
-  mulMatScaling(headMatrix,bodys[10].scaleX,bodys[10].scaleY,bodys[10].scaleZ);
-  let spainWaistHeadMatrix = matMul(spainWaistMatrix,headMatrix);
-  objectShadowMapPolygonPush(bodys,spainWaistHeadMatrix,10,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,spainWaistHeadMatrix,10,projectedObjects,viewMatrix);
+
 
 	//cuberegister
 	for(let num=0;num<cubes.length;num++){
