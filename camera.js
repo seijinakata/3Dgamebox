@@ -123,7 +123,7 @@ class ModelLoadData{
 
 class Object{
   
-  constructor(verts,x,y,z,RotX,RotY,RotZ,scalex,scaley,scalez,numCorners,faceIndex,uv,faceUV,backGroundFlag,backCullingFlag,img){
+  constructor(verts,x,y,z,RotX,RotY,RotZ,scalex,scaley,scalez,numCorners,backGroundFlag,backCullingFlag,img){
     
     this.centerObjX = x;
     this.centerObjY = y;
@@ -148,8 +148,8 @@ class Object{
     this.verts = JSON.parse(JSON.stringify(verts.vertsPosition));
     this.bonesIndex = verts.bonesIndex;
     this.faceIndex = verts.faceIndex;
-    this.UV = uv;
-    this.faceUV = faceUV;
+    this.UV = verts.uv;
+    this.faceUV = [];
   }
 }
 
@@ -250,23 +250,13 @@ function objectPolygonPush(objects,worldMatrix,plusMatrix,spainWaistHeadSkinMatr
  
   let Poly = []
   for(let i=0;i<object.faceIndex.length;i++){
+    console.log(object.UV[i][0].u)
     let triangleFaceIndex = object.faceIndex[i];
-    console.log(triangleFaceIndex)
-    let UV = [];
-    if(object.faceUV.length == 0){
-      UV = [
-           object.UV[triangleFaceIndex[0]].u, object.UV[triangleFaceIndex[0]].v,
-           object.UV[triangleFaceIndex[1]].u, object.UV[triangleFaceIndex[1]].v,
-           object.UV[triangleFaceIndex[2]].u, object.UV[triangleFaceIndex[2]].v,
+    let UV = [
+          object.UV[i][0].u, object.UV[i][0].v,
+          object.UV[i][1].u, object.UV[i][1].v,
+          object.UV[i][2].u, object.UV[i][2].v,
           ]
-    }else{
-      let triangleChangeFaceIndex = object.faceUV[i];
-      UV = [
-           object.UV[triangleChangeFaceIndex[0]].u, object.UV[triangleChangeFaceIndex[0]].v,
-           object.UV[triangleChangeFaceIndex[1]].u, object.UV[triangleChangeFaceIndex[1]].v,
-           object.UV[triangleChangeFaceIndex[2]].u, object.UV[triangleChangeFaceIndex[2]].v,
-          ]
-    } 
     Poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
       worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],UV,object.image));
   }
@@ -410,10 +400,7 @@ monkeysImage.addEventListener("load", function() {
 	monkeyPixelImage = pictureToPixelMap(backCtx,monkeysImage);
 	let monkeyVerts = {};
   monkeyVerts.vertsPosition = [];
-	let faceIndex = [];
-	let uv = [];
-	let faceUV = [];
-	monkeys.push(new Object(monkeyVerts,-1.0,-0.6,0,180,0,0,0.5,0.5,0.5,0,faceIndex,uv,faceUV,false,true,monkeyPixelImage));
+	monkeys.push(new Object(monkeyVerts,-1.0,-0.6,0,180,0,0,0.5,0.5,0.5,0,false,true,monkeyPixelImage));
 	monkeyLoad.push(new ModelLoadData(monkeys[0]));
 	monkeyLoad[0].JSONLoader("cube.json", (() => monkeyLoad[0].onJSONLoaded()));	
 }, true);	
@@ -436,87 +423,44 @@ let cubeImage = new Image();
 cubeImage.src = 'box.jpg';
 
 let cubePixelImage = [];
-let cubeFaceIndex = [];
 
-//前面
-cubeFaceIndex.push(setFaceIndex(0,1,3));
-cubeFaceIndex.push(setFaceIndex(2,3,1));
-
-//上面
-cubeFaceIndex.push(setFaceIndex(4,5,0));
-cubeFaceIndex.push(setFaceIndex(1,0,5));
-//後面
-cubeFaceIndex.push(setFaceIndex(5,4,6));
-cubeFaceIndex.push(setFaceIndex(7,6,4));
-
-//下面
-cubeFaceIndex.push(setFaceIndex(3,2,7));
-cubeFaceIndex.push(setFaceIndex(6,7,2));
-
-//左側面
-cubeFaceIndex.push(setFaceIndex(4,0,7));
-cubeFaceIndex.push(setFaceIndex(3,7,0));
-//右側面
-cubeFaceIndex.push(setFaceIndex(1,5,2));
-cubeFaceIndex.push(setFaceIndex(6,2,5));
-/**/
 let planeFaceIndex = [];
 //上面
 planeFaceIndex.push(setFaceIndex(4,5,0));
 planeFaceIndex.push(setFaceIndex(1,0,5));
 
-let cubePlane = [];
-let uvUp = [{"u":0,"v":1},{"u":1,"v":0},{"u":0,"v":1}];
-cubePlane.push(uvUp);
-let uvDown = [{"u":1,"v":1},{"u":0,"v":1},{"u":1,"v":0}];
-cubePlane.push(uvDown);
-console.log(cubePlane[0][1].v)
-let cubePlaneUV = [];
-
-cubePlaneUV.push(setUV(0,0));
-cubePlaneUV.push(setUV(1,0));
-cubePlaneUV.push(setUV(0,1));
-cubePlaneUV.push(setUV(1,1));
-cubePlaneUV.push(setUV(0,1));
-cubePlaneUV.push(setUV(1,0));
-console.log(cubePlaneUV[0].v)
-let cubeFaceUV = [];
-for(let i=0;i<cubeFaceIndex.length/2;i++){
-	cubeFaceUV.push(setFaceIndex(0,1,2));
-	cubeFaceUV.push(setFaceIndex(3,4,5));
-}
 let bodys = [];
 //一番下は-0.27から積み重ねる場合+0.5,-0.27
 cubeImage.addEventListener("load", function() {
 	cubePixelImage = pictureToPixelMap(backCtx,cubeImage);
   //waist
-	bodys.push(new Object(waistVerts,0,-1.5,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+	bodys.push(new Object(waistVerts,0,-1.5,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
   //RightLeg1Verts
-	bodys.push(new Object(RightLeg1Verts,0,-1,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+	bodys.push(new Object(RightLeg1Verts,0,-1,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
   //RightLeg2Verts
-	bodys.push(new Object(RightLeg2Verts,0,-0.5,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+	bodys.push(new Object(RightLeg2Verts,0,-0.5,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
   //LeftLeg1Verts
-	bodys.push(new Object(LeftLeg1Verts,0,-1,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+	bodys.push(new Object(LeftLeg1Verts,0,-1,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
   //LeftLeg2Verts
-	bodys.push(new Object(LeftLeg2Verts,0,-0.5,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+	bodys.push(new Object(LeftLeg2Verts,0,-0.5,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
 
   //spine
-	bodys.push(new Object(spineVerts,0,-1.5,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+	bodys.push(new Object(spineVerts,0,-1.5,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
   //rightArm1
-  bodys.push(new Object(rightArm1Verts,-0.25,-1.92,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+  bodys.push(new Object(rightArm1Verts,-0.25,-1.92,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
   //rightArm2
-  bodys.push(new Object(rightArm2Verts,-0.75,-1.92,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+  bodys.push(new Object(rightArm2Verts,-0.75,-1.92,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
   //leftArm1
-  bodys.push(new Object(leftArm1Verts,0.25,-1.92,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+  bodys.push(new Object(leftArm1Verts,0.25,-1.92,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
   //leftArm2
-  bodys.push(new Object(leftArm2Verts,0.75,-1.92,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+  bodys.push(new Object(leftArm2Verts,0.75,-1.92,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
   //head
-	bodys.push(new Object(headVerts,0,-2,0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+	bodys.push(new Object(headVerts,0,-2,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
 
-	cubes.push(new Object(orgCubeVerts,-0.6,-0.90,1.0,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
-	cubes.push(new Object(orgCubeVerts,0.6,-0.90,1,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
-	cubes.push(new Object(orgCubeVerts,1.5,-1.35,0.5,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
-	cubes.push(new Object(orgCubeVerts,-1.5,-1.35,1,0,0,0,1,1,1,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,true,cubePixelImage));
+	cubes.push(new Object(orgCubeVerts,-0.6,-0.90,1.0,0,0,0,1,1,1,0,false,true,cubePixelImage));
+	cubes.push(new Object(orgCubeVerts,0.6,-0.90,1,0,0,0,1,1,1,0,false,true,cubePixelImage));
+	cubes.push(new Object(orgCubeVerts,1.5,-1.35,0.5,0,0,0,1,1,1,0,false,true,cubePixelImage));
+	cubes.push(new Object(orgCubeVerts,-1.5,-1.35,1,0,0,0,1,1,1,0,false,true,cubePixelImage));
 }, true);
 
 //ground
@@ -528,9 +472,9 @@ let roadPixelImage = [];
 
 roadImage.addEventListener("load", function() {
 	roadPixelImage = pictureToPixelMap(backCtx,roadImage);
-  planes.push(new Object(orgPlaneVerts,0,0,0.0,0,0,0,2.5,1,3,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,false,roadPixelImage));
-  planes.push(new Object(orgPlaneVerts,0,0,1.5,0,0,0,2.5,1,3,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,false,roadPixelImage));
-  planes.push(new Object(orgPlaneVerts,0,0,3.0,0,0,0,2.5,1,3,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,false,roadPixelImage));
+  planes.push(new Object(orgPlaneVerts,0,0,0.0,0,0,0,2.5,1,3,0,false,false,roadPixelImage));
+  planes.push(new Object(orgPlaneVerts,0,0,1.5,0,0,0,2.5,1,3,0,false,false,roadPixelImage));
+  planes.push(new Object(orgPlaneVerts,0,0,3.0,0,0,0,2.5,1,3,0,false,false,roadPixelImage));
 
 }, true);
 
@@ -541,12 +485,12 @@ let sandPixelImage = [];
 
 groundImage.addEventListener("load", function() {
 	sandPixelImage = pictureToPixelMap(backCtx,groundImage);
-  planes.push(new Object(orgPlaneVerts,-1.25,0,0.0,0,0,0,2.5,1,3,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,false,sandPixelImage));
-  planes.push(new Object(orgPlaneVerts,-1.25,0,1.5,0,0,0,2.5,1,3,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,false,sandPixelImage));
-  planes.push(new Object(orgPlaneVerts,-1.25,0,3.0,0,0,0,2.5,1,3,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,false,sandPixelImage));
-  planes.push(new Object(orgPlaneVerts,1.25,0,0.0,0,0,0,2.5,1,3,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,false,sandPixelImage));
-  planes.push(new Object(orgPlaneVerts,1.25,0,1.5,0,0,0,2.5,1,3,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,false,sandPixelImage));
-  planes.push(new Object(orgPlaneVerts,1.25,0,3.0,0,0,0,2.5,1,3,0,cubeFaceIndex,cubePlaneUV,cubeFaceUV,false,false,sandPixelImage));
+  planes.push(new Object(orgPlaneVerts,-1.25,0,0.0,0,0,0,2.5,1,3,0,false,false,sandPixelImage));
+  planes.push(new Object(orgPlaneVerts,-1.25,0,1.5,0,0,0,2.5,1,3,0,false,false,sandPixelImage));
+  planes.push(new Object(orgPlaneVerts,-1.25,0,3.0,0,0,0,2.5,1,3,0,false,false,sandPixelImage));
+  planes.push(new Object(orgPlaneVerts,1.25,0,0.0,0,0,0,2.5,1,3,0,false,false,sandPixelImage));
+  planes.push(new Object(orgPlaneVerts,1.25,0,1.5,0,0,0,2.5,1,3,0,false,false,sandPixelImage));
+  planes.push(new Object(orgPlaneVerts,1.25,0,3.0,0,0,0,2.5,1,3,0,false,false,sandPixelImage));
 }, true);
 
 const gravity = 0.01;
@@ -714,7 +658,7 @@ let newsecond = newDate.getMilliseconds();
   let spainWaistHeadSkinMatrix = matPlus(spainWaistHeadWaightMatrix,spainWaistWaightMatrix);
   //waist
   //objectShadowMapPolygonPush(bodys,waistMatrix,0,shadowProjectedObjects,sunViewMatrix);
-  //objectPolygonPush(bodys,waistMatrix,spainWaistSkinMatrix,spainWaistHeadSkinMatrix,0,projectedObjects,viewMatrix);
+  objectPolygonPush(bodys,waistMatrix,spainWaistSkinMatrix,spainWaistHeadSkinMatrix,0,projectedObjects,viewMatrix);
 
   //spain
   //objectShadowMapPolygonPush(bodys,spainWaistMatrix,5,shadowProjectedObjects,sunViewMatrix);
@@ -722,7 +666,7 @@ let newsecond = newDate.getMilliseconds();
 
   //head
   //objectShadowMapPolygonPush(bodys,spainWaistHeadMatrix,10,shadowProjectedObjects,sunViewMatrix);
-  //objectPolygonPush(bodys,spainWaistHeadMatrix,spainWaistHeadSkinMatrix,spainWaistHeadSkinMatrix,10,projectedObjects,viewMatrix);
+  objectPolygonPush(bodys,spainWaistHeadMatrix,spainWaistHeadSkinMatrix,spainWaistHeadSkinMatrix,10,projectedObjects,viewMatrix);
 
   /*
   //rightLeg
