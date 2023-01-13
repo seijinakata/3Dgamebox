@@ -51,6 +51,7 @@ function setUV(u,v){
 	let uv = {"u":u,"v":v};
 	return uv;
 }
+
 // index、三角形の結び順格納
 function setFaceIndex(v0,v1,v2){
 	let faceIndex = [v0,v1,v2];
@@ -99,7 +100,7 @@ class ModelLoadData{
    			mainUV.push(tempUV);  		
    		}
    		this.mainObject.UV = mainUV;
-   		
+   		console.log(mainUV)
    		//indexLoad頂点の結び順外積負の向き
    		let mainFaceIndex = [];
    		let loadFaceIndexVertices = this.json.data.index.array;
@@ -146,8 +147,7 @@ class Object{
     //文字列になってる
     this.verts = JSON.parse(JSON.stringify(verts.vertsPosition));
     this.bonesIndex = verts.bonesIndex;
-    console.log( this.boneIndex);
-    this.faceIndex = faceIndex;
+    this.faceIndex = verts.faceIndex;
     this.UV = uv;
     this.faceUV = faceUV;
   }
@@ -251,6 +251,7 @@ function objectPolygonPush(objects,worldMatrix,plusMatrix,spainWaistHeadSkinMatr
   let Poly = []
   for(let i=0;i<object.faceIndex.length;i++){
     let triangleFaceIndex = object.faceIndex[i];
+    console.log(triangleFaceIndex)
     let UV = [];
     if(object.faceUV.length == 0){
       UV = [
@@ -464,14 +465,21 @@ let planeFaceIndex = [];
 planeFaceIndex.push(setFaceIndex(4,5,0));
 planeFaceIndex.push(setFaceIndex(1,0,5));
 
+let cubePlane = [];
+let uvUp = [{"u":0,"v":1},{"u":1,"v":0},{"u":0,"v":1}];
+cubePlane.push(uvUp);
+let uvDown = [{"u":1,"v":1},{"u":0,"v":1},{"u":1,"v":0}];
+cubePlane.push(uvDown);
+console.log(cubePlane[0][1].v)
 let cubePlaneUV = [];
+
 cubePlaneUV.push(setUV(0,0));
 cubePlaneUV.push(setUV(1,0));
 cubePlaneUV.push(setUV(0,1));
 cubePlaneUV.push(setUV(1,1));
 cubePlaneUV.push(setUV(0,1));
 cubePlaneUV.push(setUV(1,0));
-
+console.log(cubePlaneUV[0].v)
 let cubeFaceUV = [];
 for(let i=0;i<cubeFaceIndex.length/2;i++){
 	cubeFaceUV.push(setFaceIndex(0,1,2));
@@ -706,7 +714,7 @@ let newsecond = newDate.getMilliseconds();
   let spainWaistHeadSkinMatrix = matPlus(spainWaistHeadWaightMatrix,spainWaistWaightMatrix);
   //waist
   //objectShadowMapPolygonPush(bodys,waistMatrix,0,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,waistMatrix,spainWaistSkinMatrix,spainWaistHeadSkinMatrix,0,projectedObjects,viewMatrix);
+  //objectPolygonPush(bodys,waistMatrix,spainWaistSkinMatrix,spainWaistHeadSkinMatrix,0,projectedObjects,viewMatrix);
 
   //spain
   //objectShadowMapPolygonPush(bodys,spainWaistMatrix,5,shadowProjectedObjects,sunViewMatrix);
@@ -714,7 +722,7 @@ let newsecond = newDate.getMilliseconds();
 
   //head
   //objectShadowMapPolygonPush(bodys,spainWaistHeadMatrix,10,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,spainWaistHeadMatrix,spainWaistHeadSkinMatrix,spainWaistHeadSkinMatrix,10,projectedObjects,viewMatrix);
+  //objectPolygonPush(bodys,spainWaistHeadMatrix,spainWaistHeadSkinMatrix,spainWaistHeadSkinMatrix,10,projectedObjects,viewMatrix);
 
   /*
   //rightLeg
