@@ -220,7 +220,7 @@ function setShadowPolygon(Pos1,Pos2,Pos3){
   polygonElement.crossZ = culVecCrossZ(Va,Vb);
   return polygonElement;
 }
-function objectPolygonPush(objects,worldMatrix,plusMatrix,spainWaistHeadSkinMatrix,objectNumber,projectedObjects,viewMatrix){
+function objectPolygonPush(objects,worldMatrix,bones,objectNumber,projectedObjects,viewMatrix){
   let worldVerts = [];
   let projectedVerts = [];
   let object = objects[objectNumber];
@@ -231,16 +231,12 @@ function objectPolygonPush(objects,worldMatrix,plusMatrix,spainWaistHeadSkinMatr
       let verts = matVecMul(worldMatrix,object.verts[i])
       worldVerts.push(verts);
       projectedVerts.push(matVecMul(viewMatrix,verts));
-    }else if(object.bonesIndex[i][0] == 1){
-      let verts = matVecMul(plusMatrix,object.verts[i])
+    }else{
+      let mixMatrix = bones[object.bonesIndex[i][0]];
+      let verts = matVecMul(mixMatrix,object.verts[i]);
       worldVerts.push(verts);
-      projectedVerts.push(matVecMul(viewMatrix,verts));
-    }else if(object.bonesIndex[i][0] == 2){
-      let verts = matVecMul(spainWaistHeadSkinMatrix,object.verts[i])
-      worldVerts.push(verts);
-      projectedVerts.push(matVecMul(viewMatrix,verts));
+      projectedVerts.push(matVecMul(viewMatrix,verts));   
     }
-
     let projectionMatrix =  matPers(projectedVerts[i][2]);
     protMatVecMul(projectionMatrix,projectedVerts[i]);
     //projectedVerts[i] = matVecMul(viewPortMatrix,projectedVerts[i]);
@@ -250,7 +246,6 @@ function objectPolygonPush(objects,worldMatrix,plusMatrix,spainWaistHeadSkinMatr
  
   let Poly = []
   for(let i=0;i<object.faceIndex.length;i++){
-    console.log(object.UV[i][0].u)
     let triangleFaceIndex = object.faceIndex[i];
     let UV = [
           object.UV[i][0].u, object.UV[i][0].v,
@@ -615,6 +610,9 @@ let newsecond = newDate.getMilliseconds();
   let masterXYZ = setVector3(1,-0.2,0);
   let masterRotXYZ = setVector3(0,0,0);
   let masterScalingXYZ = setVector3(0.7,0.7,0.7);
+
+  let boxHumanBones = [];
+
   mulMatTranslate(masterMatrix,masterXYZ[0],masterXYZ[1],masterXYZ[2]);  
   mulMatRotateX(masterMatrix,masterRotXYZ[0]);
   mulMatRotateY(masterMatrix,masterRotXYZ[1]);
@@ -632,6 +630,7 @@ let newsecond = newDate.getMilliseconds();
   waistMatrix = matMul(masterMatrix,waistMatrix);
 
   let waistSkinMatrix = matWaight(waistMatrix,0.5);
+  boxHumanBones.push(waistSkinMatrix);
 
   //spain
   mulMatTranslate(spainMatrix,bodys[5].centerObjX,bodys[5].centerObjY,bodys[5].centerObjZ);  
@@ -645,7 +644,7 @@ let newsecond = newDate.getMilliseconds();
   let spainWaistWaightMatrix = matWaight(spainWaistMatrix,0.5);
 
   let spainWaistSkinMatrix = matPlus(spainWaistWaightMatrix,waistSkinMatrix);
-
+  boxHumanBones.push(spainWaistSkinMatrix);
   //head
   mulMatTranslate(headMatrix,bodys[10].centerObjX,bodys[10].centerObjY,bodys[10].centerObjZ);  
   mulMatRotateX(headMatrix,bodys[10].objRotX);
@@ -656,17 +655,18 @@ let newsecond = newDate.getMilliseconds();
   let spainWaistHeadMatrix = matMul(spainWaistMatrix,headMatrix);
   let spainWaistHeadWaightMatrix = matWaight(spainWaistHeadMatrix,0.5)
   let spainWaistHeadSkinMatrix = matPlus(spainWaistHeadWaightMatrix,spainWaistWaightMatrix);
+  boxHumanBones.push(spainWaistHeadSkinMatrix);
   //waist
   //objectShadowMapPolygonPush(bodys,waistMatrix,0,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,waistMatrix,spainWaistSkinMatrix,spainWaistHeadSkinMatrix,0,projectedObjects,viewMatrix);
+  objectPolygonPush(bodys,waistMatrix,boxHumanBones,0,projectedObjects,viewMatrix);
 
   //spain
   //objectShadowMapPolygonPush(bodys,spainWaistMatrix,5,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,spainWaistMatrix,spainWaistSkinMatrix,spainWaistHeadSkinMatrix,5,projectedObjects,viewMatrix);
+  objectPolygonPush(bodys,spainWaistMatrix,boxHumanBones,5,projectedObjects,viewMatrix);
 
   //head
   //objectShadowMapPolygonPush(bodys,spainWaistHeadMatrix,10,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,spainWaistHeadMatrix,spainWaistHeadSkinMatrix,spainWaistHeadSkinMatrix,10,projectedObjects,viewMatrix);
+  objectPolygonPush(bodys,spainWaistHeadMatrix,boxHumanBones,10,projectedObjects,viewMatrix);
 
   /*
   //rightLeg
