@@ -146,8 +146,9 @@ class Object{
     
     //文字列になってる
     this.verts = JSON.parse(JSON.stringify(verts.vertsPosition));
-    this.bonesIndex = verts.bonesIndex;
     this.faceIndex = verts.faceIndex;
+    this.bonesIndex = verts.bonesIndex;
+    this.bonesWaight = verts.bonesWaight;
     this.UV = verts.uv;
     this.faceUV = [];
   }
@@ -220,25 +221,28 @@ function setShadowPolygon(Pos1,Pos2,Pos3){
   polygonElement.crossZ = culVecCrossZ(Va,Vb);
   return polygonElement;
 }
-function objectPolygonPush(objects,bones,bone,objectNumber,projectedObjects,viewMatrix){
+function objectPolygonPush(objects,bones,objectNumber,projectedObjects,viewMatrix){
   let worldVerts = [];
   let projectedVerts = [];
   let mixMatrix = [];
   let object = objects[objectNumber];
+
   for (var i = 0; i < object.verts.length; i++) {
+    let mixMatrix = [0,0,0,0,
+                    0,0,0,0,
+                    0,0,0,0,
+                    0,0,0,0];
     roundVector2(object.verts[i][0],object.verts[i][1]);
     object.verts[i][2] = round(object.verts[i][2]);
-    if(object.bonesIndex[i][0] == 0){
-      mixMatrix = bones[object.bonesIndex[i][1]];
-      let verts = matVecMul(mixMatrix,object.verts[i])
-      worldVerts.push(verts);
-      projectedVerts.push(matVecMul(viewMatrix,verts));
-    }else{
-      mixMatrix = bone[object.bonesIndex[i][0]];
-      let verts = matVecMul(mixMatrix,object.verts[i]);
-      worldVerts.push(verts);
-      projectedVerts.push(matVecMul(viewMatrix,verts));   
+    for(let j=0;j<object.bonesIndex[i].length;j++){
+      let bonesMatrix = bones[object.bonesIndex[i][j]];
+      let matrixWaight = object.bonesWaight[i][j];
+      let waightMatrix = matWaight(bonesMatrix,matrixWaight);
+      mixMatrix = matPlus(mixMatrix,waightMatrix); 
     }
+    let verts = matVecMul(mixMatrix,object.verts[i])
+    worldVerts.push(verts);
+    projectedVerts.push(matVecMul(viewMatrix,verts));     
     let projectionMatrix =  matPers(projectedVerts[i][2]);
     protMatVecMul(projectionMatrix,projectedVerts[i]);
     //projectedVerts[i] = matVecMul(viewPortMatrix,projectedVerts[i]);
@@ -577,7 +581,7 @@ let newsecond = newDate.getMilliseconds();
   bodys[3].objRotX =  Math.floor(-60 * s);
   bodys[4].objRotX =  Math.floor(60 * s);
 
-  bodys[5].objRotZ =  Math.floor(-60 * s);
+  bodys[5].objRotX =  Math.floor(60 * s);
 
   bodys[6].objRotY =  Math.floor(-60 * s);
   bodys[7].objRotY =  Math.floor(-60 * s);
@@ -585,7 +589,7 @@ let newsecond = newDate.getMilliseconds();
   bodys[8].objRotY =  Math.floor(-60 * s);
   bodys[9].objRotY =  Math.floor(-60 * s);
 
-  bodys[10].objRotZ =  Math.floor(60 * s);
+  bodys[10].objRotX =  Math.floor(60 * s);
 
 
 
@@ -615,8 +619,6 @@ let newsecond = newDate.getMilliseconds();
 
   let boxHumanBones = [];
 
-  let boxHumanBone = [];
-
   mulMatTranslate(masterMatrix,masterXYZ[0],masterXYZ[1],masterXYZ[2]);  
   mulMatRotateX(masterMatrix,masterRotXYZ[0]);
   mulMatRotateY(masterMatrix,masterRotXYZ[1]);
@@ -634,9 +636,6 @@ let newsecond = newDate.getMilliseconds();
   waistMatrix = matMul(masterMatrix,waistMatrix);
   boxHumanBones.push(waistMatrix);
 
-  let waistSkinMatrix = matWaight(waistMatrix,0.5);
-  boxHumanBone.push(waistSkinMatrix);
-
   //spain
   mulMatTranslate(spainMatrix,bodys[5].centerObjX,bodys[5].centerObjY,bodys[5].centerObjZ);  
   mulMatRotateX(spainMatrix,bodys[5].objRotX);
@@ -648,32 +647,28 @@ let newsecond = newDate.getMilliseconds();
   let spainWaistMatrix = matMul(waistMatrix,spainMatrix);
   boxHumanBones.push(spainWaistMatrix);
 
-  let spainWaistWaightMatrix = matWaight(spainWaistMatrix,0.5);
-  let spainWaistSkinMatrix = matPlus(spainWaistWaightMatrix,waistSkinMatrix);
-  boxHumanBone.push(spainWaistSkinMatrix);
   //head
   mulMatTranslate(headMatrix,bodys[10].centerObjX,bodys[10].centerObjY,bodys[10].centerObjZ);  
   mulMatRotateX(headMatrix,bodys[10].objRotX);
   mulMatRotateY(headMatrix,bodys[10].objRotY);
   mulMatRotateZ(headMatrix,bodys[10].objRotZ);
   mulMatScaling(headMatrix,bodys[10].scaleX,bodys[10].scaleY,bodys[10].scaleZ);
-  mulMatTranslate(headMatrix,-bodys[10].centerObjX,-bodys[10].centerObjY,-bodys[10].centerObjZ);  
+  mulMatTranslate(headMatrix,-bodys[10].centerObjX,-bodys[10].centerObjY,-bodys[10].centerObjZ); 
+
   let spainWaistHeadMatrix = matMul(spainWaistMatrix,headMatrix);
   boxHumanBones.push(spainWaistHeadMatrix);
-  let spainWaistHeadWaightMatrix = matWaight(spainWaistHeadMatrix,0.5)
-  let spainWaistHeadSkinMatrix = matPlus(spainWaistHeadWaightMatrix,spainWaistWaightMatrix);
-  boxHumanBone.push(spainWaistHeadSkinMatrix);
+ 
   //waist
   //objectShadowMapPolygonPush(bodys,waistMatrix,0,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,boxHumanBones,boxHumanBone,0,projectedObjects,viewMatrix);
+  objectPolygonPush(bodys,boxHumanBones,0,projectedObjects,viewMatrix);
 
   //spain
   //objectShadowMapPolygonPush(bodys,spainWaistMatrix,5,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,boxHumanBones,boxHumanBone,5,projectedObjects,viewMatrix);
+  objectPolygonPush(bodys,boxHumanBones,5,projectedObjects,viewMatrix);
 
   //head
   //objectShadowMapPolygonPush(bodys,spainWaistHeadMatrix,10,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,boxHumanBones,boxHumanBone,10,projectedObjects,viewMatrix);
+  objectPolygonPush(bodys,boxHumanBones,10,projectedObjects,viewMatrix);
 
   /*
   //rightLeg
