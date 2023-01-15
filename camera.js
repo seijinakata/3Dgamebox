@@ -220,19 +220,21 @@ function setShadowPolygon(Pos1,Pos2,Pos3){
   polygonElement.crossZ = culVecCrossZ(Va,Vb);
   return polygonElement;
 }
-function objectPolygonPush(objects,worldMatrix,bones,objectNumber,projectedObjects,viewMatrix){
+function objectPolygonPush(objects,bones,bone,objectNumber,projectedObjects,viewMatrix){
   let worldVerts = [];
   let projectedVerts = [];
+  let mixMatrix = [];
   let object = objects[objectNumber];
   for (var i = 0; i < object.verts.length; i++) {
     roundVector2(object.verts[i][0],object.verts[i][1]);
     object.verts[i][2] = round(object.verts[i][2]);
     if(object.bonesIndex[i][0] == 0){
-      let verts = matVecMul(worldMatrix,object.verts[i])
+      mixMatrix = bones[object.bonesIndex[i][1]];
+      let verts = matVecMul(mixMatrix,object.verts[i])
       worldVerts.push(verts);
       projectedVerts.push(matVecMul(viewMatrix,verts));
     }else{
-      let mixMatrix = bones[object.bonesIndex[i][0]];
+      mixMatrix = bone[object.bonesIndex[i][0]];
       let verts = matVecMul(mixMatrix,object.verts[i]);
       worldVerts.push(verts);
       projectedVerts.push(matVecMul(viewMatrix,verts));   
@@ -256,7 +258,7 @@ function objectPolygonPush(objects,worldMatrix,bones,objectNumber,projectedObjec
       worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],UV,object.image));
   }
 
-  let tempMoveObject = new moveObject(object,worldMatrix,Poly);
+  let tempMoveObject = new moveObject(object,mixMatrix,Poly);
   projectedObjects.push(tempMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
@@ -613,6 +615,8 @@ let newsecond = newDate.getMilliseconds();
 
   let boxHumanBones = [];
 
+  let boxHumanBone = [];
+
   mulMatTranslate(masterMatrix,masterXYZ[0],masterXYZ[1],masterXYZ[2]);  
   mulMatRotateX(masterMatrix,masterRotXYZ[0]);
   mulMatRotateY(masterMatrix,masterRotXYZ[1]);
@@ -628,9 +632,10 @@ let newsecond = newDate.getMilliseconds();
   mulMatTranslate(waistMatrix,-bodys[0].centerObjX,-bodys[0].centerObjY,-bodys[0].centerObjZ);  
   
   waistMatrix = matMul(masterMatrix,waistMatrix);
+  boxHumanBones.push(waistMatrix);
 
   let waistSkinMatrix = matWaight(waistMatrix,0.5);
-  boxHumanBones.push(waistSkinMatrix);
+  boxHumanBone.push(waistSkinMatrix);
 
   //spain
   mulMatTranslate(spainMatrix,bodys[5].centerObjX,bodys[5].centerObjY,bodys[5].centerObjZ);  
@@ -641,32 +646,34 @@ let newsecond = newDate.getMilliseconds();
   mulMatTranslate(spainMatrix,-bodys[5].centerObjX,-bodys[5].centerObjY,-bodys[5].centerObjZ);  
   
   let spainWaistMatrix = matMul(waistMatrix,spainMatrix);
-  let spainWaistWaightMatrix = matWaight(spainWaistMatrix,0.5);
+  boxHumanBones.push(spainWaistMatrix);
 
+  let spainWaistWaightMatrix = matWaight(spainWaistMatrix,0.5);
   let spainWaistSkinMatrix = matPlus(spainWaistWaightMatrix,waistSkinMatrix);
-  boxHumanBones.push(spainWaistSkinMatrix);
+  boxHumanBone.push(spainWaistSkinMatrix);
   //head
   mulMatTranslate(headMatrix,bodys[10].centerObjX,bodys[10].centerObjY,bodys[10].centerObjZ);  
   mulMatRotateX(headMatrix,bodys[10].objRotX);
   mulMatRotateY(headMatrix,bodys[10].objRotY);
   mulMatRotateZ(headMatrix,bodys[10].objRotZ);
-  mulMatTranslate(headMatrix,-bodys[10].centerObjX,-bodys[10].centerObjY,-bodys[10].centerObjZ);  
   mulMatScaling(headMatrix,bodys[10].scaleX,bodys[10].scaleY,bodys[10].scaleZ);
+  mulMatTranslate(headMatrix,-bodys[10].centerObjX,-bodys[10].centerObjY,-bodys[10].centerObjZ);  
   let spainWaistHeadMatrix = matMul(spainWaistMatrix,headMatrix);
+  boxHumanBones.push(spainWaistHeadMatrix);
   let spainWaistHeadWaightMatrix = matWaight(spainWaistHeadMatrix,0.5)
   let spainWaistHeadSkinMatrix = matPlus(spainWaistHeadWaightMatrix,spainWaistWaightMatrix);
-  boxHumanBones.push(spainWaistHeadSkinMatrix);
+  boxHumanBone.push(spainWaistHeadSkinMatrix);
   //waist
   //objectShadowMapPolygonPush(bodys,waistMatrix,0,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,waistMatrix,boxHumanBones,0,projectedObjects,viewMatrix);
+  objectPolygonPush(bodys,boxHumanBones,boxHumanBone,0,projectedObjects,viewMatrix);
 
   //spain
   //objectShadowMapPolygonPush(bodys,spainWaistMatrix,5,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,spainWaistMatrix,boxHumanBones,5,projectedObjects,viewMatrix);
+  objectPolygonPush(bodys,boxHumanBones,boxHumanBone,5,projectedObjects,viewMatrix);
 
   //head
   //objectShadowMapPolygonPush(bodys,spainWaistHeadMatrix,10,shadowProjectedObjects,sunViewMatrix);
-  objectPolygonPush(bodys,spainWaistHeadMatrix,boxHumanBones,10,projectedObjects,viewMatrix);
+  objectPolygonPush(bodys,boxHumanBones,boxHumanBone,10,projectedObjects,viewMatrix);
 
   /*
   //rightLeg
