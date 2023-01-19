@@ -84,17 +84,18 @@ class ModelLoadData{
    		this.mainObject.verts = mainvertices;
    		
    		//uvLoad
-   		let loadTempUV = [];
+   		let mainUV = [];
    		let loadUV = this.json.data.attributes.uv.array;
    		for(let i=0;i<this.json.data.attributes.uv.array.length;i+=this.json.data.attributes.uv.itemSize){
    			let u = loadUV[i] %1.0;
    			let v = loadUV[i+1] %1.0;
 	        u = (u < 0) ? 1 + u : u;
 	        v = (v < 0) ? v * -1 : 1 - v;
-   			let tempUV = [u,v];
-   			loadTempUV.push(tempUV);  		
+   			let tempUV = setUV(u,v);
+   			mainUV.push(tempUV);  		
    		}
-   		//this.mainObject.UV = mainUV;
+   		this.mainObject.UV = mainUV;
+   		console.log(mainUV)
    		//indexLoad頂点の結び順外積負の向き
    		let mainFaceIndex = [];
    		let loadFaceIndexVertices = this.json.data.index.array;
@@ -103,18 +104,6 @@ class ModelLoadData{
    		  let tempFaceInde = setFaceIndex(loadFaceIndexVertices[i],loadFaceIndexVertices[i+2],loadFaceIndexVertices[i+1]);
    			mainFaceIndex.push(tempFaceInde);
    		}
-      let triangleIndexUV = [];
-      for(let i=0;i<this.json.data.index.array.length;i+=triangleIndex){
-        let u1 = loadTempUV[loadFaceIndexVertices[i]][0];
-        let v1 = loadTempUV[loadFaceIndexVertices[i]][1];
-        let u2 = loadTempUV[loadFaceIndexVertices[i+2]][0];
-        let v2 = loadTempUV[loadFaceIndexVertices[i+2]][1];
-        let u3 = loadTempUV[loadFaceIndexVertices[i+1]][0];
-        let v3 = loadTempUV[loadFaceIndexVertices[i+1]][1];
-        let tempUV =  [{"u":u1,"v":v1},{"u":u2,"v":v2},{"u":u3,"v":v3}];
-        triangleIndexUV.push(tempUV);
-      }
-      this.mainObject.UV = triangleIndexUV
    		this.mainObject.faceIndex = mainFaceIndex;
    		this.loadFinish = true;
    	
