@@ -39,7 +39,7 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(3,-1,-4);
+let cameraPos = setVector3(2,-2,-4);
 let lookat = setVector3(0.0,-1,1);
 let sunPos = setVector3(0,-3,-2);
 let sunLookat = setVector3(0.0,-0.0,0);
@@ -89,17 +89,17 @@ class ModelLoadData{
    		this.mainObject.verts = mainvertices;
    		
    		//uvLoad
-   		let mainUV = [];
+   		let loadTempUV = [];
    		let loadUV = this.json.data.attributes.uv.array;
    		for(let i=0;i<this.json.data.attributes.uv.array.length;i+=this.json.data.attributes.uv.itemSize){
    			let u = loadUV[i] %1.0;
    			let v = loadUV[i+1] %1.0;
 	        u = (u < 0) ? 1 + u : u;
 	        v = (v < 0) ? v * -1 : 1 - v;
-   			let tempUV = setUV(u,v);
-   			mainUV.push(tempUV);  		
+   			let tempUV = [u,v];
+   			loadTempUV.push(tempUV);  		
    		}
-   		this.mainObject.UV = mainUV;
+   		//this.mainObject.UV = mainUV;
    		//indexLoad頂点の結び順外積負の向き
    		let mainFaceIndex = [];
    		let loadFaceIndexVertices = this.json.data.index.array;
@@ -108,6 +108,18 @@ class ModelLoadData{
    		  let tempFaceInde = setFaceIndex(loadFaceIndexVertices[i],loadFaceIndexVertices[i+2],loadFaceIndexVertices[i+1]);
    			mainFaceIndex.push(tempFaceInde);
    		}
+      let triangleIndexUV = [];
+      for(let i=0;i<this.json.data.index.array.length;i+=triangleIndex){
+        let u1 = loadTempUV[loadFaceIndexVertices[i]][0];
+        let v1 = loadTempUV[loadFaceIndexVertices[i]][1];
+        let u2 = loadTempUV[loadFaceIndexVertices[i+2]][0];
+        let v2 = loadTempUV[loadFaceIndexVertices[i+2]][1];
+        let u3 = loadTempUV[loadFaceIndexVertices[i+1]][0];
+        let v3 = loadTempUV[loadFaceIndexVertices[i+1]][1];
+        let tempUV =  [{"u":u1,"v":v1},{"u":u2,"v":v2},{"u":u3,"v":v3}];
+        triangleIndexUV.push(tempUV);
+      }
+      this.mainObject.UV = triangleIndexUV
    		this.mainObject.faceIndex = mainFaceIndex;
    		this.loadFinish = true;
    	
@@ -643,7 +655,6 @@ let newsecond = newDate.getMilliseconds();
     shadowProjectedObjects.push(movesphere);
     */
   }  
-  /*
 	//blender2.7xjsonload
 	for(let num=0;num<monkeys.length;num++){
     let worldMatrix = matIdentity();
@@ -654,7 +665,7 @@ let newsecond = newDate.getMilliseconds();
     mulMatScaling(worldMatrix,monkeys[num].scaleX,monkeys[num].scaleY,monkeys[num].scaleZ);
     objectShadowMapPolygonPush(monkeys,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     objectPolygonPush(monkeys,worldMatrix,num,projectedObjects,viewMatrix);	
-  }*/
+  }
   
   let s = Math.sin(theta);
   let ns = s<0 ? -s : s;
