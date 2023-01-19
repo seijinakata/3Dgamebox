@@ -46,11 +46,6 @@ let sunLookat = setVector3(0.0,-0.0,0);
 let up = setVector3(0,1,0);
 let lookatIndex = 0;
 
-//UV
-function setUV(u,v){
-	let uv = {"u":u,"v":v};
-	return uv;
-}
 
 // index、三角形の結び順格納
 function setFaceIndex(v0,v1,v2){
@@ -622,8 +617,8 @@ let newsecond = newDate.getMilliseconds();
   let projectedObjects = [];
 
   //sphereregister
+  /*
   for(let num =0;num<spheres.length;num++){
-    /*
     let sphere = spheres[num];
    
     if(moveSphereInfo.backGroundFlag == true){
@@ -653,8 +648,8 @@ let newsecond = newDate.getMilliseconds();
     }
     let movesphere = new moveObject(moveSphereInfo,Poly);
     shadowProjectedObjects.push(movesphere);
-    */
-  }  
+  }*/
+  /*
 	//blender2.7xjsonload
 	for(let num=0;num<monkeys.length;num++){
     let worldMatrix = matIdentity();
@@ -665,7 +660,7 @@ let newsecond = newDate.getMilliseconds();
     mulMatScaling(worldMatrix,monkeys[num].scaleX,monkeys[num].scaleY,monkeys[num].scaleZ);
     objectShadowMapPolygonPush(monkeys,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     objectPolygonPush(monkeys,worldMatrix,num,projectedObjects,viewMatrix);	
-  }
+  }*/
   
   let s = Math.sin(theta);
   let ns = s<0 ? -s : s;
