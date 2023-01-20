@@ -39,8 +39,8 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(2,-2,-4);
-let lookat = setVector3(0.0,-1,1);
+let cameraPos = setVector3(3,-1.5,-4);
+let lookat = setVector3(0.0,0,1);
 let sunPos = setVector3(0,-3,-2);
 let sunLookat = setVector3(0.0,-0.0,0);
 let up = setVector3(0,1,0);
@@ -548,9 +548,9 @@ cubeImage.addEventListener("load", function() {
   //head
 	bodys.push(new Object(headVerts,0,-2,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
 
-	cubes.push(new Object(orgCubeVerts,-0.6,-0.90,1.0,0,0,0,1,1,1,0,false,true,cubePixelImage));
+	cubes.push(new Object(orgCubeVerts,-0.0,-1.0,0.0,0,0,0,1,1,1,0,false,true,cubePixelImage));
 	cubes.push(new Object(orgCubeVerts,0.6,-0.90,1,0,0,0,1,1,1,0,false,true,cubePixelImage));
-	cubes.push(new Object(orgCubeVerts,1.5,-1.35,0.5,0,0,0,1,1,1,0,false,true,cubePixelImage));
+  cubes.push(new Object(orgCubeVerts,1.5,-1.35,0.5,0,0,0,1,1,1,0,false,true,cubePixelImage));
 	cubes.push(new Object(orgCubeVerts,-1.5,-1.35,1,0,0,0,1,1,1,0,false,true,cubePixelImage));
 }, true);
 
@@ -706,7 +706,7 @@ let newsecond = newDate.getMilliseconds();
   let masterScalingXYZ = setVector3(0.7,0.7,0.7);
 
   let boxHumanBones = [];
-
+  
   mulMatTranslate(masterMatrix,masterXYZ[0],masterXYZ[1],masterXYZ[2]);  
   mulMatRotateX(masterMatrix,masterRotXYZ[0]);
   mulMatRotateY(masterMatrix,masterRotXYZ[1]);
@@ -878,7 +878,7 @@ let newsecond = newDate.getMilliseconds();
     objectShadowMapPolygonPush(cubes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     objectPolygonPush(cubes,worldMatrix,num,projectedObjects,viewMatrix);
 	}
-
+  
 	//planesregister
 	for(let num=0;num<planes.length;num++){
     let worldMatrix = matIdentity();
@@ -890,6 +890,7 @@ let newsecond = newDate.getMilliseconds();
     objectShadowMapPolygonPush(planes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     objectPolygonPush(planes,worldMatrix,num,projectedObjects,viewMatrix);
   }
+  
   /*
   lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
   for(let i = spheres.length;i<spheres.length+monkeys.length+cubes.length;i++){
