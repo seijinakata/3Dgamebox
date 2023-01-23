@@ -706,7 +706,6 @@ let newsecond = newDate.getMilliseconds();
   let masterScalingXYZ = setVector3(0.7,0.7,0.7);
 
   let boxHumanBones = [];
-  
   mulMatTranslate(masterMatrix,masterXYZ[0],masterXYZ[1],masterXYZ[2]);  
   mulMatRotateX(masterMatrix,masterRotXYZ[0]);
   mulMatRotateY(masterMatrix,masterRotXYZ[1]);
@@ -724,148 +723,25 @@ let newsecond = newDate.getMilliseconds();
   waistMatrix = matMul(masterMatrix,waistMatrix);
   boxHumanBones.push(waistMatrix);
 
-  //rightLeg
-  mulMatTranslate(rightLeg1Matrix,bodys[1].centerObjX,bodys[1].centerObjY,bodys[1].centerObjZ);  
-  mulMatRotateX(rightLeg1Matrix,bodys[1].objRotX);
-  mulMatRotateY(rightLeg1Matrix,bodys[1].objRotY);
-  mulMatRotateZ(rightLeg1Matrix,bodys[1].objRotZ);
-  mulMatScaling(rightLeg1Matrix,bodys[1].scaleX,bodys[1].scaleY,bodys[1].scaleZ);
-  mulMatTranslate(rightLeg1Matrix,-bodys[1].centerObjX,-bodys[1].centerObjY,-bodys[1].centerObjZ);  
-  let waistRightLeg1Matrix = matMul(waistMatrix,rightLeg1Matrix);
-  boxHumanBones.push(waistRightLeg1Matrix);
-  
-  mulMatTranslate(rightLeg2Matrix,bodys[2].centerObjX,bodys[2].centerObjY,bodys[2].centerObjZ);  
-  mulMatRotateX(rightLeg2Matrix,bodys[2].objRotX);
-  mulMatRotateY(rightLeg2Matrix,bodys[2].objRotY);
-  mulMatRotateZ(rightLeg2Matrix,bodys[2].objRotZ);
-  mulMatScaling(rightLeg2Matrix,bodys[2].scaleX,bodys[2].scaleY,bodys[2].scaleZ);
-  mulMatTranslate(rightLeg2Matrix,-bodys[2].centerObjX,-bodys[2].centerObjY,-bodys[2].centerObjZ);  
-  
-  let waistRightLeg12Matrix = matMul(waistRightLeg1Matrix,rightLeg2Matrix);
-  boxHumanBones.push(waistRightLeg12Matrix);
-  //leftLeg
-  mulMatTranslate(leftLeg1Matrix,bodys[3].centerObjX,bodys[3].centerObjY,bodys[3].centerObjZ);
-  mulMatRotateX(leftLeg1Matrix,bodys[3].objRotX);
-  mulMatRotateY(leftLeg1Matrix,bodys[3].objRotY);
-  mulMatRotateZ(leftLeg1Matrix,bodys[3].objRotZ);
-  mulMatScaling(leftLeg1Matrix,bodys[3].scaleX,bodys[3].scaleY,bodys[3].scaleZ);
-  mulMatTranslate(leftLeg1Matrix,-bodys[3].centerObjX,-bodys[3].centerObjY,-bodys[3].centerObjZ);  
-  
-  let waistleftLeg1Matrix = matMul(waistMatrix,leftLeg1Matrix);
-  boxHumanBones.push(waistleftLeg1Matrix);
+  //親のボーンにアクセス
+  //rightLeg,leftLeg,spain,rightArm,leftArm,head
+  let bonesJoinIndex = [0,1, 0,3, 0, 5,6, 5,8, 5];
+  for(let boneNumber = 1;boneNumber<bodys.length;boneNumber++){
+    let bonesMatrix = matIdentity();
+    mulMatTranslate(bonesMatrix,bodys[boneNumber].centerObjX,bodys[boneNumber].centerObjY,bodys[boneNumber].centerObjZ);  
+    mulMatRotateX(bonesMatrix,bodys[boneNumber].objRotX);
+    mulMatRotateY(bonesMatrix,bodys[boneNumber].objRotY);
+    mulMatRotateZ(bonesMatrix,bodys[boneNumber].objRotZ);
+    mulMatScaling(bonesMatrix,bodys[boneNumber].scaleX,bodys[boneNumber].scaleY,bodys[boneNumber].scaleZ);
+    mulMatTranslate(bonesMatrix,-bodys[boneNumber].centerObjX,-bodys[boneNumber].centerObjY,-bodys[boneNumber].centerObjZ);
+    let mixBoneMatrix = matMul(boxHumanBones[bonesJoinIndex[boneNumber-1]],bonesMatrix);
+    boxHumanBones.push(mixBoneMatrix);
+  }
 
-  mulMatTranslate(leftLeg2Matrix,bodys[4].centerObjX,bodys[4].centerObjY,bodys[4].centerObjZ);  
-  mulMatRotateX(leftLeg2Matrix,bodys[4].objRotX);
-  mulMatRotateY(leftLeg2Matrix,bodys[4].objRotY);
-  mulMatRotateZ(leftLeg2Matrix,bodys[4].objRotZ);
-  mulMatScaling(leftLeg2Matrix,bodys[4].scaleX,bodys[4].scaleY,bodys[4].scaleZ);
-  mulMatTranslate(leftLeg2Matrix,-bodys[4].centerObjX,-bodys[4].centerObjY,-bodys[4].centerObjZ);  
-  
-  let waistleftLeg12Matrix = matMul(waistleftLeg1Matrix,leftLeg2Matrix);
-  boxHumanBones.push(waistleftLeg12Matrix);
-
-  //spain
-  mulMatTranslate(spainMatrix,bodys[5].centerObjX,bodys[5].centerObjY,bodys[5].centerObjZ);  
-  mulMatRotateX(spainMatrix,bodys[5].objRotX);
-  mulMatRotateY(spainMatrix,bodys[5].objRotY);
-  mulMatRotateZ(spainMatrix,bodys[5].objRotZ);
-  mulMatScaling(spainMatrix,bodys[5].scaleX,bodys[5].scaleY,bodys[5].scaleZ);
-  mulMatTranslate(spainMatrix,-bodys[5].centerObjX,-bodys[5].centerObjY,-bodys[5].centerObjZ);  
-  
-  let spainWaistMatrix = matMul(waistMatrix,spainMatrix);
-  boxHumanBones.push(spainWaistMatrix);
-
-  //rightArm
-  mulMatTranslate(rightArm1Matrix,bodys[6].centerObjX,bodys[6].centerObjY,bodys[6].centerObjZ);  
-  mulMatRotateX(rightArm1Matrix,bodys[6].objRotX);
-  mulMatRotateY(rightArm1Matrix,bodys[6].objRotY);
-  mulMatRotateZ(rightArm1Matrix,bodys[6].objRotZ);
-  mulMatScaling(rightArm1Matrix,bodys[6].scaleX,bodys[6].scaleY,bodys[6].scaleZ);
-  mulMatTranslate(rightArm1Matrix,-bodys[6].centerObjX,-bodys[6].centerObjY,-bodys[6].centerObjZ);  
-  
-  let spainWaistRightArm1Matrix = matMul(spainWaistMatrix,rightArm1Matrix);
-  boxHumanBones.push(spainWaistRightArm1Matrix);
-
-  mulMatTranslate(rightArm2Matrix,bodys[7].centerObjX,bodys[7].centerObjY,bodys[7].centerObjZ);  
-  mulMatRotateX(rightArm2Matrix,bodys[7].objRotX);
-  mulMatRotateY(rightArm2Matrix,bodys[7].objRotY);
-  mulMatRotateZ(rightArm2Matrix,bodys[7].objRotZ);
-  mulMatScaling(rightArm2Matrix,bodys[7].scaleX,bodys[7].scaleY,bodys[7].scaleZ);
-  mulMatTranslate(rightArm2Matrix,-bodys[7].centerObjX,-bodys[7].centerObjY,-bodys[7].centerObjZ);  
-  
-  let spainWaistRightArm12Matrix = matMul(spainWaistRightArm1Matrix,rightArm2Matrix);
-  boxHumanBones.push(spainWaistRightArm12Matrix);
-
-  //leftArm
-  mulMatTranslate(leftArm1Matrix,bodys[8].centerObjX,bodys[8].centerObjY,bodys[8].centerObjZ);  
-  mulMatRotateX(leftArm1Matrix,bodys[8].objRotX);
-  mulMatRotateY(leftArm1Matrix,bodys[8].objRotY);
-  mulMatRotateZ(leftArm1Matrix,bodys[8].objRotZ);
-  mulMatScaling(leftArm1Matrix,bodys[8].scaleX,bodys[8].scaleY,bodys[8].scaleZ);
-  mulMatTranslate(leftArm1Matrix,-bodys[8].centerObjX,-bodys[8].centerObjY,-bodys[8].centerObjZ);  
-  
-  let spainWaistLeftArm1Matrix = matMul(spainWaistMatrix,leftArm1Matrix);
-  boxHumanBones.push(spainWaistLeftArm1Matrix);
-
-  mulMatTranslate(leftArm2Matrix,bodys[9].centerObjX,bodys[9].centerObjY,bodys[9].centerObjZ);  
-  mulMatRotateX(leftArm2Matrix,bodys[9].objRotX);
-  mulMatRotateY(leftArm2Matrix,bodys[9].objRotY);
-  mulMatRotateZ(leftArm2Matrix,bodys[9].objRotZ);
-  mulMatScaling(leftArm2Matrix,bodys[9].scaleX,bodys[9].scaleY,bodys[9].scaleZ);
-  mulMatTranslate(leftArm2Matrix,-bodys[9].centerObjX,-bodys[9].centerObjY,-bodys[9].centerObjZ);  
-  
-  let spainWaistLeftArm12Matrix = matMul(spainWaistLeftArm1Matrix,leftArm2Matrix);
-  boxHumanBones.push(spainWaistLeftArm12Matrix);
-  //head
-  mulMatTranslate(headMatrix,bodys[10].centerObjX,bodys[10].centerObjY,bodys[10].centerObjZ);  
-  mulMatRotateX(headMatrix,bodys[10].objRotX);
-  mulMatRotateY(headMatrix,bodys[10].objRotY);
-  mulMatRotateZ(headMatrix,bodys[10].objRotZ);
-  mulMatScaling(headMatrix,bodys[10].scaleX,bodys[10].scaleY,bodys[10].scaleZ);
-  mulMatTranslate(headMatrix,-bodys[10].centerObjX,-bodys[10].centerObjY,-bodys[10].centerObjZ); 
-
-  let spainWaistHeadMatrix = matMul(spainWaistMatrix,headMatrix);
-  boxHumanBones.push(spainWaistHeadMatrix);
- 
-  //waist
-  objectShadowMapSkinMeshPolygonPush(bodys,boxHumanBones,0,shadowProjectedObjects,sunViewMatrix);
-  objectSkinMeshPolygonPush(bodys,boxHumanBones,0,projectedObjects,viewMatrix);
-
-  //rightLeg
-  objectShadowMapSkinMeshPolygonPush(bodys,boxHumanBones,1,shadowProjectedObjects,sunViewMatrix);
-  objectSkinMeshPolygonPush(bodys,boxHumanBones,1,projectedObjects,viewMatrix);
-
-  objectShadowMapSkinMeshPolygonPush(bodys,boxHumanBones,2,shadowProjectedObjects,sunViewMatrix);
-  objectSkinMeshPolygonPush(bodys,boxHumanBones,2,projectedObjects,viewMatrix);
-
-  //leftLeg
-  objectShadowMapSkinMeshPolygonPush(bodys,boxHumanBones,3,shadowProjectedObjects,sunViewMatrix);
-  objectSkinMeshPolygonPush(bodys,boxHumanBones,3,projectedObjects,viewMatrix);
-
-  objectShadowMapSkinMeshPolygonPush(bodys,boxHumanBones,4,shadowProjectedObjects,sunViewMatrix);
-  objectSkinMeshPolygonPush(bodys,boxHumanBones,4,projectedObjects,viewMatrix);
-
-  //spain
-  objectShadowMapSkinMeshPolygonPush(bodys,boxHumanBones,5,shadowProjectedObjects,sunViewMatrix);
-  objectSkinMeshPolygonPush(bodys,boxHumanBones,5,projectedObjects,viewMatrix);
-
-  //rightArm
-  objectShadowMapSkinMeshPolygonPush(bodys,boxHumanBones,6,shadowProjectedObjects,sunViewMatrix);
-  objectSkinMeshPolygonPush(bodys,boxHumanBones,6,projectedObjects,viewMatrix);
-
-  objectShadowMapSkinMeshPolygonPush(bodys,boxHumanBones,7,shadowProjectedObjects,sunViewMatrix);
-  objectSkinMeshPolygonPush(bodys,boxHumanBones,7,projectedObjects,viewMatrix);
-
-  //leftArm
-  objectShadowMapSkinMeshPolygonPush(bodys,boxHumanBones,8,shadowProjectedObjects,sunViewMatrix);
-  objectSkinMeshPolygonPush(bodys,boxHumanBones,8,projectedObjects,viewMatrix);
-
-  objectShadowMapSkinMeshPolygonPush(bodys,boxHumanBones,9,shadowProjectedObjects,sunViewMatrix);
-  objectSkinMeshPolygonPush(bodys,boxHumanBones,9,projectedObjects,viewMatrix);
-
-  //head
-  objectShadowMapSkinMeshPolygonPush(bodys,boxHumanBones,10,shadowProjectedObjects,sunViewMatrix);
-  objectSkinMeshPolygonPush(bodys,boxHumanBones,10,projectedObjects,viewMatrix);
+  for(let objectNumber = 0;objectNumber<bodys.length;objectNumber++){
+    objectShadowMapSkinMeshPolygonPush(bodys,boxHumanBones,objectNumber,shadowProjectedObjects,sunViewMatrix);
+    objectSkinMeshPolygonPush(bodys,boxHumanBones,objectNumber,projectedObjects,viewMatrix);
+  }
 
 	//cuberegister
 	for(let num=0;num<cubes.length;num++){
