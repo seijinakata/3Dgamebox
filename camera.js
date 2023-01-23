@@ -319,7 +319,44 @@ function objectShadowMapSkinMeshPolygonPush(objects,bones,objectNumber,projected
     }
     */
 }
+function makeSkinMeshBones(bonesJoinIndex,bones,bodys,masterXYZ,masterRotXYZ,masterScalingXYZ){
+  let masterMatrix = matIdentity();
+  mulMatTranslate(masterMatrix,masterXYZ[0],masterXYZ[1],masterXYZ[2]);  
+  mulMatRotateX(masterMatrix,masterRotXYZ[0]);
+  mulMatRotateY(masterMatrix,masterRotXYZ[1]);
+  mulMatRotateZ(masterMatrix,masterRotXYZ[2]);
+  mulMatScaling(masterMatrix,masterScalingXYZ[0],masterScalingXYZ[1],masterScalingXYZ[2]);
 
+  let firstBoneMatrix = matIdentity();
+  mulMatTranslate(firstBoneMatrix,bodys[0].centerObjX,bodys[0].centerObjY,bodys[0].centerObjZ);  
+  mulMatRotateX(firstBoneMatrix,bodys[0].objRotX);
+  mulMatRotateY(firstBoneMatrix,bodys[0].objRotY);
+  mulMatRotateZ(firstBoneMatrix,bodys[0].objRotZ);
+  mulMatScaling(firstBoneMatrix,bodys[0].scaleX,bodys[0].scaleY,bodys[0].scaleZ);
+  //これが原点移動のボーンオフセット行列
+  mulMatTranslate(firstBoneMatrix,-bodys[0].centerObjX,-bodys[0].centerObjY,-bodys[0].centerObjZ);  
+  
+  firstBoneMatrix = matMul(masterMatrix,firstBoneMatrix);
+  bones.push(firstBoneMatrix);
+
+  for(let boneNumber = 1;boneNumber<bodys.length;boneNumber++){
+    let bonesMatrix = matIdentity();
+    mulMatTranslate(bonesMatrix,bodys[boneNumber].centerObjX,bodys[boneNumber].centerObjY,bodys[boneNumber].centerObjZ);  
+    mulMatRotateX(bonesMatrix,bodys[boneNumber].objRotX);
+    mulMatRotateY(bonesMatrix,bodys[boneNumber].objRotY);
+    mulMatRotateZ(bonesMatrix,bodys[boneNumber].objRotZ);
+    mulMatScaling(bonesMatrix,bodys[boneNumber].scaleX,bodys[boneNumber].scaleY,bodys[boneNumber].scaleZ);
+    mulMatTranslate(bonesMatrix,-bodys[boneNumber].centerObjX,-bodys[boneNumber].centerObjY,-bodys[boneNumber].centerObjZ);
+    let mixBoneMatrix = matMul(bones[bonesJoinIndex[boneNumber-1]],bonesMatrix);
+    bones.push(mixBoneMatrix);
+  }
+}
+function skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjects,bodys,bones,sunViewMatrix,viewMatrix){
+  for(let objectNumber = 0;objectNumber<bodys.length;objectNumber++){
+    objectShadowMapSkinMeshPolygonPush(bodys,bones,objectNumber,shadowProjectedObjects,sunViewMatrix);
+    objectSkinMeshPolygonPush(bodys,bones,objectNumber,projectedObjects,viewMatrix);
+  }
+}
 //ボーンなし
 function objectPolygonPush(objects,worldMatrix,objectNumber,projectedObjects,viewMatrix){
   let worldVerts = [];
@@ -491,7 +528,7 @@ monkeysImage.addEventListener("load", function() {
 	monkeyPixelImage = pictureToPixelMap(backCtx,monkeysImage);
 	let monkeyVerts = {};
   monkeyVerts.vertsPosition = [];
-	monkeys.push(new Object(monkeyVerts,-1.0,-0.6,0,180,0,0,0.5,0.5,0.5,0,false,true,monkeyPixelImage));
+	monkeys.push(new Object(monkeyVerts,0.0,-0.6,0,180,0,0,0.5,0.5,0.5,0,false,true,monkeyPixelImage));
 	monkeyLoad.push(new ModelLoadData(monkeys[0]));
 	monkeyLoad[0].JSONLoader("cube.json", (() => monkeyLoad[0].onJSONLoaded()));	
 }, true);	
@@ -521,6 +558,8 @@ planeFaceIndex.push(setFaceIndex(4,5,0));
 planeFaceIndex.push(setFaceIndex(1,0,5));
 
 let bodys = [];
+let bodys1 = [];
+
 //一番下は-0.27から積み重ねる場合+0.5,-0.27
 cubeImage.addEventListener("load", function() {
 	cubePixelImage = pictureToPixelMap(backCtx,cubeImage);
@@ -548,7 +587,30 @@ cubeImage.addEventListener("load", function() {
   //head
 	bodys.push(new Object(headVerts,0,-2,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
 
-	cubes.push(new Object(orgCubeVerts,-0.0,-1.0,0.0,0,0,0,1,1,1,0,false,true,cubePixelImage));
+    //waist
+	bodys1.push(new Object(waistVerts,0,-1.5,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
+  //RightLeg1Verts
+	bodys1.push(new Object(RightLeg1Verts,0,-1,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
+  //RightLeg2Verts
+	bodys1.push(new Object(RightLeg2Verts,0,-0.5,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
+  //LeftLeg1Verts
+	bodys1.push(new Object(LeftLeg1Verts,0,-1,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
+  //LeftLeg2Verts
+	bodys1.push(new Object(LeftLeg2Verts,0,-0.5,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
+
+  //spine
+	bodys1.push(new Object(spineVerts,0,-1.5,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
+  //rightArm1
+  bodys1.push(new Object(rightArm1Verts,-0.25,-1.92,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
+  //rightArm2
+  bodys1.push(new Object(rightArm2Verts,-0.75,-1.92,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
+  //leftArm1
+  bodys1.push(new Object(leftArm1Verts,0.25,-1.92,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
+  //leftArm2
+  bodys1.push(new Object(leftArm2Verts,0.75,-1.92,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
+  //head
+	bodys1.push(new Object(headVerts,0,-2,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
+
 	cubes.push(new Object(orgCubeVerts,0.6,-0.90,1,0,0,0,1,1,1,0,false,true,cubePixelImage));
   cubes.push(new Object(orgCubeVerts,1.5,-1.35,0.5,0,0,0,1,1,1,0,false,true,cubePixelImage));
 	cubes.push(new Object(orgCubeVerts,-1.5,-1.35,1,0,0,0,1,1,1,0,false,true,cubePixelImage));
@@ -679,7 +741,21 @@ let newsecond = newDate.getMilliseconds();
 
   bodys[10].objRotX =  Math.floor(60 * ns);
 
+  bodys1[1].objRotX =  Math.floor(-60 * s);
+  bodys1[2].objRotX =  Math.floor(60 * s);
 
+  bodys1[3].objRotX =  Math.floor(60 * s);
+  bodys1[4].objRotX =  Math.floor(-60 * s);
+
+  bodys1[5].objRotX =  Math.floor(60 * ns);
+
+  bodys1[6].objRotY =  Math.floor(-60 * s);
+  bodys1[7].objRotY =  Math.floor(-60 * s);
+
+  bodys1[8].objRotY =  Math.floor(60 * s);
+  bodys1[9].objRotY =  Math.floor(60 * s);
+
+  bodys1[10].objRotX =  Math.floor(-60 * ns);
 
   //bodys[0].objRotZ += 10;
   theta += 0.4;
@@ -687,61 +763,26 @@ let newsecond = newDate.getMilliseconds();
     theta = 0;
   }
 
-  let masterMatrix = matIdentity();
-    let waistMatrix = matIdentity();
-        let rightLeg1Matrix = matIdentity();
-        let rightLeg2Matrix = matIdentity();
-        let leftLeg1Matrix = matIdentity();
-        let leftLeg2Matrix = matIdentity();
-        let spainMatrix = matIdentity();
-          let rightArm1Matrix = matIdentity();
-          let rightArm2Matrix = matIdentity();
-          let leftArm1Matrix = matIdentity();
-          let leftArm2Matrix = matIdentity();
-          let headMatrix = matIdentity();
-
-
   let masterXYZ = setVector3(1,-0.2,0);
   let masterRotXYZ = setVector3(0,0,0);
   let masterScalingXYZ = setVector3(0.7,0.7,0.7);
-
   let boxHumanBones = [];
-  mulMatTranslate(masterMatrix,masterXYZ[0],masterXYZ[1],masterXYZ[2]);  
-  mulMatRotateX(masterMatrix,masterRotXYZ[0]);
-  mulMatRotateY(masterMatrix,masterRotXYZ[1]);
-  mulMatRotateZ(masterMatrix,masterRotXYZ[2]);
-  mulMatScaling(masterMatrix,masterScalingXYZ[0],masterScalingXYZ[1],masterScalingXYZ[2]);
-  //waist
-  mulMatTranslate(waistMatrix,bodys[0].centerObjX,bodys[0].centerObjY,bodys[0].centerObjZ);  
-  mulMatRotateX(waistMatrix,bodys[0].objRotX);
-  mulMatRotateY(waistMatrix,bodys[0].objRotY);
-  mulMatRotateZ(waistMatrix,bodys[0].objRotZ);
-  mulMatScaling(waistMatrix,bodys[0].scaleX,bodys[0].scaleY,bodys[0].scaleZ);
-  //これが原点移動のボーンオフセット行列
-  mulMatTranslate(waistMatrix,-bodys[0].centerObjX,-bodys[0].centerObjY,-bodys[0].centerObjZ);  
-  
-  waistMatrix = matMul(masterMatrix,waistMatrix);
-  boxHumanBones.push(waistMatrix);
-
-  //親のボーンにアクセス
+   //親のボーンにアクセス
   //rightLeg,leftLeg,spain,rightArm,leftArm,head
   let bonesJoinIndex = [0,1, 0,3, 0, 5,6, 5,8, 5];
-  for(let boneNumber = 1;boneNumber<bodys.length;boneNumber++){
-    let bonesMatrix = matIdentity();
-    mulMatTranslate(bonesMatrix,bodys[boneNumber].centerObjX,bodys[boneNumber].centerObjY,bodys[boneNumber].centerObjZ);  
-    mulMatRotateX(bonesMatrix,bodys[boneNumber].objRotX);
-    mulMatRotateY(bonesMatrix,bodys[boneNumber].objRotY);
-    mulMatRotateZ(bonesMatrix,bodys[boneNumber].objRotZ);
-    mulMatScaling(bonesMatrix,bodys[boneNumber].scaleX,bodys[boneNumber].scaleY,bodys[boneNumber].scaleZ);
-    mulMatTranslate(bonesMatrix,-bodys[boneNumber].centerObjX,-bodys[boneNumber].centerObjY,-bodys[boneNumber].centerObjZ);
-    let mixBoneMatrix = matMul(boxHumanBones[bonesJoinIndex[boneNumber-1]],bonesMatrix);
-    boxHumanBones.push(mixBoneMatrix);
-  }
 
-  for(let objectNumber = 0;objectNumber<bodys.length;objectNumber++){
-    objectShadowMapSkinMeshPolygonPush(bodys,boxHumanBones,objectNumber,shadowProjectedObjects,sunViewMatrix);
-    objectSkinMeshPolygonPush(bodys,boxHumanBones,objectNumber,projectedObjects,viewMatrix);
-  }
+  makeSkinMeshBones(bonesJoinIndex,boxHumanBones,bodys,masterXYZ,masterRotXYZ,masterScalingXYZ);
+
+  skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjects,bodys,boxHumanBones,sunViewMatrix,viewMatrix);
+
+  masterXYZ = setVector3(-1,-0.2,0);
+
+  let boxHuman1Bones = [];
+
+  
+  makeSkinMeshBones(bonesJoinIndex,boxHuman1Bones,bodys1,masterXYZ,masterRotXYZ,masterScalingXYZ);
+
+  skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjects,bodys1,boxHuman1Bones,sunViewMatrix,viewMatrix);
 
 	//cuberegister
 	for(let num=0;num<cubes.length;num++){
