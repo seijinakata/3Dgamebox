@@ -8,6 +8,60 @@ import {setPixelZ,setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,picture
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
 
+let xmlIsLoad = false;
+let readMech = [];
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState == 4) {
+          if (xmlhttp.status == 200) {
+            //var elem = document.getElementById("asset");
+
+            //elem.innerHTML += "----- getElementsByTagName -----<br/>";
+            var docelem = xmlhttp.responseXML.documentElement;
+            var nodes = docelem.getElementsByTagName("mesh");
+            let verts = [];
+            let char = [];
+            let vertsCounter = 0;
+                for(let i=0;i<nodes[0].childNodes[1].childNodes[1].childNodes[0].data.length;i++){
+                  let tempChar = nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i];
+                      if(char.length == 0){
+                        char = tempChar;
+                        continue;
+                      }else{
+                        if(nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i] != " "){
+                            char += tempChar;
+                          if(i == nodes[0].childNodes[1].childNodes[1].childNodes[0].data.length-1){
+                            let tempInt = parseInt(char)
+                            verts.push(tempInt);
+                            vertsCounter += 1;
+                            char = [];
+                          }
+                        }else{
+                        let tempInt = parseInt(char)
+                        verts.push(tempInt);
+                        vertsCounter += 1;
+                        char = [];
+                        }
+                        if(vertsCounter == 3){
+                          readMech.push(verts);
+                          verts = [];
+                          vertsCounter = 0;
+                        }
+                      }
+                }
+                xmlIsLoad = true;
+              //let mesh = [nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i],nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i+1],nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i+2]];
+              //xmlCubeMesh.push(mesh);
+
+              //elem.innerHTML += nodes[i].tagName + ":" + nodes[i].textContent + "<br/>";
+          } else {
+            alert("status = " + xmlhttp.status);
+          }
+        }
+      }
+      xmlhttp.open("GET", "a.dae");
+      xmlhttp.send();
+ 
 // ルックアップテーブルを生成しておく
 export const sinLut = [];
 export const cosLut = [];
@@ -652,7 +706,7 @@ let theta = 0;
 var mainLoopId = setInterval(function(){
 
 if( skyPixelImage.length == 0  || cubePixelImage.length == 0 ||
-	roadPixelImage.length == 0 || sandPixelImage.length == 0 || monkeyLoad[0].getLoadFinish() != true){
+	roadPixelImage.length == 0 || sandPixelImage.length == 0 || monkeyLoad[0].getLoadFinish() != true || xmlIsLoad != true){
 	ctx.font = '50pt Arial';
  	ctx.fillStyle = 'rgba(0, 0, 255)';
  	ctx.fillText("now loding", SCREEN_SIZE_W/2, SCREEN_SIZE_H/2);
@@ -677,6 +731,12 @@ let newsecond = newDate.getMilliseconds();
   let shadowProjectedObjects = [];
   //投影後の情報格納
   let projectedObjects = [];
+  cubes[0].verts = readMech
+  //cubes[0].faceIndex = [[4,2,0],[2,7,3],[6,5,7],[1,7,5],[0,3,1],[4,1,5],[4,6,2],[2,6,7],[6,4,5],[1,3,7],[0,2,3],[4,0,1]]
+  cubes[0].faceIndex = [[4,2,0],[2,7,3],[6,5,7],[1,7,5],[0,3,1],[4,1,5],[4,6,2],[2,6,7],[6,5,4],[1,7,3],[0,2,3],[4,0,1]]
+
+  //console.log(cubes[0].verts)
+  console.log(readMech)
 
   //sphereregister
   /*
@@ -719,8 +779,8 @@ let newsecond = newDate.getMilliseconds();
     mulMatRotateY(worldMatrix,monkeys[num].objRotY);
     mulMatRotateZ(worldMatrix,monkeys[num].objRotZ); 
     mulMatScaling(worldMatrix,monkeys[num].scaleX,monkeys[num].scaleY,monkeys[num].scaleZ);
-    objectShadowMapPolygonPush(monkeys,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
-    objectPolygonPush(monkeys,worldMatrix,num,projectedObjects,viewMatrix);	
+    //objectShadowMapPolygonPush(monkeys,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
+    //objectPolygonPush(monkeys,worldMatrix,num,projectedObjects,viewMatrix);	
   }
   
   let s = Math.sin(theta);
@@ -771,18 +831,18 @@ let newsecond = newDate.getMilliseconds();
   //rightLeg,leftLeg,spain,rightArm,leftArm,head
   let bonesJoinIndex = [0,1, 0,3, 0, 5,6, 5,8, 5];
 
-  makeSkinMeshBones(bonesJoinIndex,boxHumanBones,bodys,masterXYZ,masterRotXYZ,masterScalingXYZ);
+  //makeSkinMeshBones(bonesJoinIndex,boxHumanBones,bodys,masterXYZ,masterRotXYZ,masterScalingXYZ);
 
-  skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjects,bodys,boxHumanBones,sunViewMatrix,viewMatrix);
+  //skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjects,bodys,boxHumanBones,sunViewMatrix,viewMatrix);
 
   masterXYZ = setVector3(-1,-0.2,0);
 
   let boxHuman1Bones = [];
 
   
-  makeSkinMeshBones(bonesJoinIndex,boxHuman1Bones,bodys1,masterXYZ,masterRotXYZ,masterScalingXYZ);
+  //makeSkinMeshBones(bonesJoinIndex,boxHuman1Bones,bodys1,masterXYZ,masterRotXYZ,masterScalingXYZ);
 
-  skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjects,bodys1,boxHuman1Bones,sunViewMatrix,viewMatrix);
+  //skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjects,bodys1,boxHuman1Bones,sunViewMatrix,viewMatrix);
 
 	//cuberegister
 	for(let num=0;num<cubes.length;num++){
@@ -792,7 +852,7 @@ let newsecond = newDate.getMilliseconds();
     mulMatRotateY(worldMatrix,cubes[num].objRotY);
     mulMatRotateZ(worldMatrix,cubes[num].objRotZ); 
     mulMatScaling(worldMatrix,cubes[num].scaleX,cubes[num].scaleY,cubes[num].scaleZ);
-    objectShadowMapPolygonPush(cubes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
+    //objectShadowMapPolygonPush(cubes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     objectPolygonPush(cubes,worldMatrix,num,projectedObjects,viewMatrix);
 	}
   
@@ -804,8 +864,8 @@ let newsecond = newDate.getMilliseconds();
     mulMatRotateY(worldMatrix,planes[num].objRotY);
     mulMatRotateZ(worldMatrix,planes[num].objRotZ); 
     mulMatScaling(worldMatrix,planes[num].scaleX,planes[num].scaleY,planes[num].scaleZ);
-    objectShadowMapPolygonPush(planes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
-    objectPolygonPush(planes,worldMatrix,num,projectedObjects,viewMatrix);
+    //objectShadowMapPolygonPush(planes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
+    //objectPolygonPush(planes,worldMatrix,num,projectedObjects,viewMatrix);
   }
   
   /*
@@ -883,9 +943,9 @@ for(let j=0;j<SCREEN_SIZE_H;j++){
       let getPixel = zBuffering[j][i][0];
       let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
       let sunCosin = culVecDot(sunVec,zBuffering[j][i][0].crossWorldVector3);
-      getPixel.r = getPixel.r*sunCosin*1.2;
-      getPixel.g = getPixel.g*sunCosin*1.2;
-      getPixel.b = getPixel.b*sunCosin*1.2;
+      //getPixel.r = getPixel.r*sunCosin*1.2;
+      //getPixel.g = getPixel.g*sunCosin*1.2;
+      //getPixel.b = getPixel.b*sunCosin*1.2;
     }
   }
 }
@@ -922,9 +982,9 @@ for(let j=0;j<SCREEN_SIZE_H;j++){
 					if(pixelVector3[0]>0 && pixelVector3[0]<SCREEN_SIZE_W){
 						if(pixelVector3[1]>0 && pixelVector3[1]<SCREEN_SIZE_H){
 							if(shadowMap[pixelVector3[1]][pixelVector3[0]][0].z+0.2<pixelVector3[2]){
-								getPixel.r = getPixel.r/2.2;
-								getPixel.g = getPixel.g/2.2;
-								getPixel.b = getPixel.b/2.2;	
+								//getPixel.r = getPixel.r/2.2;
+								//getPixel.g = getPixel.g/2.2;
+								//getPixel.b = getPixel.b/2.2;	
               }
 						}
 					}
