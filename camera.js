@@ -10,6 +10,7 @@ export const SCREEN_SIZE_H = 800;
 
 let xmlIsLoad = false;
 let readMech = [];
+let vertsIndex = [];
       var xmlhttp = new XMLHttpRequest();
       xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4) {
@@ -21,45 +22,76 @@ let readMech = [];
             var nodes = docelem.getElementsByTagName("mesh");
             let verts = [];
             let char = [];
-            let vertsCounter = 0;
-                for(let i=0;i<nodes[0].childNodes[1].childNodes[1].childNodes[0].data.length;i++){
-                  let tempChar = nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i];
-                      if(char.length == 0){
-                        char = tempChar;
-                        continue;
-                      }else{
-                        if(nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i] != " "){
-                            char += tempChar;
-                          if(i == nodes[0].childNodes[1].childNodes[1].childNodes[0].data.length-1){
-                            let tempInt = parseInt(char)
-                            verts.push(tempInt);
-                            vertsCounter += 1;
-                            char = [];
-                          }
-                        }else{
-                        let tempInt = parseInt(char)
-                        verts.push(tempInt);
-                        vertsCounter += 1;
-                        char = [];
-                        }
-                        if(vertsCounter == 3){
-                          readMech.push(verts);
-                          verts = [];
-                          vertsCounter = 0;
-                        }
-                      }
+            //meshVerts
+            //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+            nodes[0].childNodes[1].childNodes[1].childNodes[0].data += ' ';
+            for(let i=0;i<nodes[0].childNodes[1].childNodes[1].childNodes[0].data.length;i++){
+              let tempChar = nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i];
+              if(char.length == 0 && nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i] != " "){
+                char = tempChar;
+                continue;
+              }else{
+                if(nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i] != " "){
+                    char += tempChar;
+                }else{
+                  let tempInt = parseInt(char)
+                  verts.push(tempInt);
+                  char = [];
+                  if(verts.length %3 == 0){
+                    readMech.push(verts);
+                    verts = [];
+                  }
                 }
+              }
+            }
+            //meshIndex
+            char = [];
+            verts = [];
+            let tempVertsIndex = [];
+            let normalIndex= [];
+            let UVIndex = [];
+            //1index,2normal,3uv
+            let readNow = 1;
+            nodes[0].childNodes[9].childNodes[7].textContent += ' ';
+            for(let i=0;i<nodes[0].childNodes[9].childNodes[7].textContent.length;i++){
+              let tempChar = nodes[0].childNodes[9].childNodes[7].textContent[i];
+              if(char.length == 0 && nodes[0].childNodes[9].childNodes[7].textContent[i] != " "){
+                char = tempChar;
+                continue;
+              }else{
+                if(nodes[0].childNodes[9].childNodes[7].textContent[i] != " "){
+                    char += tempChar;
+                }else{
+                  let tempInt = parseInt(char)
+                  if(readNow == 1){
+                    tempVertsIndex.unshift(tempInt);
+                    char = [];
+                    if(tempVertsIndex.length %3 == 0){
+                      vertsIndex.push(tempVertsIndex);
+                      tempVertsIndex = [];
+                    }
+                    readNow = 2;
+                  }else if(readNow == 2){
+                    //tempVertsIndex.push(tempInt);
+                    char = [];
+                    readNow = 3;
+                  }else if(readNow == 3){
+                    //tempVertsIndex.push(tempInt);
+                    char = [];
+                    readNow = 1;
+                  }
+                }
+              }
+            }
+                //console.log(nodes[0].childNodes[9].childNodes[7].textContent.length)
                 xmlIsLoad = true;
-              //let mesh = [nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i],nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i+1],nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i+2]];
-              //xmlCubeMesh.push(mesh);
-
               //elem.innerHTML += nodes[i].tagName + ":" + nodes[i].textContent + "<br/>";
           } else {
             alert("status = " + xmlhttp.status);
           }
         }
       }
-      xmlhttp.open("GET", "a.dae");
+      xmlhttp.open("GET", "cube.dae");
       xmlhttp.send();
  
 // ルックアップテーブルを生成しておく
@@ -733,10 +765,7 @@ let newsecond = newDate.getMilliseconds();
   let projectedObjects = [];
   cubes[0].verts = readMech
   //cubes[0].faceIndex = [[4,2,0],[2,7,3],[6,5,7],[1,7,5],[0,3,1],[4,1,5],[4,6,2],[2,6,7],[6,4,5],[1,3,7],[0,2,3],[4,0,1]]
-  cubes[0].faceIndex = [[4,2,0],[2,7,3],[6,5,7],[1,7,5],[0,3,1],[4,1,5],[4,6,2],[2,6,7],[6,5,4],[1,7,3],[0,2,3],[4,0,1]]
-
-  //console.log(cubes[0].verts)
-  console.log(readMech)
+  cubes[0].faceIndex = vertsIndex
 
   //sphereregister
   /*
