@@ -11,6 +11,7 @@ export const SCREEN_SIZE_H = 800;
 let xmlIsLoad = false;
 let readMech = [];
 let vertsIndex = [];
+let readUV = [];
       var xmlhttp = new XMLHttpRequest();
       xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4) {
@@ -83,8 +84,47 @@ let vertsIndex = [];
                 }
               }
             }
-                //console.log(nodes[0].childNodes[9].childNodes[7].textContent.length)
-                xmlIsLoad = true;
+            //uv
+            let tempUV = [];
+            let u = 0;
+            let v = 0;
+            let readFlag = 0;//0:u,1:v,2:tempUV
+            char = [];
+            nodes[0].childNodes[5].childNodes[1].childNodes[0].data += ' ';
+            for(let i=0;i<nodes[0].childNodes[5].childNodes[1].childNodes[0].data.length;i++){
+              let tempChar = nodes[0].childNodes[5].childNodes[1].childNodes[0].data[i];
+              if(char.length == 0 && nodes[0].childNodes[5].childNodes[1].childNodes[0].data[i] != " "){
+                char = tempChar;
+                continue;
+              }else{
+                if(nodes[0].childNodes[5].childNodes[1].childNodes[0].data[i] != " "){
+                    char += tempChar;
+                }else{
+                  let tempFloat = parseFloat(char)
+                  if(readFlag == 0){
+                    u = tempFloat;
+                    u = (u < 0) ? 1 + u : u;
+                    char = [];
+                    readFlag = 1;
+                  }else if(readFlag == 1){
+                    v = tempFloat;
+                    v = (v < 0) ? v * -1 : 1 - v;
+                    char = [];
+                    let uv = {"u":u,"v":v};
+                    tempUV.unshift(uv);
+                    if(tempUV.length %3 == 0){
+                      readUV.push(tempUV);
+                      tempUV = [];
+                    }
+                    u = 0;
+                    v = 0;
+                    readFlag = 0;
+                  }
+                }
+              }
+            }
+            //console.log(nodes[0].childNodes[9].childNodes[7].textContent.length)
+            xmlIsLoad = true;
               //elem.innerHTML += nodes[i].tagName + ":" + nodes[i].textContent + "<br/>";
           } else {
             alert("status = " + xmlhttp.status);
@@ -725,6 +765,7 @@ let tempDiceUV = [
   [{"u":0.375,"v":0.75},{"u":0.625,"v":0.75},{"u":0.625,"v":0.5}],
   [{"u":0.375,"v":0.5},{"u":0.625,"v":0.5},{"u":0.625,"v":0.25}],
 ];
+
 let diceUV = [];
 for(let i=0;i<tempDiceUV.length;i++){
   let readUV = tempDiceUV[i];
@@ -802,7 +843,7 @@ let newsecond = newDate.getMilliseconds();
   dices[0].verts = readMech
   //cubes[0].faceIndex = [[4,2,0],[2,7,3],[6,5,7],[1,7,5],[0,3,1],[4,1,5],[4,6,2],[2,6,7],[6,4,5],[1,3,7],[0,2,3],[4,0,1]]
   dices[0].faceIndex = vertsIndex
-  dices[0].UV = diceUV;
+  dices[0].UV = readUV;
   //0.875 0.5 0.625 0.75 0.625 0.5 //五0.625 0.75 0.375 1 0.375 0.75 //一0.625 0 0.375 0.25 0.375 0// 0.375 0.5 0.125 0.75 0.125 0.5
   //六 0.625 0.5 0.375 0.75 0.375 0.5//0.625 0.25 0.375 0.5 0.375 0.25// 0.875 0.5 0.875 0.75 0.625 0.75//五0.625 0.75 0.625 1 0.375 1 
   //一0.625 0 0.625 0.25 0.375 0.25 //0.375 0.5 0.375 0.75 0.125 0.75 //0.625 0.5 0.625 0.75 0.375 0.75 //0.625 0.25 0.625 0.5 0.375 0.50.875 end
