@@ -34,7 +34,7 @@ let vertsIndex = [];
                 if(nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i] != " "){
                     char += tempChar;
                 }else{
-                  let tempInt = parseInt(char)
+                  let tempInt = parseFloat(char)
                   verts.push(tempInt);
                   char = [];
                   if(verts.length %3 == 0){
@@ -125,7 +125,7 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(3,-1.5,-4);
+let cameraPos = setVector3(0,-1.5,-4);
 let lookat = setVector3(0.0,0,1);
 let sunPos = setVector3(0,-3,-2);
 let sunLookat = setVector3(0.0,-0.0,0);
@@ -447,7 +447,6 @@ function skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjec
 function objectPolygonPush(objects,worldMatrix,objectNumber,projectedObjects,viewMatrix){
   let worldVerts = [];
   let projectedVerts = [];
-  let mixMatrix = [];
   let object = objects[objectNumber];
 
   for (var i = 0; i < object.verts.length; i++) {
@@ -697,11 +696,48 @@ cubeImage.addEventListener("load", function() {
   //head
 	bodys1.push(new Object(headVerts,0,-2,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
 
-	cubes.push(new Object(orgCubeVerts,0.6,-0.90,1,0,0,0,1,1,1,0,false,true,cubePixelImage));
+	//cubes.push(new Object(orgCubeVerts,0.6,-0.90,1,0,0,0,1,1,1,0,false,true,cubePixelImage));
   cubes.push(new Object(orgCubeVerts,1.5,-1.35,0.5,0,0,0,1,1,1,0,false,true,cubePixelImage));
 	cubes.push(new Object(orgCubeVerts,-1.5,-1.35,1,0,0,0,1,1,1,0,false,true,cubePixelImage));
 }, true);
 
+//dice
+let dices = [];
+let diceImage = new Image();
+diceImage.src = "dice.png";
+let dicePixelImage = [];
+diceImage.addEventListener("load", function() {
+  dicePixelImage = pictureToPixelMap(backCtx,diceImage);
+  dices.push(new Object(orgCubeVerts,0.0,-0.90,0,0,0,0,0.5,0.5,0.5,0,false,true,dicePixelImage));
+
+},true);
+let tempDiceUV = [
+  [{"u":0.625,"v":0.5},{"u":0.625,"v":0.75},{"u":0.875,"v":0.5}],
+  [{"u":0.375,"v":0.75},{"u":0.375,"v":1},{"u":0.625,"v":0.75}],
+  [{"u":0.375,"v":0},{"u":0.375,"v":0.25},{"u":0.625,"v":0}],
+  [{"u":0.125,"v":0.5},{"u":0.125,"v":0.75},{"u":0.375,"v":0.5}],
+  [{"u":0.375,"v":0.5},{"u":0.375,"v":0.75},{"u":0.625,"v":0.5}],
+  [{"u":0.375,"v":0.25},{"u":0.375,"v":0.5},{"u":0.625,"v":0.25}],
+  [{"u":0.625,"v":0.75},{"u":0.875,"v":0.75},{"u":0.875,"v":0.5}],
+  [{"u":0.375,"v":1},{"u":0.625,"v":1},{"u":0.625,"v":0.75}],
+  [{"u":0.375,"v":0.25},{"u":0.625,"v":0.25},{"u":0.625,"v":0}],
+  [{"u":0.125,"v":0.75},{"u":0.375,"v":0.75},{"u":0.375,"v":0.5}],
+  [{"u":0.375,"v":0.75},{"u":0.625,"v":0.75},{"u":0.625,"v":0.5}],
+  [{"u":0.375,"v":0.5},{"u":0.625,"v":0.5},{"u":0.625,"v":0.25}],
+];
+let diceUV = [];
+for(let i=0;i<tempDiceUV.length;i++){
+  let readUV = tempDiceUV[i];
+  let uv = []
+  for(let j=0;j<readUV.length;j++){
+    let u = readUV[j].u;
+    let v = readUV[j].v;
+    u = (u < 0) ? 1 + u : u;
+    v = (v < 0) ? v * -1 : 1 - v;
+    uv.push({"u":u,"v":v});
+  }
+  diceUV.push(uv);
+}
 //ground
 let planes = [];
 let roadImage = new Image();
@@ -738,7 +774,7 @@ let theta = 0;
 var mainLoopId = setInterval(function(){
 
 if( skyPixelImage.length == 0  || cubePixelImage.length == 0 ||
-	roadPixelImage.length == 0 || sandPixelImage.length == 0 || monkeyLoad[0].getLoadFinish() != true || xmlIsLoad != true){
+	roadPixelImage.length == 0 || sandPixelImage.length == 0 || dicePixelImage.length == 0 || monkeyLoad[0].getLoadFinish() != true || xmlIsLoad != true){
 	ctx.font = '50pt Arial';
  	ctx.fillStyle = 'rgba(0, 0, 255)';
  	ctx.fillText("now loding", SCREEN_SIZE_W/2, SCREEN_SIZE_H/2);
@@ -763,9 +799,14 @@ let newsecond = newDate.getMilliseconds();
   let shadowProjectedObjects = [];
   //投影後の情報格納
   let projectedObjects = [];
-  cubes[0].verts = readMech
+  dices[0].verts = readMech
   //cubes[0].faceIndex = [[4,2,0],[2,7,3],[6,5,7],[1,7,5],[0,3,1],[4,1,5],[4,6,2],[2,6,7],[6,4,5],[1,3,7],[0,2,3],[4,0,1]]
-  cubes[0].faceIndex = vertsIndex
+  dices[0].faceIndex = vertsIndex
+  dices[0].UV = diceUV;
+  //0.875 0.5 0.625 0.75 0.625 0.5 //五0.625 0.75 0.375 1 0.375 0.75 //一0.625 0 0.375 0.25 0.375 0// 0.375 0.5 0.125 0.75 0.125 0.5
+  //六 0.625 0.5 0.375 0.75 0.375 0.5//0.625 0.25 0.375 0.5 0.375 0.25// 0.875 0.5 0.875 0.75 0.625 0.75//五0.625 0.75 0.625 1 0.375 1 
+  //一0.625 0 0.625 0.25 0.375 0.25 //0.375 0.5 0.375 0.75 0.125 0.75 //0.625 0.5 0.625 0.75 0.375 0.75 //0.625 0.25 0.625 0.5 0.375 0.50.875 end
+  //0.5 0.625 0.75 0.625 0.5 0.625 0.75 0.375 1 0.375 0.75 0.625 0 0.375 0.25 0.375 0 0.375 0.5 0.125 0.75 0.125 0.5 0.625 0.5 0.375 0.75 0.375 0.5 0.625 0.25 0.375 0.5 0.375 0.25 0.875 0.5 0.875 0.75 0.625 0.75 0.625 0.75 0.625 1 0.375 1 0.625 0 0.625 0.25 0.375 0.25 0.375 0.5 0.375 0.75 0.125 0.75 0.625 0.5 0.625 0.75 0.375 0.75 0.625 0.25 0.625 0.5 0.375 0.5
 
   //sphereregister
   /*
@@ -884,7 +925,17 @@ let newsecond = newDate.getMilliseconds();
     //objectShadowMapPolygonPush(cubes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     objectPolygonPush(cubes,worldMatrix,num,projectedObjects,viewMatrix);
 	}
-  
+  //dice
+  for(let num=0;num<dices.length;num++){
+    let worldMatrix = matIdentity();
+    mulMatTranslate(worldMatrix,dices[num].centerObjX,dices[num].centerObjY,dices[num].centerObjZ);  
+    mulMatRotateX(worldMatrix,dices[num].objRotX);
+    mulMatRotateY(worldMatrix,dices[num].objRotY);
+    mulMatRotateZ(worldMatrix,dices[num].objRotZ); 
+    mulMatScaling(worldMatrix,dices[num].scaleX,dices[num].scaleY,dices[num].scaleZ);
+    //objectShadowMapPolygonPush(dices,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
+    objectPolygonPush(dices,worldMatrix,num,projectedObjects,viewMatrix);
+	}
 	//planesregister
 	for(let num=0;num<planes.length;num++){
     let worldMatrix = matIdentity();
