@@ -599,9 +599,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,shadowMa
 						/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
 						selectOrgy = x * iA[2] + y * iA[3]
 						- e * iA[2] - f * iA[3];// +  orgTexture.height / 2;
-						/* 最近傍補間小数点の画像が無いので四捨五入して適当な近くのピクセルを頂く */
-						orgy = Math.floor(selectOrgy + 0.5);
-						
+						orgy = Math.floor(selectOrgy)
 						/* 元画像をはみ出る画素の場合ははみ出る前のピクセルを詰める */
 						if(orgy >=  orgTexture.height){
 							orgy = orgTexture.height -1;
@@ -614,8 +612,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,shadowMa
 						selectOrgx = x * iA[0] + y * iA[1]
 							- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
 
-						/* 最近傍補間小数点の画像が無いので四捨五入して適当な近くのピクセルを頂く */
-						orgx= Math.floor(selectOrgx + 0.5); 
+						orgx= Math.floor(selectOrgx); 
 
 						/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
 						if(orgx >= orgTexture.width){
