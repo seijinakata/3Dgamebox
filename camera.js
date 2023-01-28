@@ -131,7 +131,7 @@ let readUV = [];
           }
         }
       }
-      xmlhttp.open("GET", "cube.dae");
+      xmlhttp.open("GET", "steve.dae");
       xmlhttp.send();
  
 // ルックアップテーブルを生成しておく
@@ -744,11 +744,11 @@ cubeImage.addEventListener("load", function() {
 //dice
 let dices = [];
 let diceImage = new Image();
-diceImage.src = "dice.png";
+diceImage.src = "steve.png";
 let dicePixelImage = [];
 diceImage.addEventListener("load", function() {
   dicePixelImage = pictureToPixelMap(backCtx,diceImage);
-  dices.push(new Object(orgCubeVerts,0.0,-0.90,0,0,0,0,0.5,0.5,0.5,0,false,true,dicePixelImage));
+  dices.push(new Object(orgCubeVerts,0.0,-0.90,0,90,0,0,0.5,0.5,0.5,0,false,true,dicePixelImage));
 
 },true);
 let tempDiceUV = [
