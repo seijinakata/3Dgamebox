@@ -483,7 +483,7 @@ export function triangleRasterize(buffer,bufferFrame,z,r,g,b,a,screen_size_h,scr
 	}
 }
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
-function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,imageData,
+function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,imageData,uMax,uMIn,vMax,vMin,
 	shadowMap,crossWorldVector3){
 
 	//viewport前は0から1000で管理4桁で四捨五入0.5は画面の中央
@@ -530,7 +530,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,im
             se.max = sr;
 			if(y>=0){
             scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,
-				imageData,shadowMap,crossWorldVector3);				
+				imageData,uMax,uMIn,vMax,vMin,shadowMap,crossWorldVector3);				
 			}
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
@@ -554,7 +554,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,im
             se.min = sl;
             se.max = sr;
 			if(y>=0){
-			scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,
+			scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,uMax,uMIn,vMax,vMin,
 				shadowMap,crossWorldVector3);				
 			}
             sl = vec2Plus(sl,dl);//
@@ -564,7 +564,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,im
         }while(y<triangleBtm);
     }
 }
-function scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,shadowMap,crossWorldVector3){
+function scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,uMax,uMIn,vMax,vMin,shadowMap,crossWorldVector3){
 	let orgTexture = imageData;
 	let selectOrgx = 0,selectOrgy = 0;/* アフィン後の座標に対応した元画像の座標 */
 	let orgx,orgy = 0;/* 最近傍補間した元画像の座標 */
@@ -601,10 +601,10 @@ function scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,shadowMa
 						- e * iA[2] - f * iA[3];// +  orgTexture.height / 2;
 						orgy = Math.floor(selectOrgy)
 						/* 元画像をはみ出る画素の場合ははみ出る前のピクセルを詰める */
-						if(orgy >=  orgTexture.height){
-							orgy = orgTexture.height -1;
-						}if(orgy < 0){
-							orgy = 0;
+						if(orgy >=  orgTexture.height*vMax){
+							orgy =  Math.floor(orgTexture.height*vMax-0.5);
+						}if(orgy < orgTexture.height*vMin){
+							orgy = Math.floor(orgTexture.height*vMin+0.5);
 						}
 
 						/* 元画像における横方向座標を計算 */
@@ -615,10 +615,10 @@ function scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,shadowMa
 						orgx= Math.floor(selectOrgx); 
 
 						/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
-						if(orgx >= orgTexture.width){
-							orgx = orgTexture.width -1;
-						}if(orgx < 0){
-							orgx = 0;
+						if(orgx >= orgTexture.width*uMax){
+							orgx = Math.floor(orgTexture.width*uMax-0.5);
+						}if(orgx < orgTexture.width*uMIn){
+							orgx = Math.floor(orgTexture.width*uMIn+0.5);
 						}
 						let index = (orgx + orgy * orgTexture.width) * 4;
 						let affinedPixel = setPixel(sz,orgTexture.data[index],orgTexture.data[index + 1],orgTexture.data[index + 2],orgTexture.data[index + 3],crossWorldVector3);
@@ -796,7 +796,7 @@ export function triangleToBuffer(zBuffering,shadowMap,textureAlpha,img,vertex_li
 	*/
 	//shadowMapがnullの時適当な値を突っ込む
 	let iA = Array(4);//Aの逆行列
-	let a=0, b=0, c=0, d=0,h=0,w=0;
+	let a=0, b=0, c=0, d=0,h=0,w=0,uMax=0,uMIn=0,vMax=0,vMin=0;
 	if(shadowMap != null){
 		//マトリックス変換値を求める
 		var Ax = (uv_list[2] - uv_list[0]) * img.width;
@@ -804,6 +804,10 @@ export function triangleToBuffer(zBuffering,shadowMap,textureAlpha,img,vertex_li
 		var Bx = (uv_list[4] - uv_list[0]) * img.width;
 		var By = (uv_list[5] - uv_list[1]) * img.height;
 		var mi = getInvert2(Ax,Ay,Bx,By);
+		uMax = Math.max(uv_list[0],uv_list[2],uv_list[4]);
+		uMIn = Math.min(uv_list[0],uv_list[2],uv_list[4]);
+		vMax = Math.max(uv_list[1],uv_list[3],uv_list[5]);
+		vMin = Math.min(uv_list[1],uv_list[3],uv_list[5]);
 		if (!mi) return;
 
 		//アフィン変換の基定ベクトル、元画像を抽出するためのベクトル
@@ -833,7 +837,7 @@ export function triangleToBuffer(zBuffering,shadowMap,textureAlpha,img,vertex_li
 	let pm = tempverts[1];
 	let pb = tempverts[2];
 
-	 scan_vertical(zBuffering,SCREEN_SIZE_H,SCREEN_SIZE_W,pt,pm,pb,iA,h,w,img,
+	 scan_vertical(zBuffering,SCREEN_SIZE_H,SCREEN_SIZE_W,pt,pm,pb,iA,h,w,img,uMax,uMIn,vMax,vMin,
 		shadowMap,crossWorldVector3);
  	/*
 	let triangleFrame = new Array(SCREEN_SIZE_H);
