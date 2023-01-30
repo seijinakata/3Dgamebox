@@ -601,24 +601,27 @@ function scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,uMax,uMI
 						- e * iA[2] - f * iA[3];// +  orgTexture.height / 2;
 						orgy = Math.floor(selectOrgy)
 						/* 元画像をはみ出る画素の場合ははみ出る前のピクセルを詰める */
-						if(orgy >=  orgTexture.height*vMax){
-							orgy =  Math.floor(orgTexture.height*vMax-0.5);
-						}if(orgy < orgTexture.height*vMin){
-							orgy = Math.floor(orgTexture.height*vMin+0.5);
+						let textureVMax = Math.floor(orgTexture.height*vMax);
+						let textureVMin = Math.floor(orgTexture.height*vMin + 1);
+						if(orgy >=  textureVMax){
+							//画像配列は０から始まってるからheight,widthともに-1
+							orgy =  textureVMax - 1;
+						}if(orgy <= textureVMin){
+							orgy = textureVMin;
 						}
 
 						/* 元画像における横方向座標を計算 */
 						/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
 						selectOrgx = x * iA[0] + y * iA[1]
 							- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-
 						orgx= Math.floor(selectOrgx); 
-
 						/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
-						if(orgx >= orgTexture.width*uMax){
-							orgx = Math.floor(orgTexture.width*uMax-0.5);
-						}if(orgx < orgTexture.width*uMIn){
-							orgx = Math.floor(orgTexture.width*uMIn+0.5);
+						let textureUMax = Math.floor(orgTexture.width*uMax);
+						let textureUMin = Math.floor(orgTexture.width*uMIn + 1);
+						if(orgx >= textureUMax){
+							orgx = textureUMax -1;
+						}if(orgx <= textureUMin){
+							orgx = textureUMin
 						}
 						let index = (orgx + orgy * orgTexture.width) * 4;
 						let affinedPixel = setPixel(sz,orgTexture.data[index],orgTexture.data[index + 1],orgTexture.data[index + 2],orgTexture.data[index + 3],crossWorldVector3);
