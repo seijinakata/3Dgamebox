@@ -103,7 +103,6 @@ let readUV = [];
                   let tempFloat = parseFloat(char)
                   if(readFlag == 0){
                     u = tempFloat;
-                    u = (u < 0) ? 1 + u : u;
                     char = [];
                     readFlag = 1;
                   }else if(readFlag == 1){
@@ -165,7 +164,7 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(0,-1.5,-4);
+let cameraPos = setVector3(0,-2.5,-5);
 let lookat = setVector3(0.0,0,1);
 let sunPos = setVector3(0,-3,-2);
 let sunLookat = setVector3(0.0,-0.0,0);
