@@ -602,7 +602,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,uMax,uMI
 						orgy = Math.floor(selectOrgy)
 						/* 元画像をはみ出る画素の場合ははみ出る前のピクセルを詰める */
 						let textureVMax = Math.floor(orgTexture.height*vMax);
-						let textureVMin = Math.floor(orgTexture.height*vMin + 1);
+						let textureVMin = Math.floor(orgTexture.height*vMin + 0.5);
 						if(orgy >=  textureVMax){
 							//画像配列は０から始まってるからheight,widthともに-1
 							orgy =  textureVMax - 1;
@@ -617,7 +617,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,uMax,uMI
 						orgx= Math.floor(selectOrgx); 
 						/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
 						let textureUMax = Math.floor(orgTexture.width*uMax);
-						let textureUMin = Math.floor(orgTexture.width*uMIn + 1);
+						let textureUMin = Math.floor(orgTexture.width*uMIn + 0.5);
 						if(orgx >= textureUMax){
 							orgx = textureUMax -1;
 						}if(orgx <= textureUMin){
