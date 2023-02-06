@@ -142,7 +142,6 @@ for(let i = 0; i < 360; i++) {
   sinLut.push(Math.sin(i * DEG_TO_RAD));
   cosLut.push(Math.cos(i * DEG_TO_RAD));
 }
-
 var c = document.getElementById("myCanvas");
 var ctx = c.getContext("2d");
 c.width = SCREEN_SIZE_W;
@@ -165,8 +164,8 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(0,0,-10);
-let lookat = setVector3(0,0,1);
+let cameraPos = setVector3(0,-1,-7);
+let lookat = setVector3(0.0,-1,1);
 let sunPos = setVector3(0,-3,-2);
 let sunLookat = setVector3(0.0,-0.0,0);
 let up = setVector3(0,1,0);
@@ -673,7 +672,7 @@ skyImage.addEventListener("load", function() {
 //box
 let cubes = [];
 let cubeImage = new Image();
-cubeImage.src = "dice.png";
+cubeImage.src = 'box.jpg';
 
 let cubePixelImage = [];
 
@@ -737,8 +736,8 @@ cubeImage.addEventListener("load", function() {
 	bodys1.push(new Object(headVerts,0,-2,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
 
 	//cubes.push(new Object(orgCubeVerts,0.6,-0.90,1,0,0,0,1,1,1,0,false,true,cubePixelImage));
-  cubes.push(new Object(orgCubeVerts,0,0,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
-	//cubes.push(new Object(orgCubeVerts,-1.5,-1.35,1,0,0,0,1,1,1,0,false,true,cubePixelImage));
+  cubes.push(new Object(orgCubeVerts,1.5,-1.35,0.5,0,0,0,1,1,1,0,false,true,cubePixelImage));
+	cubes.push(new Object(orgCubeVerts,-1.5,-1.35,1,0,0,0,1,1,1,0,false,true,cubePixelImage));
 }, true);
 
 //dice
@@ -748,7 +747,7 @@ diceImage.src = "dice.png";
 let dicePixelImage = [];
 diceImage.addEventListener("load", function() {
   dicePixelImage = pictureToPixelMap(backCtx,diceImage);
-  dices.push(new Object(orgCubeVerts,2,-1,0,0,0,0,1,1,1,0,false,true,dicePixelImage));
+  dices.push(new Object(orgCubeVerts,0.0,0,0,0,0,0,1,1,1,0,false,true,dicePixelImage));
 
 },true);
 let tempDiceUV = [
@@ -788,7 +787,7 @@ let roadPixelImage = [];
 
 roadImage.addEventListener("load", function() {
 	roadPixelImage = pictureToPixelMap(backCtx,roadImage);
-  planes.push(new Object(orgPlaneVerts,2,-1,0.0,0,0,0,2.5,1,3,0,false,false,roadPixelImage));
+  planes.push(new Object(orgPlaneVerts,0,0,0.0,0,0,0,2.5,1,3,0,false,false,roadPixelImage));
   planes.push(new Object(orgPlaneVerts,0,0,1.5,0,0,0,2.5,1,3,0,false,false,roadPixelImage));
   planes.push(new Object(orgPlaneVerts,0,0,3.0,0,0,0,2.5,1,3,0,false,false,roadPixelImage));
 
@@ -818,11 +817,12 @@ CalInvMat4x4(bind1,inversebind1);
 CalInvMat4x4(bind2,inversebind2);
 let diceBoneIndex = [[0,1], [0,1],[0,1], [0 ,1],[0,1],[0,1],[0,1],[0,1],[0 ,1],[0,1],[0,1],[0,1]];
 //mulMatRotateZ(inversebind1,45)
+let rot = 0;
+let rotPlus = 5;
 
 const gravity = 0.01;
 let theta = 0;
-let rot = 0;
-let rotPlus = 5;
+
 var mainLoopId = setInterval(function(){
 
 if( skyPixelImage.length == 0  || cubePixelImage.length == 0 ||
@@ -846,37 +846,32 @@ let newsecond = newDate.getMilliseconds();
   sunViewMatrix = matIdentity();
   matCamera(sunViewMatrix,sunPos,sunLookat,up);
   matRound4X4(sunViewMatrix);
-  if(rot>50){
-    rotPlus = -5;
-  }else if(rot<-50){
-    rotPlus = 5;
-  }
-  rot += rotPlus;
-let diceBones = [];
-let a2 = matMul(inversebind1,bind1);
-diceBones.push(a2);
-let copyBind2 = matIdentity();
 
-let copyInverseBind2 = matMul(inversebind2,copyBind2);
-mulMatRotateZ(copyInverseBind2,rot);
-let a6 = matMul(a2,copyInverseBind2)
-let a8 = matMul(a6,bind2);
-diceBones.push(a8);
   //シャドウの投影後の情報格納
   let shadowProjectedObjects = [];
   //投影後の情報格納
   let projectedObjects = [];
-  cubes[0].verts = readMech;
-  cubes[0].faceIndex = vertsIndex;
-  //dices[0].faceIndex = vertsIndex
-  cubes[0].UV = readUV;
-  cubes[0].bonesWaight = diceWeight;
-  cubes[0].bonesIndex = diceBoneIndex;
-  //0.875 0.5 0.625 0.75 0.625 0.5 //五0.625 0.75 0.375 1 0.375 0.75 //一0.625 0 0.375 0.25 0.375 0// 0.375 0.5 0.125 0.75 0.125 0.5
-  //六 0.625 0.5 0.375 0.75 0.375 0.5//0.625 0.25 0.375 0.5 0.375 0.25// 0.875 0.5 0.875 0.75 0.625 0.75//五0.625 0.75 0.625 1 0.375 1 
-  //一0.625 0 0.625 0.25 0.375 0.25 //0.375 0.5 0.375 0.75 0.125 0.75 //0.625 0.5 0.625 0.75 0.375 0.75 //0.625 0.25 0.625 0.5 0.375 0.50.875 end
-  //0.5 0.625 0.75 0.625 0.5 0.625 0.75 0.375 1 0.375 0.75 0.625 0 0.375 0.25 0.375 0 0.375 0.5 0.125 0.75 0.125 0.5 0.625 0.5 0.375 0.75 0.375 0.5 0.625 0.25 0.375 0.5 0.375 0.25 0.875 0.5 0.875 0.75 0.625 0.75 0.625 0.75 0.625 1 0.375 1 0.625 0 0.625 0.25 0.375 0.25 0.375 0.5 0.375 0.75 0.125 0.75 0.625 0.5 0.625 0.75 0.375 0.75 0.625 0.25 0.625 0.5 0.375 0.5
 
+  dices[0].verts = readMech
+  dices[0].faceIndex = vertsIndex
+  dices[0].UV = readUV;
+  dices[0].bonesWaight = diceWeight;
+  dices[0].bonesIndex = diceBoneIndex;
+
+if(rot>50){
+  rotPlus = -5;
+}else if(rot<-50){
+  rotPlus = 5;
+}
+rot += rotPlus;
+let diceBones = [];
+let bone1 = matMul(inversebind1,bind1);
+diceBones.push(bone1);
+let copyInverseBind2 = inversebind2.concat();
+mulMatRotateZ(copyInverseBind2,rot);
+let inverseBone2 = matMul(bone1,copyInverseBind2)
+let bone2 = matMul(inverseBone2,bind2);
+diceBones.push(bone2);
   //sphereregister
   /*
   for(let num =0;num<spheres.length;num++){
@@ -992,19 +987,19 @@ diceBones.push(a8);
     mulMatRotateZ(worldMatrix,cubes[num].objRotZ); 
     mulMatScaling(worldMatrix,cubes[num].scaleX,cubes[num].scaleY,cubes[num].scaleZ);
     //objectShadowMapPolygonPush(cubes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
-    //objectPolygonPush(cubes,a5,num,projectedObjects,viewMatrix);
-    objectSkinMeshPolygonPush(cubes,diceBones,num,projectedObjects,viewMatrix)
+    objectPolygonPush(cubes,worldMatrix,num,projectedObjects,viewMatrix);
 	}
   //dice
   for(let num=0;num<dices.length;num++){
     let worldMatrix = matIdentity();
-    mulMatTranslate(worldMatrix,dices[num].centerObjX,dices[num].centerObjY,dices[num].centerOb1Z);  
+    mulMatTranslate(worldMatrix,dices[num].centerObjX,dices[num].centerObjY,dices[num].centerObjZ);  
     mulMatRotateX(worldMatrix,dices[num].objRotX);
     mulMatRotateY(worldMatrix,dices[num].objRotY);
     mulMatRotateZ(worldMatrix,dices[num].objRotZ); 
     mulMatScaling(worldMatrix,dices[num].scaleX,dices[num].scaleY,dices[num].scaleZ);
     //objectShadowMapPolygonPush(dices,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
-    //objectPolygonPush(dices,a5,num,projectedObjects,viewMatrix);
+    //objectPolygonPush(dices,worldMatrix,num,projectedObjects,viewMatrix);
+    objectSkinMeshPolygonPush(dices,diceBones,num,projectedObjects,viewMatrix);
 	}
 	//planesregister
 	for(let num=0;num<planes.length;num++){
@@ -1015,7 +1010,7 @@ diceBones.push(a8);
     mulMatRotateZ(worldMatrix,planes[num].objRotZ); 
     mulMatScaling(worldMatrix,planes[num].scaleX,planes[num].scaleY,planes[num].scaleZ);
     //objectShadowMapPolygonPush(planes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
-    objectPolygonPush(planes,worldMatrix,num,projectedObjects,viewMatrix);
+    //objectPolygonPush(planes,worldMatrix,num,projectedObjects,viewMatrix);
   }
   
   /*
