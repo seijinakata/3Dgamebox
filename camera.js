@@ -12,6 +12,7 @@ let xmlIsLoad = false;
 let readMech = [];
 let vertsIndex = [];
 let readUV = [];
+let bones = [];
       var xmlhttp = new XMLHttpRequest();
       xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4) {
@@ -20,6 +21,7 @@ let readUV = [];
 
             //elem.innerHTML += "----- getElementsByTagName -----<br/>";
             var docelem = xmlhttp.responseXML.documentElement;
+            //mesh
             var nodes = docelem.getElementsByTagName("mesh");
             let verts = [];
             let char = [];
@@ -122,9 +124,39 @@ let readUV = [];
                 }
               }
             }
-            //console.log(nodes[0].childNodes[9].childNodes[7].textContent.length)
+            //armature
+            var armatures = docelem.getElementsByTagName("library_controllers");
+            //bindPose
+            char = [];
+            let tempBind = [];
+            let boneContents = {};
+            armatures[0].childNodes[1].childNodes[1].childNodes[5].childNodes[1].textContent += ' ';
+            for(let i=0;i<armatures[0].childNodes[1].childNodes[1].childNodes[5].childNodes[1].textContent.length;i += 1){
+              let tempChar = armatures[0].childNodes[1].childNodes[1].childNodes[5].childNodes[1].textContent[i];
+              if(char.length == 0 && armatures[0].childNodes[1].childNodes[1].childNodes[5].childNodes[1].textContent[i] != " "){
+                char = tempChar;
+                continue;
+              }else{
+                if(armatures[0].childNodes[1].childNodes[1].childNodes[5].childNodes[1].textContent[i] != " "){
+                    char += tempChar;
+                }else{
+                  let tempFloat = parseFloat(char);
+                  char = [];
+                  tempBind.push(tempFloat)
+                  if(tempBind.length >= 4*4){
+                    let inverseBindPose = matIdentity();
+                    CalInvMat4x4(tempBind,inverseBindPose);
+                    boneContents.bindPose = tempBind;
+                    boneContents.inverseBindPose = inverseBindPose;
+                    boneContents.copyInverseBindPose = inverseBindPose.concat();
+                    bones.push(boneContents);
+                    tempBind = [];               
+                  }
+                }
+              }  
+            }
             xmlIsLoad = true;
-              //elem.innerHTML += nodes[i].tagName + ":" + nodes[i].textContent + "<br/>";
+            
           } else {
             alert("status = " + xmlhttp.status);
           }
@@ -808,13 +840,8 @@ groundImage.addEventListener("load", function() {
   planes.push(new Object(orgPlaneVerts,1.25,0,3.0,0,0,0,2.5,1,3,0,false,false,sandPixelImage));
 }, true);
 
-let bind1 = [1, 0 ,-6.27833e-7, 0 ,0, -1 ,3.61353e-7, 0 ,-6.27833e-7, -3.61353e-7 ,-1, 0, 0, 0, 0, 1];
-let bind2 = [1 ,0 ,-3.25698e-7, 0 ,0 ,-0.9996541 ,-0.02630662 ,-0.9996541 ,-3.25811e-7, 0.02630662 ,-0.999654 ,0.02630698 ,0, 0, 0, 1];
-let inversebind1 = matIdentity();
-let inversebind2 = matIdentity();
 let diceWeight = [[0.1358864, 0.8641136],[0.1539087, 0.8460913], [0.8446986 ,0.1553014], [0.8595175, 0.1404825], [0.1498486, 0.8501514], [0.1411138, 0.8588862], [0.8590241, 0.140976] ,[0.8454073, 0.1545927], [0.4902925, 0.5097075], [0.5067131, 0.4932869], [0.5044364, 0.4955636], [0.4932605 ,0.5067394]];
-CalInvMat4x4(bind1,inversebind1);
-CalInvMat4x4(bind2,inversebind2);
+
 let diceBoneIndex = [[0,1], [0,1],[0,1], [0 ,1],[0,1],[0,1],[0,1],[0,1],[0 ,1],[0,1],[0,1],[0,1]];
 //mulMatRotateZ(inversebind1,45)
 let rot = 0;
@@ -864,14 +891,30 @@ if(rot>50){
   rotPlus = 5;
 }
 rot += rotPlus;
-let diceBones = [];
+/*
 let bone1 = matMul(inversebind1,bind1);
 diceBones.push(bone1);
 let copyInverseBind2 = inversebind2.concat();
 mulMatRotateZ(copyInverseBind2,rot);
 let inverseBone2 = matMul(bone1,copyInverseBind2)
 let bone2 = matMul(inverseBone2,bind2);
-diceBones.push(bone2);
+diceBones.push(bone2);*/
+let diceBones = [];
+
+mulMatRotateZ(bones[0].copyInverseBindPose,15);
+bones[0].bone = matMul(bones[0].copyInverseBindPose,bones[0].bindPose);
+bones[0].copyInverseBindPose = bones[0].inverseBindPose.concat();
+diceBones.push(bones[0].bone);  
+
+if(bones[1].parentCrossBone  == null){
+  bones[1].parentCrossBone = matMul(bones[0].bone,bones[1].inverseBindPose);
+  bones[1].copyParentCrossBone = bones[1].parentCrossBone.concat();
+}
+mulMatRotateZ(bones[1].copyParentCrossBone,rot);
+bones[1].bone = matMul(bones[1].copyParentCrossBone,bones[1].bindPose);
+bones[1].copyParentCrossBone = bones[1].parentCrossBone.concat();
+diceBones.push(bones[1].bone);
+
   //sphereregister
   /*
   for(let num =0;num<spheres.length;num++){
