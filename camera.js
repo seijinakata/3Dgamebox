@@ -13,6 +13,7 @@ let readMech = [];
 let vertsIndex = [];
 let readUV = [];
 let bones = [];
+let bonesWeight = [];
       var xmlhttp = new XMLHttpRequest();
       xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4) {
@@ -155,6 +156,58 @@ let bones = [];
                 }
               }  
             }
+            //vertsBoneBlendNumber
+            let vertsBoneBlendNumber = [];
+            if(armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[5].textContent
+              [armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[5].textContent.length-1] != ' '){
+              armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[5].textContent += ' ';
+            }
+            for(let i=0;i<armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[5].textContent.length;i += 1){
+              let tempChar = armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[5].textContent[i];
+              if(char.length == 0 && armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[5].textContent[i] != " "){
+                char = tempChar;
+                continue;
+              }else{
+                if(armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[5].textContent[i] != " "){
+                    char += tempChar;
+                }else{
+                  let tempFloat = parseFloat(char);
+                  char = [];
+                  vertsBoneBlendNumber.push(tempFloat)
+                }
+              }  
+            }
+            //boneWeight
+            let tempBoneWeight = [];
+            if(armatures[0].childNodes[1].childNodes[1].childNodes[7].childNodes[1].textContent
+              [armatures[0].childNodes[1].childNodes[1].childNodes[7].childNodes[1].textContent.length-1] != ' '){
+                armatures[0].childNodes[1].childNodes[1].childNodes[7].childNodes[1].textContent += ' ';
+            }
+            let vertsNumber = 0;
+            let nowReadVertsNumber = vertsBoneBlendNumber[vertsNumber];
+            for(let i=0;i<armatures[0].childNodes[1].childNodes[1].childNodes[7].childNodes[1].textContent.length;i += 1){
+              let tempChar = armatures[0].childNodes[1].childNodes[1].childNodes[7].childNodes[1].textContent[i];
+              if(char.length == 0 && armatures[0].childNodes[1].childNodes[1].childNodes[7].childNodes[1].textContent[i] != " "){
+                char = tempChar;
+                continue;
+              }else{
+                if(armatures[0].childNodes[1].childNodes[1].childNodes[7].childNodes[1].textContent[i] != " "){
+                    char += tempChar;
+                }else{
+                  let tempFloat = parseFloat(char);
+                  char = [];
+                  tempBoneWeight.push(tempFloat)
+                  if(tempBoneWeight.length >= nowReadVertsNumber){
+                    bonesWeight.push(tempBoneWeight);
+                    tempBoneWeight = [];
+                    if(vertsBoneBlendNumber.length>vertsNumber){
+                     nowReadVertsNumber = vertsBoneBlendNumber[vertsNumber]; 
+                    }
+                  }
+                }
+              }  
+            }
+            //console.log(armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes)
             xmlIsLoad = true;
             
           } else {
@@ -840,8 +893,6 @@ groundImage.addEventListener("load", function() {
   planes.push(new Object(orgPlaneVerts,1.25,0,3.0,0,0,0,2.5,1,3,0,false,false,sandPixelImage));
 }, true);
 
-let diceWeight = [[0.1358864, 0.8641136],[0.1539087, 0.8460913], [0.8446986 ,0.1553014], [0.8595175, 0.1404825], [0.1498486, 0.8501514], [0.1411138, 0.8588862], [0.8590241, 0.140976] ,[0.8454073, 0.1545927], [0.4902925, 0.5097075], [0.5067131, 0.4932869], [0.5044364, 0.4955636], [0.4932605 ,0.5067394]];
-
 let diceBoneIndex = [[0,1], [0,1],[0,1], [0 ,1],[0,1],[0,1],[0,1],[0,1],[0 ,1],[0,1],[0,1],[0,1]];
 //mulMatRotateZ(inversebind1,45)
 let rot = 0;
@@ -882,7 +933,7 @@ let newsecond = newDate.getMilliseconds();
   dices[0].verts = readMech
   dices[0].faceIndex = vertsIndex
   dices[0].UV = readUV;
-  dices[0].bonesWaight = diceWeight;
+  dices[0].bonesWaight = bonesWeight;
   dices[0].bonesIndex = diceBoneIndex;
 
 if(rot>50){
