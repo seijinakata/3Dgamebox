@@ -15,23 +15,18 @@ let readUV = [];
 let bones = [];
 let bonesWeight = [];
 
-function getAllChildNodesDepth(childrenLength,element, result,id) {
+function getAllChildNodesDepth(childrenLength,element,result,boneNameList) {
   if (childrenLength !== 0) {
     for(let i=0;i<childrenLength;i++){
       let child = element.children[i];
-      
-      result.push(child);
-      if(child.id == "Armature_Bone"){
-        id += 1;
-        child.id += id;
-      }
-      if(child.id == "Armature_Bone_001"){
-        console.log(result)
-        id += 1;
-        child.id += id;
+      for(let index = 0;index<boneNameList.length;index++){
+        let boneName = boneNameList[index][0];
+        if(child.getAttribute("sid") == boneName){
+          result.push(boneNameList[index][0]);
+        }
       }
       let length = element.children[i].children.length;
-      getAllChildNodesDepth(length,child, result,id);
+      getAllChildNodesDepth(length,child, result,boneNameList);
     }
   }
 }
@@ -279,7 +274,7 @@ function getAllChildNodesDepth(childrenLength,element, result,id) {
 
             let  result = [];
             let id = 0;
-            getAllChildNodesDepth(boneJointList[0].children.length, boneJointList[0], result,id);
+            getAllChildNodesDepth(boneJointList[0].children.length, boneJointList[0], result,boneNameList);
             console.log(result);
             //console.log(armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes)
             xmlIsLoad = true;
