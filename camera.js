@@ -14,6 +14,28 @@ let vertsIndex = [];
 let readUV = [];
 let bones = [];
 let bonesWeight = [];
+
+function getAllChildNodesDepth(childrenLength,element, result,id) {
+  if (childrenLength !== 0) {
+    for(let i=0;i<childrenLength;i++){
+      let child = element.children[i];
+      
+      result.push(child);
+      if(child.id == "Armature_Bone"){
+        id += 1;
+        child.id += id;
+      }
+      if(child.id == "Armature_Bone_001"){
+        console.log(result)
+        id += 1;
+        child.id += id;
+      }
+      let length = element.children[i].children.length;
+      getAllChildNodesDepth(length,child, result,id);
+    }
+  }
+}
+
       var xmlhttp = new XMLHttpRequest();
       xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState == 4) {
@@ -23,27 +45,55 @@ let bonesWeight = [];
             //elem.innerHTML += "----- getElementsByTagName -----<br/>";
             var docelem = xmlhttp.responseXML.documentElement;
             //mesh
-            var nodes = docelem.getElementsByTagName("mesh");
+            var meshData = docelem.getElementsByTagName("mesh");
+            let loadMeshVerts = [];
+            let loadMeshIndex = [];
+            let loadMeshUV = [];
+            for(let i=0;i<meshData[0].children.length;i++){
+              if(meshData[0].children[i].id.indexOf('positions') != -1){
+                if(meshData[0].children[i].children[0].textContent[meshData[0].children[i].children[0].textContent.length-1] != ' '){
+                  //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                  meshData[0].children[i].children[0].textContent += ' ';
+                }
+                loadMeshVerts.push(meshData[0].children[i].children[0].textContent);
+              }
+
+              if(meshData[0].children[i].id.indexOf('map') != -1){
+                if(meshData[0].children[i].children[0].textContent[meshData[0].children[i].children[0].textContent.length-1] != ' '){
+                  //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                  meshData[0].children[i].children[0].textContent += ' ';
+                }
+                loadMeshUV.push(meshData[0].children[i].children[0].textContent);
+              }
+
+              if(meshData[0].children[i].getAttribute('material')  != null && meshData[0].children[i].getAttribute('material').indexOf('material') != -1){
+                if(meshData[0].children[i].children[3].textContent[meshData[0].children[i].children[3].textContent.length-1] != ' '){
+                  //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                  meshData[0].children[i].children[3].textContent += ' ';
+                }
+                loadMeshIndex.push(meshData[0].children[i].children[3].textContent);
+              }
+            }
+            //meshData
             let verts = [];
             let char = [];
-            //meshVerts
-            //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-            nodes[0].childNodes[1].childNodes[1].childNodes[0].data += ' ';
-            for(let i=0;i<nodes[0].childNodes[1].childNodes[1].childNodes[0].data.length;i++){
-              let tempChar = nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i];
-              if(char.length == 0 && nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i] != " "){
-                char = tempChar;
-                continue;
-              }else{
-                if(nodes[0].childNodes[1].childNodes[1].childNodes[0].data[i] != " "){
-                    char += tempChar;
+            for(let j=0;j<loadMeshVerts.length;j++){
+              for(let i=0;i<loadMeshVerts[j].length;i++){
+                let tempChar = loadMeshVerts[j][i];
+                if(char.length == 0 && loadMeshVerts[j][i] != " "){
+                  char = tempChar;
+                  continue;
                 }else{
-                  let tempInt = parseFloat(char)
-                  verts.push(tempInt);
-                  char = [];
-                  if(verts.length %3 == 0){
-                    readMech.push(verts);
-                    verts = [];
+                  if(loadMeshVerts[j][i] != " "){
+                      char += tempChar;
+                  }else{
+                    let tempInt = parseFloat(char)
+                    verts.push(tempInt);
+                    char = [];
+                    if(verts.length %3 == 0){
+                      readMech.push(verts);
+                      verts = [];
+                    }
                   }
                 }
               }
@@ -56,73 +106,91 @@ let bonesWeight = [];
             let UVIndex = [];
             //1index,2normal,3uv
             let readNow = 1;
-            nodes[0].childNodes[9].childNodes[7].textContent += ' ';
-            for(let i=0;i<nodes[0].childNodes[9].childNodes[7].textContent.length;i++){
-              let tempChar = nodes[0].childNodes[9].childNodes[7].textContent[i];
-              if(char.length == 0 && nodes[0].childNodes[9].childNodes[7].textContent[i] != " "){
-                char = tempChar;
-                continue;
-              }else{
-                if(nodes[0].childNodes[9].childNodes[7].textContent[i] != " "){
-                    char += tempChar;
+            for(let j=0;j<loadMeshIndex.length;j++){
+              for(let i=0;i<loadMeshIndex[j].length;i++){
+                let tempChar = loadMeshIndex[j][i];
+                if(char.length == 0 && loadMeshIndex[j][i] != " "){
+                  char = tempChar;
+                  continue;
                 }else{
-                  let tempInt = parseInt(char)
-                  if(readNow == 1){
-                    tempVertsIndex.unshift(tempInt);
-                    char = [];
-                    if(tempVertsIndex.length %3 == 0){
-                      vertsIndex.push(tempVertsIndex);
-                      tempVertsIndex = [];
+                  if(loadMeshIndex[j][i] != " "){
+                      char += tempChar;
+                  }else{
+                    let tempInt = parseInt(char)
+                    if(readNow == 1){
+                      tempVertsIndex.unshift(tempInt);
+                      char = [];
+                      if(tempVertsIndex.length %3 == 0){
+                        vertsIndex.push(tempVertsIndex);
+                        tempVertsIndex = [];
+                      }
+                      readNow = 2;
+                    }else if(readNow == 2){
+                      //tempVertsIndex.push(tempInt);
+                      char = [];
+                      readNow = 3;
+                    }else if(readNow == 3){
+                      //tempVertsIndex.push(tempInt);
+                      char = [];
+                      readNow = 1;
                     }
-                    readNow = 2;
-                  }else if(readNow == 2){
-                    //tempVertsIndex.push(tempInt);
-                    char = [];
-                    readNow = 3;
-                  }else if(readNow == 3){
-                    //tempVertsIndex.push(tempInt);
-                    char = [];
-                    readNow = 1;
                   }
                 }
               }
             }
+            
             //uv
             let tempUV = [];
             let u = 0;
             let v = 0;
             let readFlag = 0;//0:u,1:v,2:tempUV
             char = [];
-            nodes[0].childNodes[5].childNodes[1].childNodes[0].data += ' ';
-            for(let i=0;i<nodes[0].childNodes[5].childNodes[1].childNodes[0].data.length;i++){
-              let tempChar = nodes[0].childNodes[5].childNodes[1].childNodes[0].data[i];
-              if(char.length == 0 && nodes[0].childNodes[5].childNodes[1].childNodes[0].data[i] != " "){
-                char = tempChar;
-                continue;
-              }else{
-                if(nodes[0].childNodes[5].childNodes[1].childNodes[0].data[i] != " "){
-                    char += tempChar;
+            for(let j=0;j<loadMeshUV.length;j++){
+              for(let i=0;i<loadMeshUV[j].length;i++){
+                let tempChar = loadMeshUV[j][i];
+                if(char.length == 0 && loadMeshUV[j][i] != " "){
+                  char = tempChar;
+                  continue;
                 }else{
-                  let tempFloat = parseFloat(char)
-                  if(readFlag == 0){
-                    u = tempFloat;
-                    char = [];
-                    readFlag = 1;
-                  }else if(readFlag == 1){
-                    v = tempFloat;
-                    v = (v < 0) ? v * -1 : 1 - v;
-                    char = [];
-                    let uv = {"u":u,"v":v};
-                    tempUV.unshift(uv);
-                    if(tempUV.length %3 == 0){
-                      readUV.push(tempUV);
-                      tempUV = [];
+                  if(loadMeshUV[j][i] != " "){
+                      char += tempChar;
+                  }else{
+                    let tempFloat = parseFloat(char)
+                    if(readFlag == 0){
+                      u = tempFloat;
+                      char = [];
+                      readFlag = 1;
+                    }else if(readFlag == 1){
+                      v = tempFloat;
+                      v = (v < 0) ? v * -1 : 1 - v;
+                      char = [];
+                      let uv = {"u":u,"v":v};
+                      tempUV.unshift(uv);
+                      if(tempUV.length %3 == 0){
+                        readUV.push(tempUV);
+                        tempUV = [];
+                      }
+                      u = 0;
+                      v = 0;
+                      readFlag = 0;
                     }
-                    u = 0;
-                    v = 0;
-                    readFlag = 0;
                   }
                 }
+              }              
+            }
+            var boneName = docelem.getElementsByTagName("Name_array");
+            let boneNameList = [];
+            let boneNumber = 0;
+            char = [];
+            boneName[0].textContent += ' ';
+            for(let i=0;i<boneName[0].textContent.length;i++){
+              if(boneName[0].textContent[i] != ' '){
+               char += boneName[0].textContent[i];
+              }else{
+                let tempboneNameList = [char,boneNumber];
+                char = [];
+                boneNumber += 1;
+                boneNameList.push(tempboneNameList);
               }
             }
             //armature
@@ -207,6 +275,12 @@ let bonesWeight = [];
                 }
               }  
             }
+            var boneJointList = docelem.getElementsByTagName("node");
+
+            let  result = [];
+            let id = 0;
+            getAllChildNodesDepth(boneJointList[0].children.length, boneJointList[0], result,id);
+            console.log(result);
             //console.log(armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes)
             xmlIsLoad = true;
             
