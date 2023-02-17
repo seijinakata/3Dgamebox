@@ -13,21 +13,30 @@ let readMech = [];
 let vertsIndex = [];
 let readUV = [];
 let bones = [];
+let boneNameList = [];
+let blendBoneIndex = [];
 let bonesWeight = [];
+let boneParentRelation = [];
 
-function getAllChildNodesDepth(childrenLength,element,result,boneNameList) {
-  if (childrenLength !== 0) {
+function getAllChildNodesDepth(childrenLength,element,tempResult,result,boneNameList) {
+  let boneHit = false;
     for(let i=0;i<childrenLength;i++){
-      let child = element.children[i];
-      for(let index = 0;index<boneNameList.length;index++){
-        let boneName = boneNameList[index][0];
-        if(child.getAttribute("sid") == boneName){
-          result.push(boneNameList[index][0]);
-        }
+    let child = element.children[i];
+    for(let index = 0;index<boneNameList.length;index++){
+      let boneName = boneNameList[index][0];
+      if(child.getAttribute("sid") == boneName){
+        tempResult.unshift(boneNameList[index][1]);
+        let length = element.children[i].children.length;
+        getAllChildNodesDepth(length,child,tempResult,result,boneNameList);
+        boneHit = true;
+        tempResult.pop();   
       }
-      let length = element.children[i].children.length;
-      getAllChildNodesDepth(length,child, result,boneNameList);
     }
+  }
+  if(boneHit == false){
+    result.push(tempResult.slice(0,tempResult.length));
+    tempResult.pop();
+    return;
   }
 }
 
@@ -174,7 +183,6 @@ function getAllChildNodesDepth(childrenLength,element,result,boneNameList) {
               }              
             }
             var boneName = docelem.getElementsByTagName("Name_array");
-            let boneNameList = [];
             let boneNumber = 0;
             char = [];
             boneName[0].textContent += ' ';
@@ -240,6 +248,41 @@ function getAllChildNodesDepth(childrenLength,element,result,boneNameList) {
                 }
               }  
             }
+            if(armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[7].textContent
+              [armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[7].textContent.length-1] != ' '){
+              armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[7].textContent += ' ';
+            }
+            let currentVerts = 0;
+            let vertsBlend = true;
+            let tempVertsBlend = [];
+            for(let i=0;i<armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[7].textContent.length;i += 1){
+              let tempChar = armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[7].textContent[i];
+              if(char.length == 0 && armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[7].textContent[i] != " "){
+                char = tempChar;
+                continue;
+              }else{
+                if(armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[7].textContent[i] != " "){
+                    char += tempChar;
+                }else{
+                  if(vertsBlend == true){
+                  let tempFloat = parseFloat(char);
+                  char = [];
+                  tempVertsBlend.push(tempFloat);
+                  if(tempVertsBlend.length >= vertsBoneBlendNumber[currentVerts]){
+                    blendBoneIndex.push(tempVertsBlend);
+                    tempVertsBlend = [];
+                    currentVerts += 1;
+                  }
+                  vertsBlend = false;
+                  }else{
+                    vertsBlend = true;
+                    char = [];
+                  }
+                }
+              }  
+            }
+            console.log(blendBoneIndex)
+
             //boneWeight
             let tempBoneWeight = [];
             if(armatures[0].childNodes[1].childNodes[1].childNodes[7].childNodes[1].textContent
@@ -265,17 +308,18 @@ function getAllChildNodesDepth(childrenLength,element,result,boneNameList) {
                     tempBoneWeight = [];
                     if(vertsBoneBlendNumber.length>vertsNumber){
                      nowReadVertsNumber = vertsBoneBlendNumber[vertsNumber]; 
+                     vertsNumber += 1;
                     }
                   }
                 }
               }  
             }
+            console.log(bonesWeight)
             var boneJointList = docelem.getElementsByTagName("node");
 
-            let  result = [];
-            let id = 0;
-            getAllChildNodesDepth(boneJointList[0].children.length, boneJointList[0], result,boneNameList);
-            console.log(result);
+            let  tempResult = [];
+            getAllChildNodesDepth(boneJointList[0].children.length, boneJointList[0],tempResult,boneParentRelation,boneNameList);
+            console.log(boneParentRelation);
             //console.log(armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes)
             xmlIsLoad = true;
             
@@ -521,7 +565,7 @@ function objectSkinMeshPolygonPush(objects,bones,objectNumber,projectedObjects,v
     roundVector2(object.verts[i][0],object.verts[i][1]);
     object.verts[i][2] = round(object.verts[i][2]);
     for(let j=0;j<object.bonesIndex[i].length;j++){
-      let bonesMatrix = bones[object.bonesIndex[i][j]];
+      let bonesMatrix = bones[object.bonesIndex[i][j]].bone;
       let matrixWaight = object.bonesWaight[i][j];
       let waightMatrix = matWaight(bonesMatrix,matrixWaight);
       mixMatrix = matPlus(mixMatrix,waightMatrix); 
@@ -570,7 +614,7 @@ function objectShadowMapSkinMeshPolygonPush(objects,bones,objectNumber,projected
     roundVector2(object.verts[i][0],object.verts[i][1]);
     object.verts[i][2] = round(object.verts[i][2]);
     for(let j=0;j<object.bonesIndex[i].length;j++){
-      let bonesMatrix = bones[object.bonesIndex[i][j]];
+      let bonesMatrix = bones[object.bonesIndex[i][j]].bone;
       let matrixWaight = object.bonesWaight[i][j];
       let waightMatrix = matWaight(bonesMatrix,matrixWaight);
       mixMatrix = matPlus(mixMatrix,waightMatrix); 
@@ -897,7 +941,7 @@ cubeImage.addEventListener("load", function() {
 //dice
 let dices = [];
 let diceImage = new Image();
-diceImage.src = "dice.png";
+diceImage.src = "steve.png";
 let dicePixelImage = [];
 diceImage.addEventListener("load", function() {
   dicePixelImage = pictureToPixelMap(backCtx,diceImage);
@@ -979,6 +1023,7 @@ if( skyPixelImage.length == 0  || cubePixelImage.length == 0 ||
  	ctx.fillText("now loding", SCREEN_SIZE_W/2, SCREEN_SIZE_H/2);
 	return 0;
 }
+
 let newDate = new Date();
 let newsecond = newDate.getMilliseconds();
 //lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
@@ -1003,7 +1048,8 @@ let newsecond = newDate.getMilliseconds();
   dices[0].faceIndex = vertsIndex
   dices[0].UV = readUV;
   dices[0].bonesWaight = bonesWeight;
-  dices[0].bonesIndex = diceBoneIndex;
+  dices[0].bonesIndex =  blendBoneIndex;
+  ;
 
 if(rot>50){
   rotPlus = -5;
@@ -1020,21 +1066,48 @@ let inverseBone2 = matMul(bone1,copyInverseBind2)
 let bone2 = matMul(inverseBone2,bind2);
 diceBones.push(bone2);*/
 let diceBones = [];
-
-mulMatRotateZ(bones[0].copyInverseBindPose,15);
-bones[0].bone = matMul(bones[0].copyInverseBindPose,bones[0].bindPose);
-bones[0].copyInverseBindPose = bones[0].inverseBindPose.concat();
-diceBones.push(bones[0].bone);  
-
-if(bones[1].parentCrossBone  == null){
-  bones[1].parentCrossBone = matMul(bones[0].bone,bones[1].inverseBindPose);
-  bones[1].copyParentCrossBone = bones[1].parentCrossBone.concat();
+for(let i=0;i<boneNameList.length;i++){
+  let boneContents = {};
+  diceBones.push(boneContents);
 }
-mulMatRotateZ(bones[1].copyParentCrossBone,rot);
-bones[1].bone = matMul(bones[1].copyParentCrossBone,bones[1].bindPose);
-bones[1].copyParentCrossBone = bones[1].parentCrossBone.concat();
-diceBones.push(bones[1].bone);
+let dicebones = [];
 
+mulMatRotateZ(bones[boneParentRelation[0][2]].copyInverseBindPose,0);
+bones[boneParentRelation[0][2]].bone = matMul(bones[boneParentRelation[0][2]].copyInverseBindPose,bones[boneParentRelation[0][2]].bindPose);
+//bones[0].copyInverseBindPose = bones[0].inverseBindPose.concat();
+dicebones.push(bones[boneParentRelation[0][2]].bone);  
+
+if(bones[boneParentRelation[0][1]].parentCrossBone  == null){
+  bones[boneParentRelation[0][1]].parentCrossBone = matMul(bones[boneParentRelation[0][2]].bone,bones[boneParentRelation[0][1]].inverseBindPose);
+  bones[boneParentRelation[0][1]].copyParentCrossBone = bones[boneParentRelation[0][1]].parentCrossBone.concat();
+}
+mulMatRotateZ(bones[boneParentRelation[0][1]].copyParentCrossBone,0);
+bones[boneParentRelation[0][1]].bone = matMul(bones[boneParentRelation[0][1]].copyParentCrossBone,bones[boneParentRelation[0][1]].bindPose);
+bones[boneParentRelation[0][1]].copyParentCrossBone = bones[boneParentRelation[0][1]].parentCrossBone.concat();
+dicebones.push(bones[boneParentRelation[0][1]].bone);
+
+for(let j=0;j<boneParentRelation.length;j++){
+  for(let i=boneParentRelation[j].length-1;i>=0;i--){
+    //ルートボーン
+    if(i == boneParentRelation[j].length-1){
+      if(diceBones[boneParentRelation[j][i]].bone == undefined){
+      mulMatRotateZ(bones[boneParentRelation[j][i]].copyInverseBindPose,0);
+      diceBones[boneParentRelation[j][i]].bone = matMul(bones[boneParentRelation[j][i]].copyInverseBindPose,bones[boneParentRelation[j][i]].bindPose);
+      bones[boneParentRelation[j][i]].copyInverseBindPose = bones[boneParentRelation[j][i]].inverseBindPose.concat();
+      }
+    }else{
+     if(diceBones[boneParentRelation[j][i]].parentCrossBone  == undefined){
+      diceBones[boneParentRelation[j][i]].parentCrossBone = matMul(diceBones[boneParentRelation[j][i+1]].bone,bones[boneParentRelation[j][i]].inverseBindPose);
+      diceBones[boneParentRelation[j][i]].copyParentCrossBone = diceBones[boneParentRelation[j][i]].parentCrossBone.concat();
+    } 
+      mulMatRotateZ(diceBones[boneParentRelation[j][i]].copyParentCrossBone,rot);
+      diceBones[boneParentRelation[j][i]].bone = matMul(diceBones[boneParentRelation[j][i]].copyParentCrossBone,bones[boneParentRelation[j][i]].bindPose);
+      diceBones[boneParentRelation[j][i]].copyParentCrossBone = diceBones[boneParentRelation[j][i]].parentCrossBone.concat();
+    } 
+  }
+}
+console.log(dicebones)
+console.log(diceBones)
   //sphereregister
   /*
   for(let num =0;num<spheres.length;num++){
