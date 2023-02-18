@@ -202,14 +202,53 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,boneName
             char = [];
             let tempBind = [];
             let boneContents = {};
-            armatures[0].childNodes[1].childNodes[1].childNodes[5].childNodes[1].textContent += ' ';
-            for(let i=0;i<armatures[0].childNodes[1].childNodes[1].childNodes[5].childNodes[1].textContent.length;i += 1){
-              let tempChar = armatures[0].childNodes[1].childNodes[1].childNodes[5].childNodes[1].textContent[i];
-              if(char.length == 0 && armatures[0].childNodes[1].childNodes[1].childNodes[5].childNodes[1].textContent[i] != " "){
+
+            let loadBindPose = [];
+            let loadSkinWaight = [];
+            let vertsBlendNumbers = [];
+            let vertsBlendMatrixNumbers = [];
+
+            for(let i=0;i<armatures[0].children[0].children[0].children.length;i++){
+              if(armatures[0].children[0].children[0].children[i].id.indexOf('bind_poses') != -1){
+                if(armatures[0].children[0].children[0].children[i].children[0].textContent[armatures[0].children[0].children[0].children[i].children[0].textContent.length-1] != ' '){
+                  //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                  armatures[0].children[0].children[0].children[i].children[0].textContent += ' ';
+                }
+                loadBindPose.push(armatures[0].children[0].children[0].children[i].children[0].textContent);
+              }
+              if(armatures[0].children[0].children[0].children[i].id.indexOf('skin-weights') != -1){
+                if(armatures[0].children[0].children[0].children[i].children[0].textContent[armatures[0].children[0].children[0].children[i].children[0].textContent.length-1] != ' '){
+                  //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                  armatures[0].children[0].children[0].children[i].children[0].textContent += ' ';
+                }
+                loadSkinWaight.push(armatures[0].children[0].children[0].children[i].children[0].textContent);
+              }
+              if(armatures[0].children[0].children[0].children[i].tagName.indexOf('vertex_weights') != -1){
+                //vertsBlendNumbers
+                if(armatures[0].children[0].children[0].children[i].children[2].textContent[armatures[0].children[0].children[0].children[i].children[2].textContent.length-1] != ' '){
+                  //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                  armatures[0].children[0].children[0].children[i].children[2].textContent += ' ';
+                }
+                vertsBlendNumbers.push(armatures[0].children[0].children[0].children[i].children[2].textContent);
+                //vertsBlendMatrixNumbers
+                if(armatures[0].children[0].children[0].children[i].children[3].textContent[armatures[0].children[0].children[0].children[i].children[3].textContent.length-1] != ' '){
+                  //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                  armatures[0].children[0].children[0].children[i].children[3].textContent += ' ';
+                }
+                vertsBlendMatrixNumbers.push(armatures[0].children[0].children[0].children[i].children[3].textContent);
+              }
+              
+            }
+            console.log(vertsBlendMatrixNumbers)
+            
+            //bindPose
+            for(let i=0;i<loadBindPose[0].length;i += 1){
+              let tempChar = loadBindPose[0][i];
+              if(char.length == 0 && loadBindPose[0][i] != " "){
                 char = tempChar;
                 continue;
               }else{
-                if(armatures[0].childNodes[1].childNodes[1].childNodes[5].childNodes[1].textContent[i] != " "){
+                if(loadBindPose[0][i] != " "){
                     char += tempChar;
                 }else{
                   let tempFloat = parseFloat(char);
@@ -228,47 +267,45 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,boneName
               }  
             }
             //vertsBoneBlendNumber
-            let vertsBoneBlendNumber = [];
-            if(armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[5].textContent
-              [armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[5].textContent.length-1] != ' '){
-              armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[5].textContent += ' ';
-            }
-            for(let i=0;i<armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[5].textContent.length;i += 1){
-              let tempChar = armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[5].textContent[i];
-              if(char.length == 0 && armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[5].textContent[i] != " "){
+            let vertsBoneBlendFloatNumber = [];
+            for(let i=0;i<vertsBlendNumbers[0].length;i += 1){
+              let tempChar = vertsBlendNumbers[0][i];
+              if(char.length == 0 && vertsBlendNumbers[0][i] != " "){
                 char = tempChar;
                 continue;
               }else{
-                if(armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[5].textContent[i] != " "){
+                if(vertsBlendNumbers[0][i] != " "){
                     char += tempChar;
                 }else{
                   let tempFloat = parseFloat(char);
                   char = [];
-                  vertsBoneBlendNumber.push(tempFloat)
+                  vertsBoneBlendFloatNumber.push(tempFloat)
                 }
               }  
             }
+            console.log(vertsBoneBlendFloatNumber)
             if(armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[7].textContent
               [armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[7].textContent.length-1] != ' '){
               armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[7].textContent += ' ';
             }
+            //vertsBoneBlendMmatrixNumber
             let currentVerts = 0;
             let vertsBlend = true;
             let tempVertsBlend = [];
-            for(let i=0;i<armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[7].textContent.length;i += 1){
-              let tempChar = armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[7].textContent[i];
-              if(char.length == 0 && armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[7].textContent[i] != " "){
+            for(let i=0;i<vertsBlendMatrixNumbers[0].length;i += 1){
+              let tempChar = vertsBlendMatrixNumbers[0][i];
+              if(char.length == 0 && vertsBlendMatrixNumbers[0][i] != " "){
                 char = tempChar;
                 continue;
               }else{
-                if(armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes[7].textContent[i] != " "){
+                if(vertsBlendMatrixNumbers[0][i] != " "){
                     char += tempChar;
                 }else{
                   if(vertsBlend == true){
                   let tempFloat = parseFloat(char);
                   char = [];
                   tempVertsBlend.push(tempFloat);
-                  if(tempVertsBlend.length >= vertsBoneBlendNumber[currentVerts]){
+                  if(tempVertsBlend.length >= vertsBoneBlendFloatNumber[currentVerts]){
                     blendBoneIndex.push(tempVertsBlend);
                     tempVertsBlend = [];
                     currentVerts += 1;
@@ -285,19 +322,15 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,boneName
 
             //boneWeight
             let tempBoneWeight = [];
-            if(armatures[0].childNodes[1].childNodes[1].childNodes[7].childNodes[1].textContent
-              [armatures[0].childNodes[1].childNodes[1].childNodes[7].childNodes[1].textContent.length-1] != ' '){
-                armatures[0].childNodes[1].childNodes[1].childNodes[7].childNodes[1].textContent += ' ';
-            }
             let vertsNumber = 0;
-            let nowReadVertsNumber = vertsBoneBlendNumber[vertsNumber];
-            for(let i=0;i<armatures[0].childNodes[1].childNodes[1].childNodes[7].childNodes[1].textContent.length;i += 1){
-              let tempChar = armatures[0].childNodes[1].childNodes[1].childNodes[7].childNodes[1].textContent[i];
-              if(char.length == 0 && armatures[0].childNodes[1].childNodes[1].childNodes[7].childNodes[1].textContent[i] != " "){
+            let nowReadVertsNumber = vertsBoneBlendFloatNumber[vertsNumber];
+            for(let i=0;i<loadSkinWaight[0].length;i += 1){
+              let tempChar = loadSkinWaight[0][i];
+              if(char.length == 0 && loadSkinWaight[0][i] != " "){
                 char = tempChar;
                 continue;
               }else{
-                if(armatures[0].childNodes[1].childNodes[1].childNodes[7].childNodes[1].textContent[i] != " "){
+                if(loadSkinWaight[0][i] != " "){
                     char += tempChar;
                 }else{
                   let tempFloat = parseFloat(char);
@@ -307,14 +340,15 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,boneName
                     bonesWeight.push(tempBoneWeight);
                     tempBoneWeight = [];
                     vertsNumber += 1;
-                    nowReadVertsNumber = vertsBoneBlendNumber[vertsNumber]; 
+                    nowReadVertsNumber = vertsBoneBlendFloatNumber[vertsNumber]; 
                   }
                 }
               }  
             }
-            console.log(bonesWeight)
-            var boneJointList = docelem.getElementsByTagName("node");
 
+            console.log(bonesWeight)
+            //どのボーンが親が調べる
+            var boneJointList = docelem.getElementsByTagName("node");
             let  tempResult = [];
             getAllChildNodesDepth(boneJointList[0].children.length, boneJointList[0],tempResult,boneParentRelation,boneNameList);
             console.log(boneParentRelation);
@@ -1099,12 +1133,11 @@ for(let j=0;j<boneParentRelation.length;j++){
       diceBones[boneParentRelation[j][i]].copyParentCrossBone = diceBones[boneParentRelation[j][i]].parentCrossBone.concat();
     } 
     if(boneParentRelation[j][i]  == 1){
-mulMatRotateX(diceBones[boneParentRelation[j][i]].copyParentCrossBone,rot);
+      mulMatRotateX(diceBones[boneParentRelation[j][i]].copyParentCrossBone,rot);
     }else{
       mulMatRotateZ(diceBones[boneParentRelation[j][i]].copyParentCrossBone,0);
 
     }
-      
       diceBones[boneParentRelation[j][i]].bone = matMul(diceBones[boneParentRelation[j][i]].copyParentCrossBone,bones[boneParentRelation[j][i]].bindPose);
       diceBones[boneParentRelation[j][i]].copyParentCrossBone = diceBones[boneParentRelation[j][i]].parentCrossBone.concat();
     } 
