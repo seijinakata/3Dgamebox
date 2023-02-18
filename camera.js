@@ -306,10 +306,8 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,boneName
                   if(tempBoneWeight.length >= nowReadVertsNumber){
                     bonesWeight.push(tempBoneWeight);
                     tempBoneWeight = [];
-                    if(vertsBoneBlendNumber.length>vertsNumber){
-                     nowReadVertsNumber = vertsBoneBlendNumber[vertsNumber]; 
-                     vertsNumber += 1;
-                    }
+                    vertsNumber += 1;
+                    nowReadVertsNumber = vertsBoneBlendNumber[vertsNumber]; 
                   }
                 }
               }  
@@ -362,8 +360,8 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(0,-1,-7);
-let lookat = setVector3(0.0,-1,1);
+let cameraPos = setVector3(0,-3,-10);
+let lookat = setVector3(0.0,-3,1);
 let sunPos = setVector3(0,-3,-2);
 let sunLookat = setVector3(0.0,-0.0,0);
 let up = setVector3(0,1,0);
@@ -1051,9 +1049,9 @@ let newsecond = newDate.getMilliseconds();
   dices[0].bonesIndex =  blendBoneIndex;
   ;
 
-if(rot>50){
+if(rot>80){
   rotPlus = -5;
-}else if(rot<-50){
+}else if(rot<-80){
   rotPlus = 5;
 }
 rot += rotPlus;
@@ -1100,7 +1098,13 @@ for(let j=0;j<boneParentRelation.length;j++){
       diceBones[boneParentRelation[j][i]].parentCrossBone = matMul(diceBones[boneParentRelation[j][i+1]].bone,bones[boneParentRelation[j][i]].inverseBindPose);
       diceBones[boneParentRelation[j][i]].copyParentCrossBone = diceBones[boneParentRelation[j][i]].parentCrossBone.concat();
     } 
-      mulMatRotateZ(diceBones[boneParentRelation[j][i]].copyParentCrossBone,rot);
+    if(boneParentRelation[j][i]  == 1){
+mulMatRotateX(diceBones[boneParentRelation[j][i]].copyParentCrossBone,rot);
+    }else{
+      mulMatRotateZ(diceBones[boneParentRelation[j][i]].copyParentCrossBone,0);
+
+    }
+      
       diceBones[boneParentRelation[j][i]].bone = matMul(diceBones[boneParentRelation[j][i]].copyParentCrossBone,bones[boneParentRelation[j][i]].bindPose);
       diceBones[boneParentRelation[j][i]].copyParentCrossBone = diceBones[boneParentRelation[j][i]].parentCrossBone.concat();
     } 
