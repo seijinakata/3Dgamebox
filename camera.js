@@ -182,6 +182,8 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,boneName
                 }
               }              
             }
+            
+            //boneNameList
             var boneName = docelem.getElementsByTagName("Name_array");
             let boneNumber = 0;
             char = [];
@@ -198,7 +200,7 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,boneName
             }
             //armature
             var armatures = docelem.getElementsByTagName("library_controllers");
-            //bindPose
+
             char = [];
             let tempBind = [];
             let boneContents = {};
@@ -242,7 +244,7 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,boneName
             console.log(vertsBlendMatrixNumbers)
             
             //bindPose
-            for(let i=0;i<loadBindPose[0].length;i += 1){
+            for(let i=0;i<loadBindPose[0].length;i++){
               let tempChar = loadBindPose[0][i];
               if(char.length == 0 && loadBindPose[0][i] != " "){
                 char = tempChar;
@@ -268,7 +270,7 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,boneName
             }
             //vertsBoneBlendNumber
             let vertsBoneBlendFloatNumber = [];
-            for(let i=0;i<vertsBlendNumbers[0].length;i += 1){
+            for(let i=0;i<vertsBlendNumbers[0].length;i++){
               let tempChar = vertsBlendNumbers[0][i];
               if(char.length == 0 && vertsBlendNumbers[0][i] != " "){
                 char = tempChar;
@@ -292,7 +294,7 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,boneName
             let currentVerts = 0;
             let vertsBlend = true;
             let tempVertsBlend = [];
-            for(let i=0;i<vertsBlendMatrixNumbers[0].length;i += 1){
+            for(let i=0;i<vertsBlendMatrixNumbers[0].length;i++){
               let tempChar = vertsBlendMatrixNumbers[0][i];
               if(char.length == 0 && vertsBlendMatrixNumbers[0][i] != " "){
                 char = tempChar;
@@ -1129,17 +1131,16 @@ for(let j=0;j<boneParentRelation.length;j++){
       }
     }else{
      if(diceBones[boneParentRelation[j][i]].parentCrossBone  == undefined){
-      diceBones[boneParentRelation[j][i]].parentCrossBone = matMul(diceBones[boneParentRelation[j][i+1]].bone,bones[boneParentRelation[j][i]].inverseBindPose);
-      diceBones[boneParentRelation[j][i]].copyParentCrossBone = diceBones[boneParentRelation[j][i]].parentCrossBone.concat();
-    } 
-    if(boneParentRelation[j][i]  == 1){
-      mulMatRotateX(diceBones[boneParentRelation[j][i]].copyParentCrossBone,rot);
-    }else{
-      mulMatRotateZ(diceBones[boneParentRelation[j][i]].copyParentCrossBone,0);
-
-    }
-      diceBones[boneParentRelation[j][i]].bone = matMul(diceBones[boneParentRelation[j][i]].copyParentCrossBone,bones[boneParentRelation[j][i]].bindPose);
-      diceBones[boneParentRelation[j][i]].copyParentCrossBone = diceBones[boneParentRelation[j][i]].parentCrossBone.concat();
+        diceBones[boneParentRelation[j][i]].parentCrossBone = matMul(diceBones[boneParentRelation[j][i+1]].bone,bones[boneParentRelation[j][i]].inverseBindPose);
+        diceBones[boneParentRelation[j][i]].copyParentCrossBone = diceBones[boneParentRelation[j][i]].parentCrossBone.concat();
+        if(boneParentRelation[j][i]  == 1){
+          mulMatRotateX(diceBones[boneParentRelation[j][i]].copyParentCrossBone,rot);
+        }else{
+          mulMatRotateZ(diceBones[boneParentRelation[j][i]].copyParentCrossBone,0);
+        }
+        diceBones[boneParentRelation[j][i]].bone = matMul(diceBones[boneParentRelation[j][i]].copyParentCrossBone,bones[boneParentRelation[j][i]].bindPose);
+        diceBones[boneParentRelation[j][i]].copyParentCrossBone = diceBones[boneParentRelation[j][i]].parentCrossBone.concat();
+      }
     } 
   }
 }
