@@ -21,21 +21,23 @@ let boneParentRelation = [];
 function getAllChildNodesDepth(childrenLength,element,tempResult,result,boneNameList) {
   let boneHit = false;
     for(let i=0;i<childrenLength;i++){
-    let child = element.children[i];
+    let currentElement = element[i];
+    //boneElement
     for(let index = 0;index<boneNameList.length;index++){
       let boneName = boneNameList[index][0];
-      if(child.getAttribute("sid") == boneName){
+      if(currentElement.getAttribute("sid") == boneName){
+           console.log(currentElement)
         tempResult.unshift(boneNameList[index][1]);
-        let length = element.children[i].children.length;
-        getAllChildNodesDepth(length,child,tempResult,result,boneNameList);
+        let length = currentElement.children.length;
+        getAllChildNodesDepth(length,currentElement.children,tempResult,result,boneNameList);
         boneHit = true;
-        tempResult.pop();   
+        tempResult.shift();
       }
     }
   }
+  //leafNoBone
   if(boneHit == false){
     result.push(tempResult.slice(0,tempResult.length));
-    tempResult.pop();
     return;
   }
 }
@@ -352,7 +354,7 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,boneName
             //どのボーンが親が調べる
             var boneJointList = docelem.getElementsByTagName("node");
             let  tempResult = [];
-            getAllChildNodesDepth(boneJointList[0].children.length, boneJointList[0],tempResult,boneParentRelation,boneNameList);
+            getAllChildNodesDepth(boneJointList[0].children.length, boneJointList[0].children,tempResult,boneParentRelation,boneNameList);
             console.log(boneParentRelation);
             //console.log(armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes)
             xmlIsLoad = true;
@@ -396,7 +398,7 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(0,-3,-10);
+let cameraPos = setVector3(0,0,-10);
 let lookat = setVector3(0.0,-3,1);
 let sunPos = setVector3(0,-3,-2);
 let sunLookat = setVector3(0.0,-0.0,0);
@@ -1133,8 +1135,8 @@ for(let j=0;j<boneParentRelation.length;j++){
      if(diceBones[boneParentRelation[j][i]].parentCrossBone  == undefined){
         diceBones[boneParentRelation[j][i]].parentCrossBone = matMul(diceBones[boneParentRelation[j][i+1]].bone,bones[boneParentRelation[j][i]].inverseBindPose);
         diceBones[boneParentRelation[j][i]].copyParentCrossBone = diceBones[boneParentRelation[j][i]].parentCrossBone.concat();
-        if(boneParentRelation[j][i]  == 1){
-          mulMatRotateX(diceBones[boneParentRelation[j][i]].copyParentCrossBone,rot);
+        if(boneParentRelation[j][i]  == 3){
+          mulMatRotateZ(diceBones[boneParentRelation[j][i]].copyParentCrossBone,90);
         }else{
           mulMatRotateZ(diceBones[boneParentRelation[j][i]].copyParentCrossBone,0);
         }
