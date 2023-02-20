@@ -971,8 +971,8 @@ cubeImage.addEventListener("load", function() {
 	bodys1.push(new Object(headVerts,0,-2,0,0,0,0,1,1,1,0,false,true,cubePixelImage));
 
 	//cubes.push(new Object(orgCubeVerts,0.6,-0.90,1,0,0,0,1,1,1,0,false,true,cubePixelImage));
-  cubes.push(new Object(orgCubeVerts,1.5,-1.35,0.5,0,0,0,1,1,1,0,false,true,cubePixelImage));
-	cubes.push(new Object(orgCubeVerts,-1.5,-1.35,1,0,0,0,1,1,1,0,false,true,cubePixelImage));
+  cubes.push(new Object(orgCubeVerts,0.5,-1.35,0.5,0,0,0,1,1,1,0,false,true,cubePixelImage));
+	cubes.push(new Object(orgCubeVerts,-0.5,-1.35,1,0,0,0,1,1,1,0,false,true,cubePixelImage));
 }, true);
 
 //dice
@@ -1286,7 +1286,7 @@ for(let j=0;j<boneParentRelation.length;j++){
     mulMatRotateY(worldMatrix,cubes[num].objRotY);
     mulMatRotateZ(worldMatrix,cubes[num].objRotZ); 
     mulMatScaling(worldMatrix,cubes[num].scaleX,cubes[num].scaleY,cubes[num].scaleZ);
-    //objectShadowMapPolygonPush(cubes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
+    objectShadowMapPolygonPush(cubes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     objectPolygonPush(cubes,worldMatrix,num,projectedObjects,viewMatrix);
 	}
   //dice
@@ -1297,7 +1297,7 @@ for(let j=0;j<boneParentRelation.length;j++){
     mulMatRotateY(worldMatrix,dices[num].objRotY);
     mulMatRotateZ(worldMatrix,dices[num].objRotZ); 
     mulMatScaling(worldMatrix,dices[num].scaleX,dices[num].scaleY,dices[num].scaleZ);
-    //objectShadowMapSkinMeshPolygonPush(dices,diceBones,num,shadowProjectedObjects,sunViewMatrix);
+    objectShadowMapSkinMeshPolygonPush(dices,diceBones,num,shadowProjectedObjects,sunViewMatrix);
     //objectShadowMapPolygonPush(dices,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     //objectPolygonPush(dices,worldMatrix,num,projectedObjects,viewMatrix);
     objectSkinMeshPolygonPush(dices,diceBones,num,projectedObjects,viewMatrix);
@@ -1310,8 +1310,8 @@ for(let j=0;j<boneParentRelation.length;j++){
     mulMatRotateY(worldMatrix,planes[num].objRotY);
     mulMatRotateZ(worldMatrix,planes[num].objRotZ); 
     mulMatScaling(worldMatrix,planes[num].scaleX,planes[num].scaleY,planes[num].scaleZ);
-    //objectShadowMapPolygonPush(planes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
-    //objectPolygonPush(planes,worldMatrix,num,projectedObjects,viewMatrix);
+    objectShadowMapPolygonPush(planes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
+    objectPolygonPush(planes,worldMatrix,num,projectedObjects,viewMatrix);
   }
   
   /*
@@ -1389,9 +1389,9 @@ for(let j=0;j<SCREEN_SIZE_H;j++){
       let getPixel = zBuffering[j][i][0];
       let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
       let sunCosin = culVecDot(sunVec,zBuffering[j][i][0].crossWorldVector3);
-      //getPixel.r = getPixel.r*sunCosin*1.2;
-      //getPixel.g = getPixel.g*sunCosin*1.2;
-      //getPixel.b = getPixel.b*sunCosin*1.2;
+      getPixel.r = getPixel.r*sunCosin*1.2;
+      getPixel.g = getPixel.g*sunCosin*1.2;
+      getPixel.b = getPixel.b*sunCosin*1.2;
     }
   }
 }
@@ -1428,9 +1428,9 @@ for(let j=0;j<SCREEN_SIZE_H;j++){
 					if(pixelVector3[0]>0 && pixelVector3[0]<SCREEN_SIZE_W){
 						if(pixelVector3[1]>0 && pixelVector3[1]<SCREEN_SIZE_H){
 							if(shadowMap[pixelVector3[1]][pixelVector3[0]][0].z+0.2<pixelVector3[2]){
-								//getPixel.r = getPixel.r/2.2;
-								//getPixel.g = getPixel.g/2.2;
-								//getPixel.b = getPixel.b/2.2;	
+								getPixel.r = getPixel.r/2.2;
+								getPixel.g = getPixel.g/2.2;
+								getPixel.b = getPixel.b/2.2;	
               }
 						}
 					}
