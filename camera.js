@@ -399,8 +399,8 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(0,-3,-10);
-let lookat = setVector3(0.0,-3,1);
+let cameraPos = setVector3(0,-1,-4);
+let lookat = setVector3(0.0,-1,1);
 let sunPos = setVector3(0,-3,-2);
 let sunLookat = setVector3(0.0,-0.0,0);
 let up = setVector3(0,1,0);
@@ -1157,8 +1157,10 @@ for(let j=0;j<boneParentRelation.length;j++){
         diceBones[boneParentRelation[j][i]].parentCrossBone = matMul(diceBones[boneParentRelation[j][i+1]].bone,bones[boneParentRelation[j][i]].inverseBindPose);
         diceBones[boneParentRelation[j][i]].copyParentCrossBone = diceBones[boneParentRelation[j][i]].parentCrossBone.concat();
         if(boneParentRelation[j][i]  == 1){
-          mulMatRotateY(diceBones[boneParentRelation[j][i]].copyParentCrossBone,rot);
-          mulMatRotateX(diceBones[boneParentRelation[j][i]].copyParentCrossBone,rot);
+          mulMatRotateY(diceBones[boneParentRelation[j][i]].copyParentCrossBone,0);
+          mulMatRotateX(diceBones[boneParentRelation[j][i]].copyParentCrossBone,0);
+          mulMatRotateZ(diceBones[boneParentRelation[j][i]].copyParentCrossBone,rot);
+
         }else{
           mulMatRotateZ(diceBones[boneParentRelation[j][i]].copyParentCrossBone,0);
         }
