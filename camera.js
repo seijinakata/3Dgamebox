@@ -1051,14 +1051,47 @@ let rotPlus = 5;
 const gravity = 0.01;
 let theta = 0;
 
-var mainLoopId = setInterval(function(){
+let dataLoad = false;
+let skyPixelImageLoad = false;
+let cubePixelImageLoad = false;
+let roadPixelImageLoad = false;
+let sandPixelImageLoad = false;
+let dicePixelImageLoad = false;
+let steveLoad = false;
 
-if( skyPixelImage.length == 0  || cubePixelImage.length == 0 ||
-	roadPixelImage.length == 0 || sandPixelImage.length == 0 || dicePixelImage.length == 0 || monkeyLoad[0].getLoadFinish() != true || xmlIsLoad != true){
-	ctx.font = '50pt Arial';
- 	ctx.fillStyle = 'rgba(0, 0, 255)';
- 	ctx.fillText("now loding", SCREEN_SIZE_W/2, SCREEN_SIZE_H/2);
-	return 0;
+var mainLoopId = setInterval(function(){
+//dataLoad
+if(dataLoad == false){
+  if(skyPixelImage.length != 0 && skyPixelImageLoad == false){
+    skyPixelImageLoad = true;
+  }
+  if(cubePixelImage.length != 0 && cubePixelImageLoad == false){
+    cubePixelImageLoad = true;
+  }
+  if(roadPixelImage.length != 0 && roadPixelImageLoad == false){
+    roadPixelImageLoad = true;
+  }
+  if(sandPixelImage.length != 0 && sandPixelImageLoad == false){
+    sandPixelImageLoad = true;
+  }
+  if(dicePixelImage.length != 0 && dicePixelImageLoad == false){
+    dicePixelImageLoad = true;
+  }
+  if(xmlIsLoad == true && steveLoad == false){
+    dices[0].verts = readMech
+    dices[0].faceIndex = vertsIndex
+    dices[0].UV = readUV;
+    dices[0].bonesWaight = bonesWeight;
+    dices[0].bonesIndex =  blendBoneIndex;
+    steveLoad = true;
+  }
+  if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steveLoad){
+    dataLoad = true;
+  }
+  ctx.font = '50pt Arial';
+  ctx.fillStyle = 'rgba(0, 0, 255)';
+  ctx.fillText("now loding", SCREEN_SIZE_W/2, SCREEN_SIZE_H/2);
+  return;
 }
 
 let newDate = new Date();
@@ -1081,33 +1114,13 @@ let newsecond = newDate.getMilliseconds();
   //投影後の情報格納
   let projectedObjects = [];
 
-  dices[0].verts = readMech
-  dices[0].faceIndex = vertsIndex
-  dices[0].UV = readUV;
-  dices[0].bonesWaight = bonesWeight;
-  dices[0].bonesIndex =  blendBoneIndex;
-  ;
-
 if(rot>50){
   rotPlus = -5;
 }else if(rot<-50){
   rotPlus = 5;
 }
 rot += rotPlus;
-/*
-let bone1 = matMul(inversebind1,bind1);
-diceBones.push(bone1);
-let copyInverseBind2 = inversebind2.concat();
-mulMatRotateZ(copyInverseBind2,rot);
-let inverseBone2 = matMul(bone1,copyInverseBind2)
-let bone2 = matMul(inverseBone2,bind2);
-diceBones.push(bone2);*/
-let diceBones = [];
-for(let i=0;i<boneNameList.length;i++){
-  let boneContents = {};
-  diceBones.push(boneContents);
-}
-let dicebones = [];
+
 /*
 mulMatRotateZ(bones[boneParentRelation[0][2]].copyInverseBindPose,0);
 bones[boneParentRelation[0][2]].bone = matMul(bones[boneParentRelation[0][2]].copyInverseBindPose,bones[boneParentRelation[0][2]].bindPose);
@@ -1123,6 +1136,13 @@ bones[boneParentRelation[0][1]].bone = matMul(bones[boneParentRelation[0][1]].co
 bones[boneParentRelation[0][1]].copyParentCrossBone = bones[boneParentRelation[0][1]].parentCrossBone.concat();
 dicebones.push(bones[boneParentRelation[0][1]].bone);
 */
+
+let diceBones = [];
+for(let i=0;i<boneNameList.length;i++){
+  let boneContents = {};
+  diceBones.push(boneContents);
+}
+
 for(let j=0;j<boneParentRelation.length;j++){
   for(let i=boneParentRelation[j].length-1;i>=0;i--){
     //ルートボーン
@@ -1148,8 +1168,7 @@ for(let j=0;j<boneParentRelation.length;j++){
     } 
   }
 }
-console.log(dicebones)
-console.log(diceBones)
+//console.log(diceBones)
   //sphereregister
   /*
   for(let num =0;num<spheres.length;num++){
@@ -1184,6 +1203,7 @@ console.log(diceBones)
     shadowProjectedObjects.push(movesphere);
   }*/
 	//blender2.7xjsonload
+  /*
 	for(let num=0;num<monkeys.length;num++){
     let worldMatrix = matIdentity();
     mulMatTranslate(worldMatrix,monkeys[num].centerObjX,monkeys[num].centerObjY,monkeys[num].centerObjZ);  
@@ -1193,7 +1213,7 @@ console.log(diceBones)
     mulMatScaling(worldMatrix,monkeys[num].scaleX,monkeys[num].scaleY,monkeys[num].scaleZ);
     //objectShadowMapPolygonPush(monkeys,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     //objectPolygonPush(monkeys,worldMatrix,num,projectedObjects,viewMatrix);	
-  }
+  }*/
   
   let s = Math.sin(theta);
   let ns = s<0 ? -s : s;
@@ -1275,6 +1295,7 @@ console.log(diceBones)
     mulMatRotateY(worldMatrix,dices[num].objRotY);
     mulMatRotateZ(worldMatrix,dices[num].objRotZ); 
     mulMatScaling(worldMatrix,dices[num].scaleX,dices[num].scaleY,dices[num].scaleZ);
+    //objectShadowMapSkinMeshPolygonPush(dices,diceBones,num,shadowProjectedObjects,sunViewMatrix);
     //objectShadowMapPolygonPush(dices,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     //objectPolygonPush(dices,worldMatrix,num,projectedObjects,viewMatrix);
     objectSkinMeshPolygonPush(dices,diceBones,num,projectedObjects,viewMatrix);
