@@ -1077,7 +1077,7 @@ if(dataLoad == false){
   if(dicePixelImage.length != 0 && dicePixelImageLoad == false){
     dicePixelImageLoad = true;
   }
-  if(xmlIsLoad == true && steveLoad == false){
+  if(dicePixelImageLoad == true && xmlIsLoad == true && steveLoad == false){
     dices[0].verts = readMech
     dices[0].faceIndex = vertsIndex
     dices[0].UV = readUV;
@@ -1138,17 +1138,24 @@ dicebones.push(bones[boneParentRelation[0][1]].bone);
 */
 
 let diceBones = [];
+//bonesInit
 for(let i=0;i<boneNameList.length;i++){
   let boneContents = {};
+  boneContents.rotXYZ = setVector3(0,0,0);
   diceBones.push(boneContents);
 }
+diceBones[1].rotXYZ = setVector3(rot,0,rot);
+diceBones[11].rotXYZ = setVector3(rot,0,rot);
 
+//makeBones
 for(let j=0;j<boneParentRelation.length;j++){
   for(let i=boneParentRelation[j].length-1;i>=0;i--){
     //ルートボーン
     if(i == boneParentRelation[j].length-1){
       if(diceBones[boneParentRelation[j][i]].bone == undefined){
-        mulMatRotateZ(bones[boneParentRelation[j][i]].copyInverseBindPose,0);
+        mulMatRotateX(bones[boneParentRelation[j][i]].copyInverseBindPose,diceBones[boneParentRelation[j][i]].rotXYZ[0]);
+        mulMatRotateY(bones[boneParentRelation[j][i]].copyInverseBindPose,diceBones[boneParentRelation[j][i]].rotXYZ[1]);
+        mulMatRotateZ(bones[boneParentRelation[j][i]].copyInverseBindPose,diceBones[boneParentRelation[j][i]].rotXYZ[2]);
         diceBones[boneParentRelation[j][i]].bone = matMul(bones[boneParentRelation[j][i]].copyInverseBindPose,bones[boneParentRelation[j][i]].bindPose);
         bones[boneParentRelation[j][i]].copyInverseBindPose = bones[boneParentRelation[j][i]].inverseBindPose.concat();
       }
@@ -1156,14 +1163,9 @@ for(let j=0;j<boneParentRelation.length;j++){
      if(diceBones[boneParentRelation[j][i]].parentCrossBone  == undefined){
         diceBones[boneParentRelation[j][i]].parentCrossBone = matMul(diceBones[boneParentRelation[j][i+1]].bone,bones[boneParentRelation[j][i]].inverseBindPose);
         diceBones[boneParentRelation[j][i]].copyParentCrossBone = diceBones[boneParentRelation[j][i]].parentCrossBone.concat();
-        if(boneParentRelation[j][i]  == 1){
-          mulMatRotateY(diceBones[boneParentRelation[j][i]].copyParentCrossBone,0);
-          mulMatRotateX(diceBones[boneParentRelation[j][i]].copyParentCrossBone,0);
-          mulMatRotateZ(diceBones[boneParentRelation[j][i]].copyParentCrossBone,rot);
-
-        }else{
-          mulMatRotateZ(diceBones[boneParentRelation[j][i]].copyParentCrossBone,0);
-        }
+        mulMatRotateX(diceBones[boneParentRelation[j][i]].copyParentCrossBone,diceBones[boneParentRelation[j][i]].rotXYZ[0]);
+        mulMatRotateY(diceBones[boneParentRelation[j][i]].copyParentCrossBone,diceBones[boneParentRelation[j][i]].rotXYZ[1]);
+        mulMatRotateZ(diceBones[boneParentRelation[j][i]].copyParentCrossBone,diceBones[boneParentRelation[j][i]].rotXYZ[2]);
         diceBones[boneParentRelation[j][i]].bone = matMul(diceBones[boneParentRelation[j][i]].copyParentCrossBone,bones[boneParentRelation[j][i]].bindPose);
         diceBones[boneParentRelation[j][i]].copyParentCrossBone = diceBones[boneParentRelation[j][i]].parentCrossBone.concat();
       }
