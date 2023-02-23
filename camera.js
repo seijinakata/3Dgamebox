@@ -595,6 +595,7 @@ function objectSkinMeshPolygonPush(objects,bones,objectNumber,projectedObjects,v
     roundVector2(object.verts[i][0],object.verts[i][1]);
     object.verts[i][2] = round(object.verts[i][2]);
     for(let j=0;j<object.bonesIndex[i].length;j++){
+      console.log(object.bonesIndex[i].length)
       let bonesMatrix = bones[object.bonesIndex[i][j]].bone;
       let matrixWaight = object.bonesWaight[i][j];
       let waightMatrix = matWaight(bonesMatrix,matrixWaight);
@@ -1107,9 +1108,9 @@ let newsecond = newDate.getMilliseconds();
   //投影後の情報格納
   let projectedObjects = [];
 
-if(rot>50){
+if(rot>70){
   rotPlus = -5;
-}else if(rot<-50){
+}else if(rot<-70){
   rotPlus = 5;
 }
 rot += rotPlus;
@@ -1137,8 +1138,14 @@ for(let i=0;i<boneNameList.length;i++){
   boneContents.rotXYZ = setVector3(0,0,0);
   diceBones.push(boneContents);
 }
-diceBones[1].rotXYZ = setVector3(rot,0,rot);
-diceBones[11].rotXYZ = setVector3(rot,0,rot);
+diceBones[4].rotXYZ = setVector3(0,0,80);
+diceBones[6].rotXYZ = setVector3(0,0,-80);
+
+diceBones[8].rotXYZ = setVector3(0,0,-80);
+diceBones[10].rotXYZ = setVector3(0,0,80);
+
+diceBones[11].rotXYZ = setVector3(-80,0,0);
+diceBones[12].rotXYZ = setVector3(80,0,0);
 
 //makeBones
 for(let j=0;j<boneParentRelation.length;j++){
@@ -1165,7 +1172,6 @@ for(let j=0;j<boneParentRelation.length;j++){
     } 
   }
 }
-//console.log(diceBones)
   //sphereregister
   /*
   for(let num =0;num<spheres.length;num++){
