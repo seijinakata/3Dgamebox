@@ -8,7 +8,7 @@ import {setPixelZ,setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,picture
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
 
-let xmlIsLoad = false;
+let steveLoadPack = {};
 let readMech = [];
 let vertsIndex = [];
 let readUV = [];
@@ -42,10 +42,9 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,boneName
 }
 
 
-daeLoader("dice3.dae")
+daeLoader("dice3.dae",steveLoadPack,readMech,vertsIndex,readUV,bones,boneNameList,blendBoneIndex,bonesWeight,boneParentRelation);
 
-
-function daeLoader(fileName){
+function daeLoader(fileName,daeLoad,readMech,vertsIndex,readUV,bones,boneNameList,blendBoneIndex,bonesWeight,boneParentRelation){
   let xmlhttp = new XMLHttpRequest();
   xmlhttp.open("GET", fileName);
   xmlhttp.send();
@@ -357,8 +356,7 @@ function daeLoader(fileName){
           console.log(boneParentRelation);
           //console.log(armatures[0].childNodes[1].childNodes[1].childNodes[11].childNodes)
         }
-
-        xmlIsLoad = true;
+        daeLoad.daeLoad = true;
 
       } else {
         alert("status = " + xmlhttp.status);
@@ -602,7 +600,6 @@ function objectSkinMeshPolygonPush(objects,bones,objectNumber,projectedObjects,v
     roundVector2(object.verts[i][0],object.verts[i][1]);
     object.verts[i][2] = round(object.verts[i][2]);
     for(let j=0;j<object.bonesIndex[i].length;j++){
-      console.log(object.bonesIndex[i].length)
       let bonesMatrix = bones[object.bonesIndex[i][j]].bone;
       let matrixWaight = object.bonesWaight[i][j];
       let waightMatrix = matWaight(bonesMatrix,matrixWaight);
@@ -1078,7 +1075,7 @@ if(dataLoad == false){
   if(dicePixelImage.length != 0 && dicePixelImageLoad == false){
     dicePixelImageLoad = true;
   }
-  if(dicePixelImageLoad == true && xmlIsLoad == true && steveLoad == false){
+  if(dicePixelImageLoad == true && steveLoadPack.daeLoad == true && steveLoad == false){
     dices[0].verts = readMech
     dices[0].faceIndex = vertsIndex
     dices[0].UV = readUV;
@@ -1115,10 +1112,10 @@ let newsecond = newDate.getMilliseconds();
   //投影後の情報格納
   let projectedObjects = [];
 
-if(rot>70){
-  rotPlus = -5;
-}else if(rot<-70){
-  rotPlus = 5;
+if(rot>80){
+  rotPlus = -15;
+}else if(rot<0){
+  rotPlus = 15;
 }
 rot += rotPlus;
 
@@ -1145,14 +1142,14 @@ for(let i=0;i<boneNameList.length;i++){
   boneContents.rotXYZ = setVector3(0,0,0);
   diceBones.push(boneContents);
 }
-diceBones[4].rotXYZ = setVector3(0,0,80);
-diceBones[6].rotXYZ = setVector3(0,0,-80);
+diceBones[4].rotXYZ = setVector3(0,0,rot);
+diceBones[6].rotXYZ = setVector3(0,0,-1*rot);
 
-diceBones[8].rotXYZ = setVector3(0,0,-80);
-diceBones[10].rotXYZ = setVector3(0,0,80);
+diceBones[8].rotXYZ = setVector3(0,0,-1*rot);
+diceBones[10].rotXYZ = setVector3(0,0,rot);
 
-diceBones[11].rotXYZ = setVector3(-80,0,0);
-diceBones[12].rotXYZ = setVector3(80,0,0);
+diceBones[11].rotXYZ = setVector3(-1* rot,0,0);
+diceBones[12].rotXYZ = setVector3(rot,0,0);
 
 //makeBones
 for(let j=0;j<boneParentRelation.length;j++){
