@@ -91,7 +91,7 @@ function daeLoader(fileName,daeLoadPack){
                   char += tempChar;
               }else{
                 let tempInt = parseFloat(char);
-                //vertsを丸める
+                //vertsを丸める。影響のない小数点は切り捨てる。
                 tempInt = round(tempInt);
                 verts.push(tempInt);
                 char = [];
@@ -685,6 +685,7 @@ function objectShadowMapSkinMeshPolygonPush(objects,bones,objectNumber,projected
   for(let i=0;i<object.faceIndex.length;i++){
     let triangleFaceIndex = object.faceIndex[i]; 
     Poly.push(setShadowPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]]));
+    
   }
   let tempMoveObject = new moveObject(object,mixMatrix,Poly);
   projectedObjects.push(tempMoveObject);
@@ -733,26 +734,34 @@ function skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjec
     objectSkinMeshPolygonPush(bodys,bones,objectNumber,projectedObjects,viewMatrix);
   }
 }
-//ボーンなし
-function objectPolygonPush(objects,worldMatrix,objectNumber,projectedObjects,viewMatrix){
+//ボーンなしシャドウマップ付き
+function objectPolygonPush(objects,worldMatrix,objectNumber,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix){
   let worldVerts = [];
   let projectedVerts = [];
+  let shadowProjectedVerts = [];
   let object = objects[objectNumber];
 
   for (var i = 0; i < object.verts.length; i++) {
-    roundVector2(object.verts[i][0],object.verts[i][1]);
-    object.verts[i][2] = round(object.verts[i][2]);
     let verts = matVecMul(worldMatrix,object.verts[i])
     worldVerts.push(verts);
-    projectedVerts.push(matVecMul(viewMatrix,verts));     
+    projectedVerts.push(matVecMul(viewMatrix,verts));
+    shadowProjectedVerts.push(matVecMul(shadowViewMatrix,verts));     
+
     let projectionMatrix =  matPers(projectedVerts[i][2]);
+    let shadowProjectionMatrix =  matPers(shadowProjectedVerts[i][2]);
+
     protMatVecMul(projectionMatrix,projectedVerts[i]);
+    protMatVecMul(shadowProjectionMatrix,shadowProjectedVerts[i]);
+
     //projectedVerts[i] = matVecMul(viewPortMatrix,projectedVerts[i]);
     projectedVerts[i][0] = Math.floor((projectedVerts[i][0] + 0.5)*SCREEN_SIZE_W);
     projectedVerts[i][1] = Math.floor((projectedVerts[i][1] + 0.5)*SCREEN_SIZE_H);
+    shadowProjectedVerts[i][0] = Math.floor((shadowProjectedVerts[i][0] + 0.5)*SCREEN_SIZE_W);
+    shadowProjectedVerts[i][1] = Math.floor((shadowProjectedVerts[i][1] + 0.5)*SCREEN_SIZE_H);
   }
  
-  let Poly = []
+  let Poly = [];
+  let shadowPoly = [];
   for(let i=0;i<object.faceIndex.length;i++){
     let triangleFaceIndex = object.faceIndex[i];
     let UV = [
@@ -762,10 +771,14 @@ function objectPolygonPush(objects,worldMatrix,objectNumber,projectedObjects,vie
           ]
     Poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
       worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],UV,object.image));
+    shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));
+
   }
 
   let tempMoveObject = new moveObject(object,worldMatrix,Poly);
   projectedObjects.push(tempMoveObject);
+  let tempShadowMoveObject = new moveObject(objects,worldMatrix,shadowPoly);
+  shadowPprojectedObjects.push(tempShadowMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
     if(moveCubeInfo.backGroundFlag == true){
@@ -1310,10 +1323,10 @@ steveLoadPack.skinmeshBones = diceBones;
     mulMatRotateY(worldMatrix,cubes[num].objRotY);
     mulMatRotateZ(worldMatrix,cubes[num].objRotZ); 
     mulMatScaling(worldMatrix,cubes[num].scaleX,cubes[num].scaleY,cubes[num].scaleZ);
-    objectShadowMapPolygonPush(cubes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
-    objectPolygonPush(cubes,worldMatrix,num,projectedObjects,viewMatrix);
+    //objectShadowMapPolygonPush(cubes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
+    objectPolygonPush(cubes,worldMatrix,num,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
 	}
-  //dice
+  //steve
   for(let num=0;num<dices.length;num++){
     let worldMatrix = matIdentity();
     mulMatTranslate(worldMatrix,dices[num].centerObjX,dices[num].centerObjY,dices[num].centerObjZ);  
@@ -1334,8 +1347,8 @@ steveLoadPack.skinmeshBones = diceBones;
     mulMatRotateY(worldMatrix,planes[num].objRotY);
     mulMatRotateZ(worldMatrix,planes[num].objRotZ); 
     mulMatScaling(worldMatrix,planes[num].scaleX,planes[num].scaleY,planes[num].scaleZ);
-    objectShadowMapPolygonPush(planes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
-    objectPolygonPush(planes,worldMatrix,num,projectedObjects,viewMatrix);
+    //objectShadowMapPolygonPush(planes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
+    objectPolygonPush(planes,worldMatrix,num,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
   }
   
   /*
