@@ -106,7 +106,7 @@ function daeLoader(fileName,daeLoadPack){
         char = [];
         verts = [];
         let tempVertsIndex = [];
-        let meshVertsIndex = [];
+        let meshVertsFaceIndex = [];
         let normalIndex= [];
         let UVIndex = [];
         //1index,2normal,3uv
@@ -126,7 +126,7 @@ function daeLoader(fileName,daeLoadPack){
                   tempVertsIndex.unshift(tempInt);
                   char = [];
                   if(tempVertsIndex.length %3 == 0){
-                    meshVertsIndex.push(tempVertsIndex);
+                    meshVertsFaceIndex.push(tempVertsIndex);
                     tempVertsIndex = [];
                   }
                   readNow = 2;
@@ -143,7 +143,7 @@ function daeLoader(fileName,daeLoadPack){
             }
           }
         }
-        daeLoadPack.meshVertsIndex = meshVertsIndex;
+        daeLoadPack.meshVertsFaceIndex = meshVertsFaceIndex;
         //uv
         let tempUV = [];
         let meshUV = [];
@@ -590,28 +590,27 @@ function setShadowPolygon(Pos1,Pos2,Pos3){
   return polygonElement;
 }
 //スキンメッシュ用
-function objectSkinMeshPolygonPush(objects,bones,objectNumber,projectedObjects,viewMatrix){
+function objectSkinMeshPolygonPush(objects,projectedObjects,viewMatrix){
   let worldVerts = [];
   let projectedVerts = [];
   let mixMatrix = [];
-  let object = objects[objectNumber];
 
-  for (var i = 0; i < object.verts.length; i++) {
+  for (var i = 0; i < objects.meshVerts.length; i++) {
     let mixMatrix = [0,0,0,0,
                     0,0,0,0,
                     0,0,0,0,
                     0,0,0,0];
-    roundVector2(object.verts[i][0],object.verts[i][1]);
-    object.verts[i][2] = round(object.verts[i][2]);
-    for(let j=0;j<object.bonesIndex[i].length;j++){
-      let bonesMatrix = bones[object.bonesIndex[i][j]].bone;
-      let matrixWaight = object.bonesWaight[i][j];
+    roundVector2(objects.meshVerts[i][0],objects.meshVerts[i][1]);
+    objects.meshVerts[i][2] = round(objects.meshVerts[i][2]);
+    for(let j=0;j<objects.blendBoneIndex[i].length;j++){
+      let bonesMatrix = objects.skinmeshBones[objects.blendBoneIndex[i][j]].skinmeshBone;
+      let matrixWaight = objects.bonesWeight[i][j];
       let waightMatrix = matWaight(bonesMatrix,matrixWaight);
       mixMatrix = matPlus(mixMatrix,waightMatrix); 
     }
-    let verts = matVecMul(mixMatrix,object.verts[i])
-    worldVerts.push(verts);
-    projectedVerts.push(matVecMul(viewMatrix,verts));     
+    let boneWeightVerts = matVecMul(mixMatrix,objects.meshVerts[i])
+    worldVerts.push(boneWeightVerts);
+    projectedVerts.push(matVecMul(viewMatrix,boneWeightVerts));     
     let projectionMatrix =  matPers(projectedVerts[i][2]);
     protMatVecMul(projectionMatrix,projectedVerts[i]);
     //projectedVerts[i] = matVecMul(viewPortMatrix,projectedVerts[i]);
@@ -620,18 +619,18 @@ function objectSkinMeshPolygonPush(objects,bones,objectNumber,projectedObjects,v
   }
  
   let Poly = []
-  for(let i=0;i<object.faceIndex.length;i++){
-    let triangleFaceIndex = object.faceIndex[i];
-    let UV = [
-          object.UV[i][0].u, object.UV[i][0].v,
-          object.UV[i][1].u, object.UV[i][1].v,
-          object.UV[i][2].u, object.UV[i][2].v,
+  for(let i=0;i<objects.meshVertsFaceIndex.length;i++){
+    let triangleFaceIndex = objects.meshVertsFaceIndex[i];
+    let meshUV = [
+          objects.meshUV[i][0].u, objects.meshUV[i][0].v,
+          objects.meshUV[i][1].u, objects.meshUV[i][1].v,
+          objects.meshUV[i][2].u, objects.meshUV[i][2].v,
           ]
     Poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],UV,object.image));
+      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],meshUV,objects.textureImage));
   }
 
-  let tempMoveObject = new moveObject(object,mixMatrix,Poly);
+  let tempMoveObject = new moveObject(objects,mixMatrix,Poly);
   projectedObjects.push(tempMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
@@ -653,7 +652,7 @@ function objectShadowMapSkinMeshPolygonPush(objects,bones,objectNumber,projected
     roundVector2(object.verts[i][0],object.verts[i][1]);
     object.verts[i][2] = round(object.verts[i][2]);
     for(let j=0;j<object.bonesIndex[i].length;j++){
-      let bonesMatrix = bones[object.bonesIndex[i][j]].bone;
+      let bonesMatrix = bones[object.bonesIndex[i][j]].skinmeshBone;
       let matrixWaight = object.bonesWaight[i][j];
       let waightMatrix = matWaight(bonesMatrix,matrixWaight);
       mixMatrix = matPlus(mixMatrix,waightMatrix); 
@@ -1081,10 +1080,11 @@ if(dataLoad == false){
   }
   if(dicePixelImageLoad == true && steveLoadPack.daeLoad == true && steveLoad == false){
     dices[0].verts = steveLoadPack.meshVerts;
-    dices[0].faceIndex = steveLoadPack.meshVertsIndex;
+    dices[0].faceIndex = steveLoadPack.meshVertsFaceIndex;
     dices[0].UV = steveLoadPack.meshUV;
     dices[0].bonesWaight = steveLoadPack.bonesWeight;
     dices[0].bonesIndex =  steveLoadPack.blendBoneIndex;
+    steveLoadPack.textureImage = dicePixelImage;
     steveLoad = true;
   }
   if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steveLoad){
@@ -1160,26 +1160,27 @@ for(let j=0;j<steveLoadPack.boneParentRelation.length;j++){
   for(let i=steveLoadPack.boneParentRelation[j].length-1;i>=0;i--){
     //ルートボーン
     if(i == steveLoadPack.boneParentRelation[j].length-1){
-      if(diceBones[steveLoadPack.boneParentRelation[j][i]].bone == undefined){
+      if(diceBones[steveLoadPack.boneParentRelation[j][i]].skinmeshBone == undefined){
         mulMatRotateX(steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].copyInverseBindPose,diceBones[steveLoadPack.boneParentRelation[j][i]].rotXYZ[0]);
         mulMatRotateY(steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].copyInverseBindPose,diceBones[steveLoadPack.boneParentRelation[j][i]].rotXYZ[1]);
         mulMatRotateZ(steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].copyInverseBindPose,diceBones[steveLoadPack.boneParentRelation[j][i]].rotXYZ[2]);
-        diceBones[steveLoadPack.boneParentRelation[j][i]].bone = matMul(steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].copyInverseBindPose,steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].bindPose);
+        diceBones[steveLoadPack.boneParentRelation[j][i]].skinmeshBone = matMul(steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].copyInverseBindPose,steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].bindPose);
         steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].copyInverseBindPose = steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].inverseBindPose.concat();
       }
     }else{
      if(diceBones[steveLoadPack.boneParentRelation[j][i]].parentCrossBone  == undefined){
-        diceBones[steveLoadPack.boneParentRelation[j][i]].parentCrossBone = matMul(diceBones[steveLoadPack.boneParentRelation[j][i+1]].bone,steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].inverseBindPose);
+        diceBones[steveLoadPack.boneParentRelation[j][i]].parentCrossBone = matMul(diceBones[steveLoadPack.boneParentRelation[j][i+1]].skinmeshBone,steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].inverseBindPose);
         diceBones[steveLoadPack.boneParentRelation[j][i]].copyParentCrossBone = diceBones[steveLoadPack.boneParentRelation[j][i]].parentCrossBone.concat();
         mulMatRotateX(diceBones[steveLoadPack.boneParentRelation[j][i]].copyParentCrossBone,diceBones[steveLoadPack.boneParentRelation[j][i]].rotXYZ[0]);
         mulMatRotateY(diceBones[steveLoadPack.boneParentRelation[j][i]].copyParentCrossBone,diceBones[steveLoadPack.boneParentRelation[j][i]].rotXYZ[1]);
         mulMatRotateZ(diceBones[steveLoadPack.boneParentRelation[j][i]].copyParentCrossBone,diceBones[steveLoadPack.boneParentRelation[j][i]].rotXYZ[2]);
-        diceBones[steveLoadPack.boneParentRelation[j][i]].bone = matMul(diceBones[steveLoadPack.boneParentRelation[j][i]].copyParentCrossBone,steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].bindPose);
+        diceBones[steveLoadPack.boneParentRelation[j][i]].skinmeshBone = matMul(diceBones[steveLoadPack.boneParentRelation[j][i]].copyParentCrossBone,steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].bindPose);
         diceBones[steveLoadPack.boneParentRelation[j][i]].copyParentCrossBone = diceBones[steveLoadPack.boneParentRelation[j][i]].parentCrossBone.concat();
       }
     } 
   }
 }
+steveLoadPack.skinmeshBones = diceBones;
   //sphereregister
   /*
   for(let num =0;num<spheres.length;num++){
@@ -1309,7 +1310,7 @@ for(let j=0;j<steveLoadPack.boneParentRelation.length;j++){
     objectShadowMapSkinMeshPolygonPush(dices,diceBones,num,shadowProjectedObjects,sunViewMatrix);
     //objectShadowMapPolygonPush(dices,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     //objectPolygonPush(dices,worldMatrix,num,projectedObjects,viewMatrix);
-    objectSkinMeshPolygonPush(dices,diceBones,num,projectedObjects,viewMatrix);
+    objectSkinMeshPolygonPush(steveLoadPack,projectedObjects,viewMatrix);
 	}
 	//planesregister
 	for(let num=0;num<planes.length;num++){
