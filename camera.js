@@ -90,7 +90,9 @@ function daeLoader(fileName,daeLoadPack){
               if(loadMeshVerts[j][i] != " "){
                   char += tempChar;
               }else{
-                let tempInt = parseFloat(char)
+                let tempInt = parseFloat(char);
+                //vertsを丸める
+                tempInt = round(tempInt);
                 verts.push(tempInt);
                 char = [];
                 if(verts.length %3 == 0){
@@ -589,7 +591,7 @@ function setShadowPolygon(Pos1,Pos2,Pos3){
   polygonElement.crossZ = culVecCrossZ(Va,Vb);
   return polygonElement;
 }
-//スキンメッシュ用
+//スキンメッシュ用シャドウマップ付き
 function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix){
   let worldVerts = [];
   let projectedVerts = [];
@@ -601,8 +603,6 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObje
                     0,0,0,0,
                     0,0,0,0,
                     0,0,0,0];
-    roundVector2(objects.meshVerts[i][0],objects.meshVerts[i][1]);
-    objects.meshVerts[i][2] = round(objects.meshVerts[i][2]);
     for(let j=0;j<objects.blendBoneIndex[i].length;j++){
       let bonesMatrix = objects.skinmeshBones[objects.blendBoneIndex[i][j]].skinmeshBone;
       let matrixWaight = objects.bonesWeight[i][j];
