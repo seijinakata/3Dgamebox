@@ -590,9 +590,10 @@ function setShadowPolygon(Pos1,Pos2,Pos3){
   return polygonElement;
 }
 //スキンメッシュ用
-function objectSkinMeshPolygonPush(objects,projectedObjects,viewMatrix){
+function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix){
   let worldVerts = [];
   let projectedVerts = [];
+  let shadowProjectedVerts = [];
   let mixMatrix = [];
 
   for (var i = 0; i < objects.meshVerts.length; i++) {
@@ -608,17 +609,27 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,viewMatrix){
       let waightMatrix = matWaight(bonesMatrix,matrixWaight);
       mixMatrix = matPlus(mixMatrix,waightMatrix); 
     }
-    let boneWeightVerts = matVecMul(mixMatrix,objects.meshVerts[i])
+    let boneWeightVerts = matVecMul(mixMatrix,objects.meshVerts[i]);
+
     worldVerts.push(boneWeightVerts);
-    projectedVerts.push(matVecMul(viewMatrix,boneWeightVerts));     
+
+    projectedVerts.push(matVecMul(viewMatrix,boneWeightVerts));
+    shadowProjectedVerts.push(matVecMul(shadowViewMatrix,boneWeightVerts));
+
     let projectionMatrix =  matPers(projectedVerts[i][2]);
+    let shadowProjectionMatrix =  matPers(shadowProjectedVerts[i][2]);
     protMatVecMul(projectionMatrix,projectedVerts[i]);
+    protMatVecMul(shadowProjectionMatrix,shadowProjectedVerts[i]);
+
     //projectedVerts[i] = matVecMul(viewPortMatrix,projectedVerts[i]);
     projectedVerts[i][0] = Math.floor((projectedVerts[i][0] + 0.5)*SCREEN_SIZE_W);
     projectedVerts[i][1] = Math.floor((projectedVerts[i][1] + 0.5)*SCREEN_SIZE_H);
+    shadowProjectedVerts[i][0] = Math.floor((shadowProjectedVerts[i][0] + 0.5)*SCREEN_SIZE_W);
+    shadowProjectedVerts[i][1] = Math.floor((shadowProjectedVerts[i][1] + 0.5)*SCREEN_SIZE_H);
   }
  
-  let Poly = []
+  let Poly = [];
+  let shadowPoly = [];
   for(let i=0;i<objects.meshVertsFaceIndex.length;i++){
     let triangleFaceIndex = objects.meshVertsFaceIndex[i];
     let meshUV = [
@@ -628,10 +639,14 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,viewMatrix){
           ]
     Poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
       worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],meshUV,objects.textureImage));
+    shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));
+
   }
 
   let tempMoveObject = new moveObject(objects,mixMatrix,Poly);
   projectedObjects.push(tempMoveObject);
+  let tempShadowMoveObject = new moveObject(objects,mixMatrix,shadowPoly);
+  shadowPprojectedObjects.push(tempShadowMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
     if(moveCubeInfo.backGroundFlag == true){
@@ -1128,7 +1143,6 @@ mulMatRotateZ(bones[steveLoadPack.boneParentRelation[0][2]].copyInverseBindPose,
 bones[steveLoadPack.boneParentRelation[0][2]].bone = matMul(bones[steveLoadPack.boneParentRelation[0][2]].copyInverseBindPose,bones[steveLoadPack.boneParentRelation[0][2]].bindPose);
 //bones[0].copyInverseBindPose = bones[0].inverseBindPose.concat();
 dicebones.push(bones[steveLoadPack.boneParentRelation[0][2]].bone);  
-
 if(bones[steveLoadPack.boneParentRelation[0][1]].parentCrossBone  == null){
   bones[steveLoadPack.boneParentRelation[0][1]].parentCrossBone = matMul(bones[steveLoadPack.boneParentRelation[0][2]].bone,bones[steveLoadPack.boneParentRelation[0][1]].inverseBindPose);
   bones[steveLoadPack.boneParentRelation[0][1]].copyParentCrossBone = bones[steveLoadPack.boneParentRelation[0][1]].parentCrossBone.concat();
@@ -1307,10 +1321,10 @@ steveLoadPack.skinmeshBones = diceBones;
     mulMatRotateY(worldMatrix,dices[num].objRotY);
     mulMatRotateZ(worldMatrix,dices[num].objRotZ); 
     mulMatScaling(worldMatrix,dices[num].scaleX,dices[num].scaleY,dices[num].scaleZ);
-    objectShadowMapSkinMeshPolygonPush(dices,diceBones,num,shadowProjectedObjects,sunViewMatrix);
+    //objectShadowMapSkinMeshPolygonPush(dices,diceBones,num,shadowProjectedObjects,sunViewMatrix);
     //objectShadowMapPolygonPush(dices,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     //objectPolygonPush(dices,worldMatrix,num,projectedObjects,viewMatrix);
-    objectSkinMeshPolygonPush(steveLoadPack,projectedObjects,viewMatrix);
+    objectSkinMeshPolygonPush(steveLoadPack,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
 	}
 	//planesregister
 	for(let num=0;num<planes.length;num++){
