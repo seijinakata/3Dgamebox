@@ -1,3 +1,4 @@
+//４行目は使わないので消去しました
 //行列計算ループアンローリング
 //演算結果をreturnsしてその結果をもう一回関数に入れると重たくなるみたい。
 import {setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize,round} from './vector.js';
@@ -7,22 +8,22 @@ export function matRound4X4(mat){
     mat[0] = round( mat[0]);
     mat[4] = round( mat[4]);
     mat[8] = round( mat[8]);
-    mat[12] = round( mat[12]);
+    //mat[12] = round( mat[12]);
 
     mat[1] = round( mat[1]);
     mat[5] = round( mat[5]);
     mat[9] = round( mat[9]);
-    mat[13] = round( mat[13]);
+    //mat[13] = round( mat[13]);
 
     mat[2] = round( mat[2]);
     mat[6] = round( mat[6]);
     mat[10] = round( mat[10]);
-    mat[14] = round( mat[14]);
+    //mat[14] = round( mat[14]);
 
     mat[3] = round( mat[3]);
     mat[7] = round( mat[7]);
     mat[11] = round( mat[11]);
-    mat[15] = round( mat[15]);
+    //mat[15] = round( mat[15]);
 }
 
 export function matIdentity(){
@@ -30,8 +31,8 @@ export function matIdentity(){
         [
          1, 0, 0, 0,
          0, 1, 0, 0,
-         0, 0, 1, 0,
-         0, 0, 0, 1];
+         0, 0, 1, 0];
+         //0, 0, 0, 1];
     
     return identityMatrix;
     }
@@ -40,8 +41,8 @@ export function maketranslateMatrix(x,y,z){
     [
         1, 0, 0, x,
         0, 1, 0, y,
-        0, 0, 1, z,
-        0, 0, 0, 1];
+        0, 0, 1, z];
+        //0, 0, 0, 1];
 
 return translateMatrix;
 }
@@ -50,8 +51,8 @@ export function makeScalingMatrix(x,y,z){
     [
         x, 0, 0, 0,
         0, y, 0, 0,
-        0, 0, z, 0,
-        0, 0, 0, 1];
+        0, 0, z, 0];
+        //0, 0, 0, 1];
 
 return scalingMatrix;
 } 
@@ -83,10 +84,10 @@ export function matPlus(m1,m2) {
     tmp[10] = m1[10] + m2[10];
     tmp[11] = m1[11] + m2[11];
 
-    tmp[12] = m1[12] + m2[12];
-    tmp[13] = m1[13] + m2[13];
-    tmp[14] = m1[14] + m2[14];
-    tmp[15] = m1[15] + m2[15];
+    //tmp[12] = m1[12] + m2[12];
+    //tmp[13] = m1[13] + m2[13];
+    //tmp[14] = m1[14] + m2[14];
+    //tmp[15] = m1[15] + m2[15];
 
     return tmp;
 }
@@ -108,35 +109,36 @@ export function matWaight(m,w) {
     tmp[10] = m[10] * w;
     tmp[11] = m[11] * w;
 
-    tmp[12] = m[12] * w;
-    tmp[13] = m[13] * w;
-    tmp[14] = m[14] * w;
-    tmp[15] = m[15] * w;
+    //tmp[12] = m[12] * w;
+    //tmp[13] = m[13] * w;
+    //tmp[14] = m[14] * w;
+    //tmp[15] = m[15] * w;
 
     return tmp;
 }
+//４行目は0,0,0,1なので出力3,7,11は最後そのまま足す。
 export function matMul(m1,m2) {
         let tmp = matIdentity();
     
-        tmp[0] = m1[0] * m2[0] + m1[1] * m2[4] + m1[2] * m2[8] +m1[3] * m2[12];
-        tmp[4] = m1[4] * m2[0] + m1[5] * m2[4] + m1[6] * m2[8] +m1[7] * m2[12];
-        tmp[8] = m1[8] * m2[0] + m1[9] * m2[4] + m1[10] * m2[8] +m1[11] * m2[12];
-        tmp[12] = m1[12] * m2[0] + m1[13] * m2[4] + m1[14] * m2[8] +m1[15] * m2[12];
+        tmp[0] = m1[0] * m2[0] + m1[1] * m2[4] + m1[2] * m2[8];// +m1[3] * m2[12];
+        tmp[4] = m1[4] * m2[0] + m1[5] * m2[4] + m1[6] * m2[8];// +m1[7] * m2[12];
+        tmp[8] = m1[8] * m2[0] + m1[9] * m2[4] + m1[10] * m2[8];// +m1[11] * m2[12];
+        //tmp[12] = m1[12] * m2[0] + m1[13] * m2[4] + m1[14] * m2[8] +m1[15] * m2[12];
     
-        tmp[1] = m1[0] * m2[1] + m1[1] * m2[5] + m1[2] * m2[9] +m1[3] * m2[13];
-        tmp[5] = m1[4] * m2[1] + m1[5] * m2[5] + m1[6] * m2[9] +m1[7] * m2[13];
-        tmp[9] = m1[8] * m2[1] + m1[9] * m2[5] + m1[10] * m2[9] +m1[11] * m2[13];
-        tmp[13] = m1[12] * m2[1] + m1[13] * m2[5] + m1[14] * m2[9] +m1[15] * m2[13];
+        tmp[1] = m1[0] * m2[1] + m1[1] * m2[5] + m1[2] * m2[9];// +m1[3] * m2[13];
+        tmp[5] = m1[4] * m2[1] + m1[5] * m2[5] + m1[6] * m2[9];// +m1[7] * m2[13];
+        tmp[9] = m1[8] * m2[1] + m1[9] * m2[5] + m1[10] * m2[9];// +m1[11] * m2[13];
+        //tmp[13] = m1[12] * m2[1] + m1[13] * m2[5] + m1[14] * m2[9] +m1[15] * m2[13];
     
-        tmp[2] = m1[0] * m2[2] + m1[1] * m2[6] + m1[2] * m2[10] + m1[3] * m2[14];
-        tmp[6] = m1[4] * m2[2] + m1[5] * m2[6] + m1[6] * m2[10] + m1[7] * m2[14];
-        tmp[10] = m1[8] * m2[2] + m1[9] * m2[6] + m1[10] * m2[10] + m1[11] * m2[14];
-        tmp[14] = m1[12] * m2[2] + m1[13] * m2[6] + m1[14] * m2[10] + m1[15] * m2[14];
+        tmp[2] = m1[0] * m2[2] + m1[1] * m2[6] + m1[2] * m2[10];// + m1[3] * m2[14];
+        tmp[6] = m1[4] * m2[2] + m1[5] * m2[6] + m1[6] * m2[10];// + m1[7] * m2[14];
+        tmp[10] = m1[8] * m2[2] + m1[9] * m2[6] + m1[10] * m2[10];// + m1[11] * m2[14];
+        //tmp[14] = m1[12] * m2[2] + m1[13] * m2[6] + m1[14] * m2[10] + m1[15] * m2[14];
     
-        tmp[3] = m1[0] * m2[3] + m1[1] * m2[7] + m1[2] * m2[11] + m1[3] * m2[15];
-        tmp[7] = m1[4] * m2[3] + m1[5] * m2[7] + m1[6] * m2[11] + m1[7] * m2[15];
-        tmp[11] = m1[8] * m2[3] + m1[9] * m2[7] + m1[10] * m2[11] + m1[11] * m2[15];
-        tmp[15] = m1[12] * m2[3] + m1[13] * m2[7] + m1[14] * m2[11] + m1[15] * m2[15];
+        tmp[3] = m1[0] * m2[3] + m1[1] * m2[7] + m1[2] * m2[11] + m1[3];// * m2[15];
+        tmp[7] = m1[4] * m2[3] + m1[5] * m2[7] + m1[6] * m2[11] + m1[7];// * m2[15];
+        tmp[11] = m1[8] * m2[3] + m1[9] * m2[7] + m1[10] * m2[11] + m1[11];// * m2[15];
+        //tmp[15] = m1[12] * m2[3] + m1[13] * m2[7] + m1[14] * m2[11] + m1[15] * m2[15];
     
         return tmp;
     }
@@ -180,8 +182,8 @@ export function matPers(z) {
         [
          1/z, 0, 0, 0,
          0, 1/z, 0, 0,
-         0, 0,   1, 0,
-         0, 0,   0, 1];
+         0, 0,   1, 0];
+        // 0, 0,   0, 1];
     
     return Matrix;
     /*
@@ -199,7 +201,7 @@ export function matCamera(m,camPos,lookat,up) {
         m[0] = x[0];    m[1] = x[1];    m[2] = x[2];    m[3] = x[0] * -camPos[0] + x[1] * -camPos[1] + x[2] * -camPos[2];
         m[4] = y[0];    m[5] = y[1];    m[6] = y[2];    m[7] = y[0] * -camPos[0] + y[1] * -camPos[1] + y[2] * -camPos[2];
         m[8] = z[0];    m[9] = z[1];    m[10] = z[2];    m[11] = z[0] * -camPos[0] + z[1] * -camPos[1] + z[2] * -camPos[2];
-        m[12] = 0;      m[13] = 0;      m[14] = 0;      m[15] = 1;
+        //m[12] = 0;      m[13] = 0;      m[14] = 0;      m[15] = 1;
     }
 export function mulMatRotateX(m,r) {
         let c = 0;
@@ -383,6 +385,16 @@ export function mulMatRotatePointZ(m,r,x,y,z) {
  */
 function CalDetMat4x4(m)
 {
+    return m[0]*m[5]*m[10]
+          +m[1]*m[6]*m[8]
+          +m[2]*m[4]*m[9]
+          -m[0]*m[6]*m[9]
+          -m[1]*m[4]*m[10]
+          -m[2]*m[5]*m[8];
+}
+/*
+function CalDetMat4x4(m)
+{
     return m[0]*m[5]*m[10]*m[15]+m[0]*m[6]*m[11]*m[13]+m[0]*m[7]*m[9]*m[14]
           +m[1]*m[4]*m[11]*m[14]+m[1]*m[6]*m[8]*m[15]+m[1]*m[7]*m[10]*m[12]
           +m[2]*m[4]*m[9]*m[15]+m[2]*m[5]*m[11]*m[12]+m[2]*m[7]*m[8]*m[13]
@@ -391,8 +403,7 @@ function CalDetMat4x4(m)
           -m[1]*m[4]*m[10]*m[15]-m[1]*m[6]*m[11]*m[12]-m[1]*m[7]*m[8]*m[14]
           -m[2]*m[4]*m[11]*m[13]-m[2]*m[5]*m[8]*m[15]-m[2]*m[7]*m[9]*m[12]
           -m[3]*m[4]*m[9]*m[14]-m[3]*m[5]*m[10]*m[12]-m[3]*m[6]*m[8]*m[13];
-}
- 
+}*/
 /*!
  * 4x4行列の行列式の計算
  *  | m[0]  m[1]  m[2]  m[3]  |
@@ -403,6 +414,34 @@ function CalDetMat4x4(m)
  * @param[out] invm 逆行列
  * @return 逆行列の存在
  */
+export function CalInvMat4x4(m,invm)
+{
+    let det = CalDetMat4x4(m);
+    if(det == 0){
+        return false;
+    }
+    else{
+        let  inv_det = 1.0/det;
+ 
+        invm[0]  = inv_det*(m[5]*m[10]-m[6]*m[9]);
+        invm[1]  = inv_det*(m[2]*m[9]-m[1]*m[10]);
+        invm[2]  = inv_det*(m[1]*m[6]-m[2]*m[5]);
+        invm[3]  = inv_det*(m[1]*m[7]*m[10]+m[2]*m[5]*m[11]+m[3]*m[6]*m[9]-m[1]*m[6]*m[11]-m[2]*m[7]*m[9]-m[3]*m[5]*m[10]);
+ 
+        invm[4]  = inv_det*(m[6]*m[8]-m[4]*m[10]);
+        invm[5]  = inv_det*(m[0]*m[10]-m[2]*m[8]);
+        invm[6]  = inv_det*(m[2]*m[4]-m[0]*m[6]);
+        invm[7]  = inv_det*(m[0]*m[6]*m[11]+m[2]*m[7]*m[8]+m[3]*m[4]*m[10]-m[0]*m[7]*m[10]-m[2]*m[4]*m[11]-m[3]*m[6]*m[8]);
+ 
+        invm[8]  = inv_det*(m[4]*m[9]-m[5]*m[8]);
+        invm[9]  = inv_det*(m[1]*m[8]-m[0]*m[9]);
+        invm[10]  = inv_det*(m[0]*m[5]-m[1]*m[4]);
+        invm[11]  = inv_det*(m[0]*m[7]*m[9]+m[1]*m[4]*m[11]+m[3]*m[5]*m[8]-m[0]*m[5]*m[11]-m[1]*m[7]*m[8]-m[3]*m[4]*m[9]);
+
+        return true;
+    }
+}
+/*
 export function CalInvMat4x4(m,invm)
 {
     let det = CalDetMat4x4(m);
@@ -434,7 +473,7 @@ export function CalInvMat4x4(m,invm)
  
         return true;
     }
-}
+}*/
 export function getInvert2(_11,_12,_21,_22){
     var out = [[1,0],
 				[0,1]]
