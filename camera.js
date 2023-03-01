@@ -524,16 +524,17 @@ class Object{
   }
 }
 
-class moveObject{ 
-  constructor(orgObject,worldMatrix,polyList){
-    this.orgObject = orgObject;
-    this.worldMatrix = worldMatrix;
-    if(polyList!=undefined){
-      this.polygonList = polyList;
-      this.polygonNum = this.polygonList.length; 
-    } 
-    this.gravityCollision = false;
+//projectedObject
+function makeProjectedObject(orgObject,worldMatrix,polyList){
+  let projectedObject = {};
+  projectedObject.orgObject = orgObject;
+  projectedObject.worldMatrix = worldMatrix;
+  if(polyList != undefined){
+    projectedObject.polygonList = polyList;
+    projectedObject.polygonNum = polyList.length
   }
+  projectedObject.gravityCollision = false;
+  return projectedObject;
 }
 //jsonポリゴン製造
 function setPolygon(Pos1,Pos2,Pos3,worldPos1,worldPos2,worldPos3,UV,image){
@@ -643,9 +644,9 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObje
 
   }
 
-  let tempMoveObject = new moveObject(objects,mixMatrix,Poly);
+  let tempMoveObject = makeProjectedObject(objects,mixMatrix,Poly);
   projectedObjects.push(tempMoveObject);
-  let tempShadowMoveObject = new moveObject(objects,mixMatrix,shadowPoly);
+  let tempShadowMoveObject = makeProjectedObject(objects,mixMatrix,shadowPoly);
   shadowPprojectedObjects.push(tempShadowMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
@@ -687,7 +688,7 @@ function objectShadowMapSkinMeshPolygonPush(objects,bones,objectNumber,projected
     Poly.push(setShadowPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]]));
     
   }
-  let tempMoveObject = new moveObject(object,mixMatrix,Poly);
+  let tempMoveObject = makeProjectedObject(object,mixMatrix,Poly);
   projectedObjects.push(tempMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
@@ -726,12 +727,6 @@ function makeSkinMeshBones(bonesJoinIndex,bones,bodys,masterXYZ,masterRotXYZ,mas
     mulMatTranslate(bonesMatrix,-bodys[boneNumber].centerObjX,-bodys[boneNumber].centerObjY,-bodys[boneNumber].centerObjZ);
     let mixBoneMatrix = matMul(bones[bonesJoinIndex[boneNumber-1]],bonesMatrix);
     bones.push(mixBoneMatrix);
-  }
-}
-function skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjects,bodys,bones,sunViewMatrix,viewMatrix){
-  for(let objectNumber = 0;objectNumber<bodys.length;objectNumber++){
-    objectShadowMapSkinMeshPolygonPush(bodys,bones,objectNumber,shadowProjectedObjects,sunViewMatrix);
-    objectSkinMeshPolygonPush(bodys,bones,objectNumber,projectedObjects,viewMatrix);
   }
 }
 //ボーンなしシャドウマップ付き
@@ -775,9 +770,9 @@ function objectPolygonPush(objects,worldMatrix,objectNumber,projectedObjects,sha
 
   }
 
-  let tempMoveObject = new moveObject(object,worldMatrix,Poly);
+  let tempMoveObject = makeProjectedObject(object,worldMatrix,Poly);
   projectedObjects.push(tempMoveObject);
-  let tempShadowMoveObject = new moveObject(objects,worldMatrix,shadowPoly);
+  let tempShadowMoveObject = makeProjectedObject(objects,worldMatrix,shadowPoly);
   shadowPprojectedObjects.push(tempShadowMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
@@ -807,7 +802,7 @@ function objectShadowMapPolygonPush(objects,worldMatrix,objectNumber,projectedOb
     let triangleFaceIndex = object.faceIndex[i]; 
     Poly.push(setShadowPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]]));
   }
-  let tempMoveObject = new moveObject(object,worldMatrix,Poly);
+  let tempMoveObject = makeProjectedObject(object,worldMatrix,Poly);
   projectedObjects.push(tempMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
@@ -1072,8 +1067,6 @@ groundImage.addEventListener("load", function() {
   planes.push(new Object(orgPlaneVerts,1.25,0,3.0,0,0,0,2.5,1,3,0,false,false,sandPixelImage));
 }, true);
 
-let diceBoneIndex = [[0,1], [0,1],[0,1], [0 ,1],[0,1],[0,1],[0,1],[0,1],[0 ,1],[0,1],[0,1],[0,1]];
-//mulMatRotateZ(inversebind1,45)
 let rot = 0;
 let rotPlus = 5;
 
@@ -1107,11 +1100,6 @@ if(dataLoad == false){
     dicePixelImageLoad = true;
   }
   if(dicePixelImageLoad == true && steveLoadPack.daeLoad == true && steveLoad == false){
-    dices[0].verts = steveLoadPack.meshVerts;
-    dices[0].faceIndex = steveLoadPack.meshVertsFaceIndex;
-    dices[0].UV = steveLoadPack.meshUV;
-    dices[0].bonesWaight = steveLoadPack.bonesWeight;
-    dices[0].bonesIndex =  steveLoadPack.blendBoneIndex;
     steveLoadPack.textureImage = dicePixelImage;
     steveLoad = true;
   }
@@ -1253,7 +1241,7 @@ steveLoadPack.skinmeshBones = diceBones;
     //objectShadowMapPolygonPush(monkeys,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     //objectPolygonPush(monkeys,worldMatrix,num,projectedObjects,viewMatrix);	
   }*/
-  
+  /*
   let s = Math.sin(theta);
   let ns = s<0 ? -s : s;
   bodys[1].objRotX =  Math.floor(60 * s);
@@ -1287,7 +1275,7 @@ steveLoadPack.skinmeshBones = diceBones;
   bodys1[9].objRotY =  Math.floor(60 * s);
 
   bodys1[10].objRotX =  Math.floor(-60 * ns);
-
+*/
   //bodys[0].objRotZ += 10;
   theta += 0.4;
   if(theta >=2000){
