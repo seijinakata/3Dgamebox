@@ -1275,30 +1275,12 @@ steveLoadPack.skinmeshBones = diceBones;
   bodys1[9].objRotY =  Math.floor(60 * s);
 
   bodys1[10].objRotX =  Math.floor(-60 * ns);
-*/
+
   //bodys[0].objRotZ += 10;
   theta += 0.4;
   if(theta >=2000){
     theta = 0;
-  }
-
-  let masterXYZ = setVector3(1,-0.2,0);
-  let masterRotXYZ = setVector3(0,0,0);
-  let masterScalingXYZ = setVector3(0.7,0.7,0.7);
-  let boxHumanBones = [];
-   //親のボーンにアクセス
-  //rightLeg,leftLeg,spain,rightArm,leftArm,head
-  let bonesJoinIndex = [0,1, 0,3, 0, 5,6, 5,8, 5];
-
-  //makeSkinMeshBones(bonesJoinIndex,boxHumanBones,bodys,masterXYZ,masterRotXYZ,masterScalingXYZ);
-
-  //skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjects,bodys,boxHumanBones,sunViewMatrix,viewMatrix);
-
-  masterXYZ = setVector3(-1,-0.2,0);
-
-  let boxHuman1Bones = [];
-
-  
+  }*/
   //makeSkinMeshBones(bonesJoinIndex,boxHuman1Bones,bodys1,masterXYZ,masterRotXYZ,masterScalingXYZ);
 
   //skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjects,bodys1,boxHuman1Bones,sunViewMatrix,viewMatrix);
@@ -1405,6 +1387,8 @@ for(let j=0;j<projectedObjects.length;j++){
 }
 var myImageData = ctx.createImageData(SCREEN_SIZE_W, SCREEN_SIZE_H);
 
+let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
+
 //レンダリングZバッファ作画
 //ライトシミュレーション
 for(let j=0;j<SCREEN_SIZE_H;j++){
@@ -1412,7 +1396,6 @@ for(let j=0;j<SCREEN_SIZE_H;j++){
 	let base = (j * SCREEN_SIZE_W + i) * 4;
 		if(zBuffering[j][i][0].z < 99999){
       let getPixel = zBuffering[j][i][0];
-      let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
       let sunCosin = culVecDot(sunVec,zBuffering[j][i][0].crossWorldVector3);
       getPixel.r = getPixel.r*sunCosin*1.2;
       getPixel.g = getPixel.g*sunCosin*1.2;
@@ -1425,53 +1408,53 @@ for(let j=0;j<SCREEN_SIZE_H;j++){
 	let base = (j * SCREEN_SIZE_W + i) * 4;
 		if(zBuffering[j][i][0].z < 99999){
       let getPixel = zBuffering[j][i][0];
-          //シャドウマップ
-      		//camera
-					let pixelVector3 = setVector3(i,j,getPixel.z);
-					//pixelVector3 = matVecMul(inverseViewPortMatrix,pixelVector3);
-					pixelVector3[0] = pixelVector3[0]/SCREEN_SIZE_W  - 0.5;
-					pixelVector3[1] = pixelVector3[1]/SCREEN_SIZE_H  - 0.5;
-					//let projectionMatrix = matPers(pixelVector3[2]);
-					//let inverseProjectionMatrix = matIdentity();
-					//CalInvMat4x4(projectionMatrix,inverseProjectionMatrix);
-					//getInverseMatrix(projectionMatrix);
-					//pixelVector3 = matVecMul(inverseProjectionMatrix,pixelVector3);
-					pixelVector3[0] *= pixelVector3[2];
-					pixelVector3[1] *= pixelVector3[2];
-					protMatVecMul(inverseViewMatrix,pixelVector3);
-					//view
-					protMatVecMul(sunViewMatrix,pixelVector3);
-					//projectionMatrix = matPers(pixelVector3[2]);
-					//pixelVector3 = matVecMul(projectionMatrix,pixelVector3);
-					pixelVector3[0] /= pixelVector3[2];
-					pixelVector3[1] /= pixelVector3[2];
-					pixelVector3[0] = Math.floor((pixelVector3[0]  + 0.5)*SCREEN_SIZE_W);
-					pixelVector3[1] = Math.floor((pixelVector3[1]  + 0.5)*SCREEN_SIZE_H);
-					//pixelVector3 = matVecMul(viewPortMatrix,pixelVector3);
-					//pixelVector3[0] = Math.floor(pixelVector3[0] + 0.5);
-					//pixelVector3[1] = Math.floor(pixelVector3[1] + 0.5);
-					if(pixelVector3[0]>0 && pixelVector3[0]<SCREEN_SIZE_W){
-						if(pixelVector3[1]>0 && pixelVector3[1]<SCREEN_SIZE_H){
-							if(shadowMap[pixelVector3[1]][pixelVector3[0]][0].z+0.2<pixelVector3[2]){
-								getPixel.r = getPixel.r/2.2;
-								getPixel.g = getPixel.g/2.2;
-								getPixel.b = getPixel.b/2.2;	
-              }
-						}
-					}
+      //シャドウマップ
+      //camera
+      let pixelVector3 = setVector3(i,j,getPixel.z);
+      //pixelVector3 = matVecMul(inverseViewPortMatrix,pixelVector3);
+      pixelVector3[0] = pixelVector3[0]/SCREEN_SIZE_W  - 0.5;
+      pixelVector3[1] = pixelVector3[1]/SCREEN_SIZE_H  - 0.5;
+      //let projectionMatrix = matPers(pixelVector3[2]);
+      //let inverseProjectionMatrix = matIdentity();
+      //CalInvMat4x4(projectionMatrix,inverseProjectionMatrix);
+      //getInverseMatrix(projectionMatrix);
+      //pixelVector3 = matVecMul(inverseProjectionMatrix,pixelVector3);
+      pixelVector3[0] *= pixelVector3[2];
+      pixelVector3[1] *= pixelVector3[2];
+      protMatVecMul(inverseViewMatrix,pixelVector3);
+      //view
+      protMatVecMul(sunViewMatrix,pixelVector3);
+      //projectionMatrix = matPers(pixelVector3[2]);
+      //pixelVector3 = matVecMul(projectionMatrix,pixelVector3);
+      pixelVector3[0] /= pixelVector3[2];
+      pixelVector3[1] /= pixelVector3[2];
+      pixelVector3[0] = Math.floor((pixelVector3[0]  + 0.5)*SCREEN_SIZE_W);
+      pixelVector3[1] = Math.floor((pixelVector3[1]  + 0.5)*SCREEN_SIZE_H);
+      //pixelVector3 = matVecMul(viewPortMatrix,pixelVector3);
+      //pixelVector3[0] = Math.floor(pixelVector3[0] + 0.5);
+      //pixelVector3[1] = Math.floor(pixelVector3[1] + 0.5);
+      if(pixelVector3[0]>0 && pixelVector3[0]<SCREEN_SIZE_W){
+        if(pixelVector3[1]>0 && pixelVector3[1]<SCREEN_SIZE_H){
+          if(shadowMap[pixelVector3[1]][pixelVector3[0]][0].z+0.2<pixelVector3[2]){
+            getPixel.r = getPixel.r/2.2;
+            getPixel.g = getPixel.g/2.2;
+            getPixel.b = getPixel.b/2.2;	
+          }
+        }
+      }
       //let getPixel = renderZBuffer[j][i].get();
 			myImageData.data[base + 0] = getPixel.r;  // Red
-		    myImageData.data[base + 1] = getPixel.g;  // Green
-		    myImageData.data[base + 2] = getPixel.b  // Blue
-		    myImageData.data[base + 3] = 255 * getPixel.a; // Alpha
+      myImageData.data[base + 1] = getPixel.g;  // Green
+      myImageData.data[base + 2] = getPixel.b  // Blue
+      myImageData.data[base + 3] = 255 * getPixel.a; // Alpha
 		//dotPaint(j,i,getPixel.r,getPixel.g,getPixel.b,getPixel.a,ctx);    
 		}else{
 			//何もないところは黒
 			//dotPaint(j,i,0,0,0,255,ctx);
 			myImageData.data[base + 0] =0;  // Red
-		    myImageData.data[base + 1] = 0;  // Green
-		    myImageData.data[base + 2] = 0  // Blue
-		    myImageData.data[base + 3] = 255; // Alpha
+      myImageData.data[base + 1] = 0;  // Green
+      myImageData.data[base + 2] = 0  // Blue
+      myImageData.data[base + 3] = 255; // Alpha
 		}
 	}
 }
