@@ -1341,6 +1341,9 @@ steveLoadPack.skinmeshBones = diceBones;
   }*/
 let shadowMap = [];
 renderbufferInit(shadowMap,SCREEN_SIZE_H,SCREEN_SIZE_W);
+let zBuffering = [];
+renderbufferInit(zBuffering,SCREEN_SIZE_H,SCREEN_SIZE_W);
+//shadowと元々のポリゴン数は同じ
 for(let j=0;j<shadowProjectedObjects.length;j++){
 	for(let i=0;i<shadowProjectedObjects[j].polygonNum;i++){
 	  //-の方がこちらに近くなる座標軸だから
@@ -1358,51 +1361,35 @@ for(let j=0;j<shadowProjectedObjects.length;j++){
      triangleToBuffer(shadowMap,null,1,image,shadowProjectedObjects[j].polygonList[i].moveVertices,crossWorldVector3,UV);
 	  }
 	}
-}
-let zBuffering = [];
-renderbufferInit(zBuffering,SCREEN_SIZE_H,SCREEN_SIZE_W);
-for(let j=0;j<projectedObjects.length;j++){
-	for(let i=0;i<projectedObjects[j].polygonNum;i++){
+	for(let projectedPolyNum=0;projectedPolyNum<projectedObjects[j].polygonNum;projectedPolyNum++){
 	  //-の方がこちらに近くなる座標軸だから
 	  if(projectedObjects[j].orgObject.backCullingFlag == true){
-	    if(projectedObjects[j].polygonList[i].crossZ<0){
-        triangleToBuffer(zBuffering,shadowMap,1,projectedObjects[j].polygonList[i].image,projectedObjects[j].polygonList[i].moveVertices,projectedObjects[j].polygonList[i].crossWorldVector3,
+	    if(projectedObjects[j].polygonList[projectedPolyNum].crossZ<0){
+        triangleToBuffer(zBuffering,shadowMap,1,projectedObjects[j].polygonList[projectedPolyNum].image,projectedObjects[j].polygonList[projectedPolyNum].moveVertices,projectedObjects[j].polygonList[projectedPolyNum].crossWorldVector3,
           [
-            projectedObjects[j].polygonList[i].UV[0], projectedObjects[j].polygonList[i].UV[1],
-            projectedObjects[j].polygonList[i].UV[2], projectedObjects[j].polygonList[i].UV[3],
-            projectedObjects[j].polygonList[i].UV[4], projectedObjects[j].polygonList[i].UV[5]
+            projectedObjects[j].polygonList[projectedPolyNum].UV[0], projectedObjects[j].polygonList[projectedPolyNum].UV[1],
+            projectedObjects[j].polygonList[projectedPolyNum].UV[2], projectedObjects[j].polygonList[projectedPolyNum].UV[3],
+            projectedObjects[j].polygonList[projectedPolyNum].UV[4], projectedObjects[j].polygonList[projectedPolyNum].UV[5]
           ]
            );
 	    } 
 	  }else{
-      triangleToBuffer(zBuffering,shadowMap,1,projectedObjects[j].polygonList[i].image,projectedObjects[j].polygonList[i].moveVertices,projectedObjects[j].polygonList[i].crossWorldVector3,
+      triangleToBuffer(zBuffering,shadowMap,1,projectedObjects[j].polygonList[projectedPolyNum].image,projectedObjects[j].polygonList[projectedPolyNum].moveVertices,projectedObjects[j].polygonList[projectedPolyNum].crossWorldVector3,
         [
-          projectedObjects[j].polygonList[i].UV[0], projectedObjects[j].polygonList[i].UV[1],
-          projectedObjects[j].polygonList[i].UV[2], projectedObjects[j].polygonList[i].UV[3],
-          projectedObjects[j].polygonList[i].UV[4], projectedObjects[j].polygonList[i].UV[5]
+          projectedObjects[j].polygonList[projectedPolyNum].UV[0], projectedObjects[j].polygonList[projectedPolyNum].UV[1],
+          projectedObjects[j].polygonList[projectedPolyNum].UV[2], projectedObjects[j].polygonList[projectedPolyNum].UV[3],
+          projectedObjects[j].polygonList[projectedPolyNum].UV[4], projectedObjects[j].polygonList[projectedPolyNum].UV[5]
         ]
          );
 	  }
 	}
 }
+
 var myImageData = ctx.createImageData(SCREEN_SIZE_W, SCREEN_SIZE_H);
 
 let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
 
 //レンダリングZバッファ作画
-//ライトシミュレーション
-for(let j=0;j<SCREEN_SIZE_H;j++){
-	for(let i=0;i<SCREEN_SIZE_W;i++){
-	let base = (j * SCREEN_SIZE_W + i) * 4;
-		if(zBuffering[j][i][0].z < 99999){
-      let getPixel = zBuffering[j][i][0];
-      let sunCosin = culVecDot(sunVec,zBuffering[j][i][0].crossWorldVector3);
-      getPixel.r = getPixel.r*sunCosin*1.2;
-      getPixel.g = getPixel.g*sunCosin*1.2;
-      getPixel.b = getPixel.b*sunCosin*1.2;
-    }
-  }
-}
 for(let j=0;j<SCREEN_SIZE_H;j++){
 	for(let i=0;i<SCREEN_SIZE_W;i++){
 	let base = (j * SCREEN_SIZE_W + i) * 4;
@@ -1442,6 +1429,11 @@ for(let j=0;j<SCREEN_SIZE_H;j++){
           }
         }
       }
+      //ライトシミュレーション
+      let sunCosin = culVecDot(sunVec,zBuffering[j][i][0].crossWorldVector3);
+      getPixel.r = getPixel.r*sunCosin*1.2;
+      getPixel.g = getPixel.g*sunCosin*1.2;
+      getPixel.b = getPixel.b*sunCosin*1.2;
       //let getPixel = renderZBuffer[j][i].get();
 			myImageData.data[base + 0] = getPixel.r;  // Red
       myImageData.data[base + 1] = getPixel.g;  // Green
@@ -1451,7 +1443,7 @@ for(let j=0;j<SCREEN_SIZE_H;j++){
 		}else{
 			//何もないところは黒
 			//dotPaint(j,i,0,0,0,255,ctx);
-			myImageData.data[base + 0] =0;  // Red
+			myImageData.data[base + 0] = 0;  // Red
       myImageData.data[base + 1] = 0;  // Green
       myImageData.data[base + 2] = 0  // Blue
       myImageData.data[base + 3] = 255; // Alpha
