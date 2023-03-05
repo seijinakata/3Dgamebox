@@ -501,7 +501,6 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,im
 
     let pl = [],pr = [];
 
-
     if(tmp[0]<pm[0]){
         pl = tmp;
         pr = pm;
@@ -798,7 +797,7 @@ export function triangleToBuffer(zBuffering,shadowMap,textureAlpha,img,vertex_li
     d = mi._21 * _Ay + mi._22 * _By;
 	*/
 	//shadowMapがnullの時適当な値を突っ込む
-	let iA = Array(4);//Aの逆行列
+	let iA = [0,0,0,0];//Aの逆行列
 	let a=0, b=0, c=0, d=0,h=0,w=0,uMax=0,uMIn=0,vMax=0,vMin=0;
 	if(shadowMap != null){
 		//マトリックス変換値を求める
