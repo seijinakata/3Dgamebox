@@ -1,5 +1,5 @@
 export function round(orgValue){
-    let newFloorValue = Math.floor(orgValue * 1000) / 1000;
+    let newFloorValue = ((orgValue * 1000)|0) / 1000;
     return newFloorValue;
 }
 

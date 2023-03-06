@@ -608,25 +608,29 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObje
       let bonesMatrix = objects.skinmeshBones[objects.blendBoneIndex[i][j]].skinmeshBone;
       let matrixWaight = objects.bonesWeight[i][j];
       let waightMatrix = matWaight(bonesMatrix,matrixWaight);
-      mixMatrix = matPlus(mixMatrix,waightMatrix); 
+      matPlus(mixMatrix,waightMatrix); 
     }
     let boneWeightVerts = matVecMul(mixMatrix,objects.meshVerts[i]);
+    let nomalBoneWeightVerts = boneWeightVerts.concat();
+    let boneShadowWeightVerts = boneWeightVerts.concat();
 
     worldVerts.push(boneWeightVerts);
+    protMatVecMul(viewMatrix,nomalBoneWeightVerts);
+    protMatVecMul(shadowViewMatrix,boneShadowWeightVerts);
 
-    projectedVerts.push(matVecMul(viewMatrix,boneWeightVerts));
-    shadowProjectedVerts.push(matVecMul(shadowViewMatrix,boneWeightVerts));
+    let projectionMatrix =  matPers(nomalBoneWeightVerts[2]);
+    let shadowProjectionMatrix =  matPers(boneShadowWeightVerts[2]);
+    protMatVecMul(projectionMatrix,nomalBoneWeightVerts);
+    protMatVecMul(shadowProjectionMatrix,boneShadowWeightVerts);
 
-    let projectionMatrix =  matPers(projectedVerts[i][2]);
-    let shadowProjectionMatrix =  matPers(shadowProjectedVerts[i][2]);
-    protMatVecMul(projectionMatrix,projectedVerts[i]);
-    protMatVecMul(shadowProjectionMatrix,shadowProjectedVerts[i]);
+    //boneWeightVerts = matVecMul(viewPortMatrix,boneWeightVerts);
+    nomalBoneWeightVerts[0] = ((nomalBoneWeightVerts[0] + 0.5)*SCREEN_SIZE_W)|0;
+    nomalBoneWeightVerts[1] = ((nomalBoneWeightVerts[1] + 0.5)*SCREEN_SIZE_H)|0;
+    boneShadowWeightVerts[0] = ((boneShadowWeightVerts[0] + 0.5)*SCREEN_SIZE_W)|0;
+    boneShadowWeightVerts[1] = ((boneShadowWeightVerts[1] + 0.5)*SCREEN_SIZE_H)|0;
 
-    //projectedVerts[i] = matVecMul(viewPortMatrix,projectedVerts[i]);
-    projectedVerts[i][0] = Math.floor((projectedVerts[i][0] + 0.5)*SCREEN_SIZE_W);
-    projectedVerts[i][1] = Math.floor((projectedVerts[i][1] + 0.5)*SCREEN_SIZE_H);
-    shadowProjectedVerts[i][0] = Math.floor((shadowProjectedVerts[i][0] + 0.5)*SCREEN_SIZE_W);
-    shadowProjectedVerts[i][1] = Math.floor((shadowProjectedVerts[i][1] + 0.5)*SCREEN_SIZE_H);
+    projectedVerts.push(nomalBoneWeightVerts);
+    shadowProjectedVerts.push(boneShadowWeightVerts);
   }
  
   let Poly = [];
@@ -737,22 +741,28 @@ function objectPolygonPush(objects,worldMatrix,objectNumber,projectedObjects,sha
   let object = objects[objectNumber];
 
   for (var i = 0; i < object.verts.length; i++) {
-    let verts = matVecMul(worldMatrix,object.verts[i])
+    let verts = matVecMul(worldMatrix,object.verts[i]);
+    let nomalVerts = verts.concat();
+    let shadowVerts = verts.concat();
     worldVerts.push(verts);
-    projectedVerts.push(matVecMul(viewMatrix,verts));
-    shadowProjectedVerts.push(matVecMul(shadowViewMatrix,verts));     
+    protMatVecMul(viewMatrix,nomalVerts);
+    protMatVecMul(shadowViewMatrix,shadowVerts);
+   
 
-    let projectionMatrix =  matPers(projectedVerts[i][2]);
-    let shadowProjectionMatrix =  matPers(shadowProjectedVerts[i][2]);
+    let projectionMatrix =  matPers(nomalVerts[2]);
+    let shadowProjectionMatrix =  matPers(shadowVerts[2]);
 
-    protMatVecMul(projectionMatrix,projectedVerts[i]);
-    protMatVecMul(shadowProjectionMatrix,shadowProjectedVerts[i]);
+    protMatVecMul(projectionMatrix,nomalVerts);
+    protMatVecMul(shadowProjectionMatrix,shadowVerts);
 
-    //projectedVerts[i] = matVecMul(viewPortMatrix,projectedVerts[i]);
-    projectedVerts[i][0] = Math.floor((projectedVerts[i][0] + 0.5)*SCREEN_SIZE_W);
-    projectedVerts[i][1] = Math.floor((projectedVerts[i][1] + 0.5)*SCREEN_SIZE_H);
-    shadowProjectedVerts[i][0] = Math.floor((shadowProjectedVerts[i][0] + 0.5)*SCREEN_SIZE_W);
-    shadowProjectedVerts[i][1] = Math.floor((shadowProjectedVerts[i][1] + 0.5)*SCREEN_SIZE_H);
+    //nomalVerts = matVecMul(viewPortMatrix,nomalVerts);
+    nomalVerts[0] = ((nomalVerts[0] + 0.5)*SCREEN_SIZE_W)|0;
+    nomalVerts[1] = ((nomalVerts[1] + 0.5)*SCREEN_SIZE_H)|0;
+    shadowVerts[0] = ((shadowVerts[0] + 0.5)*SCREEN_SIZE_W)|0;
+    shadowVerts[1] = ((shadowVerts[1] + 0.5)*SCREEN_SIZE_H)|0;
+
+    projectedVerts.push(nomalVerts);
+    shadowProjectedVerts.push(shadowVerts);  
   }
  
   let Poly = [];
@@ -1112,8 +1122,8 @@ if(dataLoad == false){
   return;
 }
 
-let newDate = new Date();
-let newsecond = newDate.getMilliseconds();
+//let newDate = new Date();
+//let newsecond = newDate.getMilliseconds();
 //lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
   viewMatrix = matIdentity();
   matCamera(viewMatrix,cameraPos,lookat,up);
@@ -1415,8 +1425,8 @@ for(let j=0;j<SCREEN_SIZE_H;j++){
       //pixelVector3 = matVecMul(projectionMatrix,pixelVector3);
       pixelVector3[0] /= pixelVector3[2];
       pixelVector3[1] /= pixelVector3[2];
-      pixelVector3[0] = Math.floor((pixelVector3[0]  + 0.5)*SCREEN_SIZE_W);
-      pixelVector3[1] = Math.floor((pixelVector3[1]  + 0.5)*SCREEN_SIZE_H);
+      pixelVector3[0] = ((pixelVector3[0]  + 0.5)*SCREEN_SIZE_W)|0;
+      pixelVector3[1] = ((pixelVector3[1]  + 0.5)*SCREEN_SIZE_H)|0;
       //pixelVector3 = matVecMul(viewPortMatrix,pixelVector3);
       //pixelVector3[0] = Math.floor(pixelVector3[0] + 0.5);
       //pixelVector3[1] = Math.floor(pixelVector3[1] + 0.5);
@@ -1450,9 +1460,9 @@ for(let j=0;j<SCREEN_SIZE_H;j++){
 		}
 	}
 }
-newDate = new Date();
-let aftersecond = newDate.getMilliseconds();
-let result = aftersecond - newsecond;
+//newDate = new Date();
+//let aftersecond = newDate.getMilliseconds();
+//let result = aftersecond - newsecond;
 //console.log(result);
 ctx.putImageData(myImageData, 0, 0);
 
