@@ -514,8 +514,7 @@ class Object{
     this.backGroundFlag = backGroundFlag;
     this.backCullingFlag = backCullingFlag;
     
-    //文字列になってる
-    this.verts = JSON.parse(JSON.stringify(verts.vertsPosition));
+    this.verts = verts.vertsPosition.concat();
     this.faceIndex = verts.faceIndex;
     this.bonesIndex = verts.bonesIndex;
     this.bonesWaight = verts.bonesWaight;
@@ -1448,7 +1447,7 @@ for(let j=0;j<SCREEN_SIZE_H;j++){
 			myImageData.data[base + 0] = getPixel.r;  // Red
       myImageData.data[base + 1] = getPixel.g;  // Green
       myImageData.data[base + 2] = getPixel.b  // Blue
-      myImageData.data[base + 3] = 255 * getPixel.a; // Alpha
+      myImageData.data[base + 3] = 255; // Alpha
 		//dotPaint(j,i,getPixel.r,getPixel.g,getPixel.b,getPixel.a,ctx);    
 		}else{
 			//何もないところは黒

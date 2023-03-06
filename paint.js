@@ -128,7 +128,7 @@ class scan_entry{
 };
 //整数座標を求める
 export function top_int(x){
-    return Math.floor(x+0.5);
+    return (x+0.5)|0;
 }
 //増分を求める
 export function delta_xz(edge){
@@ -142,7 +142,7 @@ export function delta_xz(edge){
 }
 //ソート関数
 function swap(a,b){
-	let t = JSON.parse(JSON.stringify(a));
+	let t = a.concat();
 	for(let i=0;i<3;i++){
 		a[i]=b[i];
 		b[i]=t[i];
@@ -598,10 +598,10 @@ function scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,uMax,uMI
 						/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
 						selectOrgy = x * iA[2] + y * iA[3]
 						- e * iA[2] - f * iA[3];// +  orgTexture.height / 2;
-						orgy = Math.floor(selectOrgy)
+						orgy = selectOrgy|0;
 						/* 元画像をはみ出る画素の場合ははみ出る前のピクセルを詰める */
-						let textureVMax = Math.floor(orgTexture.height*vMax);
-						let textureVMin = Math.floor(orgTexture.height*vMin + 0.5);
+						let textureVMax = (orgTexture.height*vMax)|0;
+						let textureVMin = (orgTexture.height*vMin + 0.5)|0;
 						if(orgy >=  textureVMax){
 							//画像配列は０から始まってるからheight,widthともに-1
 							orgy =  textureVMax - 1;
@@ -613,10 +613,10 @@ function scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,uMax,uMI
 						/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
 						selectOrgx = x * iA[0] + y * iA[1]
 							- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-						orgx= Math.floor(selectOrgx); 
+						orgx= selectOrgx|0; 
 						/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
-						let textureUMax = Math.floor(orgTexture.width*uMax);
-						let textureUMin = Math.floor(orgTexture.width*uMIn + 0.5);
+						let textureUMax = (orgTexture.width*uMax)|0;
+						let textureUMin = (orgTexture.width*uMIn + 0.5)|0;
 						if(orgx >= textureUMax){
 							orgx = textureUMax -1;
 						}if(orgx <= textureUMin){
@@ -832,7 +832,7 @@ export function triangleToBuffer(zBuffering,shadowMap,textureAlpha,img,vertex_li
 		w = vertex_list[0][0] - (a * uv_list[0] * img.width + c * uv_list[1] * img.height);
 	}
 	
-	let tempverts = JSON.parse(JSON.stringify(vertex_list));
+	let tempverts = vertex_list.concat();
 
 	sort_index(tempverts,1);//ys
 	let pt = tempverts[0];
