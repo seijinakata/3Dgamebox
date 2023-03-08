@@ -1121,8 +1121,9 @@ if(dataLoad == false){
   return;
 }
 
-//let newDate = new Date();
-//let newsecond = newDate.getMilliseconds();
+const start = performance.now();
+const screen_size_h = SCREEN_SIZE_H;
+const screen_size_w = SCREEN_SIZE_W;
 //lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
   viewMatrix = matIdentity();
   matCamera(viewMatrix,cameraPos,lookat,up);
@@ -1165,7 +1166,8 @@ dicebones.push(bones[steveLoadPack.boneParentRelation[0][1]].bone);
 
 let diceBones = [];
 //bonesInit
-for(let i=0;i<steveLoadPack.bonesNameList.length;i++){
+let boneNameListLength = steveLoadPack.bonesNameList.length;
+for(let i=0;i<boneNameListLength;i++){
   let boneContents = {};
   boneContents.rotXYZ = setVector3(0,0,0);
   diceBones.push(boneContents);
@@ -1180,10 +1182,12 @@ diceBones[11].rotXYZ = setVector3(-1* rot,0,0);
 diceBones[12].rotXYZ = setVector3(rot,0,0);
 
 //makeBones
-for(let j=0;j<steveLoadPack.boneParentRelation.length;j++){
-  for(let i=steveLoadPack.boneParentRelation[j].length-1;i>=0;i--){
+let boneParentRelationLength = steveLoadPack.boneParentRelation.length;
+for(let j=0;j<boneParentRelationLength;j++){
+  let boneParentRelation_j_length = steveLoadPack.boneParentRelation[j].length;
+  for(let i=boneParentRelation_j_length-1;i>=0;i--){
     //ルートボーン
-    if(i == steveLoadPack.boneParentRelation[j].length-1){
+    if(i == boneParentRelation_j_length-1){
       if(diceBones[steveLoadPack.boneParentRelation[j][i]].skinmeshBone == undefined){
         mulMatRotateX(steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].copyInverseBindPose,diceBones[steveLoadPack.boneParentRelation[j][i]].rotXYZ[0]);
         mulMatRotateY(steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].copyInverseBindPose,diceBones[steveLoadPack.boneParentRelation[j][i]].rotXYZ[1]);
@@ -1295,7 +1299,8 @@ steveLoadPack.skinmeshBones = diceBones;
   //skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjects,bodys1,boxHuman1Bones,sunViewMatrix,viewMatrix);
 
 	//cuberegister
-	for(let num=0;num<cubes.length;num++){
+  let cubesLength = cubes.length;
+	for(let num=0;num<cubesLength;num++){
     let worldMatrix = matIdentity();
     mulMatTranslate(worldMatrix,cubes[num].centerObjX,cubes[num].centerObjY,cubes[num].centerObjZ);  
     mulMatRotateX(worldMatrix,cubes[num].objRotX);
@@ -1306,7 +1311,8 @@ steveLoadPack.skinmeshBones = diceBones;
     objectPolygonPush(cubes,worldMatrix,num,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
 	}
   //steve
-  for(let num=0;num<dices.length;num++){
+  let steveLength = dices.length;
+  for(let num=0;num<steveLength;num++){
     let worldMatrix = matIdentity();
     mulMatTranslate(worldMatrix,dices[num].centerObjX,dices[num].centerObjY,dices[num].centerObjZ);  
     mulMatRotateX(worldMatrix,dices[num].objRotX);
@@ -1319,7 +1325,8 @@ steveLoadPack.skinmeshBones = diceBones;
     objectSkinMeshPolygonPush(steveLoadPack,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
 	}
 	//planesregister
-	for(let num=0;num<planes.length;num++){
+  let planesLength = planes.length;
+	for(let num=0;num<planesLength;num++){
     let worldMatrix = matIdentity();
     mulMatTranslate(worldMatrix,planes[num].centerObjX,planes[num].centerObjY,planes[num].centerObjZ);  
     mulMatRotateX(worldMatrix,planes[num].objRotX);
@@ -1349,28 +1356,30 @@ steveLoadPack.skinmeshBones = diceBones;
   	}
   }*/
 let shadowMap = [];
-renderbufferInit(shadowMap,SCREEN_SIZE_H,SCREEN_SIZE_W);
+renderbufferInit(shadowMap,screen_size_h,screen_size_w);
 let zBuffering = [];
-renderbufferInit(zBuffering,SCREEN_SIZE_H,SCREEN_SIZE_W);
+renderbufferInit(zBuffering,screen_size_h,screen_size_w);
+
 //shadowと元々のポリゴン数は同じ
-for(let j=0;j<shadowProjectedObjects.length;j++){
-	for(let i=0;i<shadowProjectedObjects[j].polygonNum;i++){
+let shadowProjectedObjectsLength  = shadowProjectedObjects.length;
+for(let j=0;j<shadowProjectedObjectsLength;j++){
+  let shadowProjectedObjects_j_polygonNum = shadowProjectedObjects[j].polygonNum
+	for(let projectedPolyNum=0;projectedPolyNum<shadowProjectedObjects_j_polygonNum;projectedPolyNum++){
 	  //-の方がこちらに近くなる座標軸だから
 	  if(shadowProjectedObjects[j].orgObject.backCullingFlag == true){
-	    if(shadowProjectedObjects[j].polygonList[i].crossZ<0){
+	    if(shadowProjectedObjects[j].polygonList[projectedPolyNum].crossZ<0){
         let image = null;
         let crossWorldVector3 = null;
         let UV = null;
-       triangleToBuffer(shadowMap,null,1,image,shadowProjectedObjects[j].polygonList[i].moveVertices,crossWorldVector3,UV);
+       triangleToBuffer(shadowMap,null,1,image,shadowProjectedObjects[j].polygonList[projectedPolyNum].moveVertices,crossWorldVector3,UV);
         } 
 	  }else{
       let image = null;
       let crossWorldVector3 = null;
       let UV = null;
-     triangleToBuffer(shadowMap,null,1,image,shadowProjectedObjects[j].polygonList[i].moveVertices,crossWorldVector3,UV);
+     triangleToBuffer(shadowMap,null,1,image,shadowProjectedObjects[j].polygonList[projectedPolyNum].moveVertices,crossWorldVector3,UV);
 	  }
-	}
-	for(let projectedPolyNum=0;projectedPolyNum<projectedObjects[j].polygonNum;projectedPolyNum++){
+	
 	  //-の方がこちらに近くなる座標軸だから
 	  if(projectedObjects[j].orgObject.backCullingFlag == true){
 	    if(projectedObjects[j].polygonList[projectedPolyNum].crossZ<0){
@@ -1391,25 +1400,25 @@ for(let j=0;j<shadowProjectedObjects.length;j++){
         ]
          );
 	  }
-	}
+  }  
 }
 
-var myImageData = ctx.createImageData(SCREEN_SIZE_W, SCREEN_SIZE_H);
+var myImageData = ctx.createImageData(screen_size_w, screen_size_h);
 
 let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
 
 //レンダリングZバッファ作画
-for(let j=0;j<SCREEN_SIZE_H;j++){
-	for(let i=0;i<SCREEN_SIZE_W;i++){
-	let base = (j * SCREEN_SIZE_W + i) * 4;
+for(let j=0;j<screen_size_h;j++){
+	for(let i=0;i<screen_size_w;i++){
+	let base = (j * screen_size_w + i) * 4;
 		if(zBuffering[j][i][0].z < 99999){
       let getPixel = zBuffering[j][i][0];
       //シャドウマップ
       //camera
       let pixelVector3 = setVector3(i,j,getPixel.z);
       //pixelVector3 = matVecMul(inverseViewPortMatrix,pixelVector3);
-      pixelVector3[0] = pixelVector3[0]/SCREEN_SIZE_W  - 0.5;
-      pixelVector3[1] = pixelVector3[1]/SCREEN_SIZE_H  - 0.5;
+      pixelVector3[0] = pixelVector3[0]/screen_size_w  - 0.5;
+      pixelVector3[1] = pixelVector3[1]/screen_size_h  - 0.5;
       //let projectionMatrix = matPers(pixelVector3[2]);
       //let inverseProjectionMatrix = matIdentity();
       //CalInvMat4x4(projectionMatrix,inverseProjectionMatrix);
@@ -1424,13 +1433,13 @@ for(let j=0;j<SCREEN_SIZE_H;j++){
       //pixelVector3 = matVecMul(projectionMatrix,pixelVector3);
       pixelVector3[0] /= pixelVector3[2];
       pixelVector3[1] /= pixelVector3[2];
-      pixelVector3[0] = ((pixelVector3[0]  + 0.5)*SCREEN_SIZE_W)|0;
-      pixelVector3[1] = ((pixelVector3[1]  + 0.5)*SCREEN_SIZE_H)|0;
+      pixelVector3[0] = ((pixelVector3[0]  + 0.5)*screen_size_w)|0;
+      pixelVector3[1] = ((pixelVector3[1]  + 0.5)*screen_size_h)|0;
       //pixelVector3 = matVecMul(viewPortMatrix,pixelVector3);
       //pixelVector3[0] = Math.floor(pixelVector3[0] + 0.5);
       //pixelVector3[1] = Math.floor(pixelVector3[1] + 0.5);
-      if(pixelVector3[0]>0 && pixelVector3[0]<SCREEN_SIZE_W){
-        if(pixelVector3[1]>0 && pixelVector3[1]<SCREEN_SIZE_H){
+      if(pixelVector3[0]>0 && pixelVector3[0]<screen_size_w){
+        if(pixelVector3[1]>0 && pixelVector3[1]<screen_size_h){
           if(shadowMap[pixelVector3[1]][pixelVector3[0]][0].z+0.2<pixelVector3[2]){
             getPixel.r = getPixel.r/2.2;
             getPixel.g = getPixel.g/2.2;
@@ -1459,13 +1468,10 @@ for(let j=0;j<SCREEN_SIZE_H;j++){
 		}
 	}
 }
-//newDate = new Date();
-//let aftersecond = newDate.getMilliseconds();
-//let result = aftersecond - newsecond;
-//console.log(result);
 ctx.putImageData(myImageData, 0, 0);
-
-}, 1000/60);
+const end = performance.now();
+console.log(`実行時間: ${end - start} ミリ秒`);
+}, 1000/90);
 
 document.addEventListener('keydown',e => {
 
