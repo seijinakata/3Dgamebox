@@ -733,11 +733,10 @@ function makeSkinMeshBones(bonesJoinIndex,bones,bodys,masterXYZ,masterRotXYZ,mas
   }
 }
 //ボーンなしシャドウマップ付き
-function objectPolygonPush(objects,worldMatrix,objectNumber,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix){
+function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix){
   let worldVerts = [];
   let projectedVerts = [];
   let shadowProjectedVerts = [];
-  let object = objects[objectNumber];
 
   for (var i = 0; i < object.verts.length; i++) {
     let verts = matVecMul(worldMatrix,object.verts[i]);
@@ -781,7 +780,7 @@ function objectPolygonPush(objects,worldMatrix,objectNumber,projectedObjects,sha
 
   let tempMoveObject = makeProjectedObject(object,worldMatrix,Poly);
   projectedObjects.push(tempMoveObject);
-  let tempShadowMoveObject = makeProjectedObject(objects,worldMatrix,shadowPoly);
+  let tempShadowMoveObject = makeProjectedObject(object,worldMatrix,shadowPoly);
   shadowPprojectedObjects.push(tempShadowMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
@@ -1010,6 +1009,7 @@ cubeImage.addEventListener("load", function() {
 
 //dice
 let dices = [];
+let steves = [];
 let diceImage = new Image();
 diceImage.src = "steve.png";
 let dicePixelImage = [];
@@ -1110,6 +1110,7 @@ if(dataLoad == false){
   }
   if(dicePixelImageLoad == true && steveLoadPack.daeLoad == true && steveLoad == false){
     steveLoadPack.textureImage = dicePixelImage;
+    steves.push(steveLoadPack) 
     steveLoad = true;
   }
   if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steveLoad){
@@ -1167,7 +1168,7 @@ dicebones.push(bones[steveLoadPack.boneParentRelation[0][1]].bone);
 let diceBones = [];
 //bonesInit
 let boneNameListLength = steveLoadPack.bonesNameList.length;
-for(let i=0;i<boneNameListLength;i++){
+for(let i in steveLoadPack.bonesNameList){
   let boneContents = {};
   boneContents.rotXYZ = setVector3(0,0,0);
   diceBones.push(boneContents);
@@ -1299,42 +1300,28 @@ steveLoadPack.skinmeshBones = diceBones;
   //skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjects,bodys1,boxHuman1Bones,sunViewMatrix,viewMatrix);
 
 	//cuberegister
-  let cubesLength = cubes.length;
-	for(let num=0;num<cubesLength;num++){
+  for(let object of cubes){
     let worldMatrix = matIdentity();
-    mulMatTranslate(worldMatrix,cubes[num].centerObjX,cubes[num].centerObjY,cubes[num].centerObjZ);  
-    mulMatRotateX(worldMatrix,cubes[num].objRotX);
-    mulMatRotateY(worldMatrix,cubes[num].objRotY);
-    mulMatRotateZ(worldMatrix,cubes[num].objRotZ); 
-    mulMatScaling(worldMatrix,cubes[num].scaleX,cubes[num].scaleY,cubes[num].scaleZ);
-    //objectShadowMapPolygonPush(cubes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
-    objectPolygonPush(cubes,worldMatrix,num,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
+    mulMatTranslate(worldMatrix,object.centerObjX,object.centerObjY,object.centerObjZ);  
+    mulMatRotateX(worldMatrix,object.objRotX);
+    mulMatRotateY(worldMatrix,object.objRotY);
+    mulMatRotateZ(worldMatrix,object.objRotZ); 
+    mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
+    objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
 	}
   //steve
-  let steveLength = dices.length;
-  for(let num=0;num<steveLength;num++){
-    let worldMatrix = matIdentity();
-    mulMatTranslate(worldMatrix,dices[num].centerObjX,dices[num].centerObjY,dices[num].centerObjZ);  
-    mulMatRotateX(worldMatrix,dices[num].objRotX);
-    mulMatRotateY(worldMatrix,dices[num].objRotY);
-    mulMatRotateZ(worldMatrix,dices[num].objRotZ); 
-    mulMatScaling(worldMatrix,dices[num].scaleX,dices[num].scaleY,dices[num].scaleZ);
-    //objectShadowMapSkinMeshPolygonPush(dices,diceBones,num,shadowProjectedObjects,sunViewMatrix);
-    //objectShadowMapPolygonPush(dices,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
-    //objectPolygonPush(dices,worldMatrix,num,projectedObjects,viewMatrix);
-    objectSkinMeshPolygonPush(steveLoadPack,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
+  for(let object of steves){
+    objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
 	}
 	//planesregister
-  let planesLength = planes.length;
-	for(let num=0;num<planesLength;num++){
+  for(let object of planes){
     let worldMatrix = matIdentity();
-    mulMatTranslate(worldMatrix,planes[num].centerObjX,planes[num].centerObjY,planes[num].centerObjZ);  
-    mulMatRotateX(worldMatrix,planes[num].objRotX);
-    mulMatRotateY(worldMatrix,planes[num].objRotY);
-    mulMatRotateZ(worldMatrix,planes[num].objRotZ); 
-    mulMatScaling(worldMatrix,planes[num].scaleX,planes[num].scaleY,planes[num].scaleZ);
-    //objectShadowMapPolygonPush(planes,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
-    objectPolygonPush(planes,worldMatrix,num,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
+    mulMatTranslate(worldMatrix,object.centerObjX,object.centerObjY,object.centerObjZ);  
+    mulMatRotateX(worldMatrix,object.objRotX);
+    mulMatRotateY(worldMatrix,object.objRotY);
+    mulMatRotateZ(worldMatrix,object.objRotZ); 
+    mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
+    objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
   }
   
   /*
@@ -1406,16 +1393,18 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
 var myImageData = ctx.createImageData(screen_size_w, screen_size_h);
 
 let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
-
-//レンダリングZバッファ作画
-for(let j=0;j<screen_size_h;j++){
-	for(let i=0;i<screen_size_w;i++){
-	let base = (j * screen_size_w + i) * 4;
-		if(zBuffering[j][i][0].z < 99999){
-      let getPixel = zBuffering[j][i][0];
+let rowCounter = -1;
+for (let row of zBuffering) {
+  let colCounter = -1;
+  rowCounter += 1;
+  for (let col of row) {
+    colCounter += 1;
+    let base = (rowCounter * screen_size_w + colCounter) * 4;
+    if(col[0].z<99999){
+      let getPixel = col[0];
       //シャドウマップ
       //camera
-      let pixelVector3 = setVector3(i,j,getPixel.z);
+      let pixelVector3 = setVector3(colCounter,rowCounter,getPixel.z);
       //pixelVector3 = matVecMul(inverseViewPortMatrix,pixelVector3);
       pixelVector3[0] = pixelVector3[0]/screen_size_w  - 0.5;
       pixelVector3[1] = pixelVector3[1]/screen_size_h  - 0.5;
@@ -1448,30 +1437,30 @@ for(let j=0;j<screen_size_h;j++){
         }
       }
       //ライトシミュレーション
-      let sunCosin = culVecDot(sunVec,zBuffering[j][i][0].crossWorldVector3);
+      let sunCosin = culVecDot(sunVec,getPixel.crossWorldVector3);
       getPixel.r = getPixel.r*sunCosin*1.2;
       getPixel.g = getPixel.g*sunCosin*1.2;
       getPixel.b = getPixel.b*sunCosin*1.2;
-      //let getPixel = renderZBuffer[j][i].get();
-			myImageData.data[base + 0] = getPixel.r;  // Red
+      myImageData.data[base + 0] = getPixel.r;  // Red
       myImageData.data[base + 1] = getPixel.g;  // Green
       myImageData.data[base + 2] = getPixel.b  // Blue
       myImageData.data[base + 3] = 255; // Alpha
-		//dotPaint(j,i,getPixel.r,getPixel.g,getPixel.b,getPixel.a,ctx);    
-		}else{
-			//何もないところは黒
-			//dotPaint(j,i,0,0,0,255,ctx);
-			myImageData.data[base + 0] = 0;  // Red
+    //dotPaint(j,i,getPixel.r,getPixel.g,getPixel.b,getPixel.a,ctx);    
+    }else{
+      //何もないところは黒
+      //dotPaint(j,i,0,0,0,255,ctx);
+      myImageData.data[base + 0] = 0;  // Red
       myImageData.data[base + 1] = 0;  // Green
       myImageData.data[base + 2] = 0  // Blue
       myImageData.data[base + 3] = 255; // Alpha
-		}
-	}
+    }
+  }
 }
+
 ctx.putImageData(myImageData, 0, 0);
 const end = performance.now();
 console.log(`実行時間: ${end - start} ミリ秒`);
-}, 1000/90);
+}, 1000/0);
 
 document.addEventListener('keydown',e => {
 
