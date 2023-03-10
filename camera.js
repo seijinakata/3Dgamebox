@@ -16,11 +16,11 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,bonesNam
     for(let index = 0;index<bonesNameList.length;index++){
       let boneName = bonesNameList[index][0];
       if(currentElement.getAttribute("sid") == boneName){
-        tempResult.unshift(bonesNameList[index][1]);
+        tempResult.push(bonesNameList[index][1]);
         let length = currentElement.children.length;
         getAllChildNodesDepth(length,currentElement.children,tempResult,result,bonesNameList);
         boneHit = true;
-        tempResult.shift();
+        tempResult.pop();
       }
     }
   }
@@ -1173,6 +1173,9 @@ for(let i in steveLoadPack.bonesNameList){
   boneContents.rotXYZ = setVector3(0,0,0);
   diceBones.push(boneContents);
 }
+diceBones[0].position = setVector3(0,0,0);
+diceBones[0].rotXYZ = setVector3(0,0,0);
+
 diceBones[4].rotXYZ = setVector3(0,0,rot);
 diceBones[6].rotXYZ = setVector3(0,0,-1*rot);
 
@@ -1183,32 +1186,36 @@ diceBones[11].rotXYZ = setVector3(-1* rot,0,0);
 diceBones[12].rotXYZ = setVector3(rot,0,0);
 
 //makeBones
-let boneParentRelationLength = steveLoadPack.boneParentRelation.length;
-for(let j=0;j<boneParentRelationLength;j++){
-  let boneParentRelation_j_length = steveLoadPack.boneParentRelation[j].length;
-  for(let i=boneParentRelation_j_length-1;i>=0;i--){
-    //ルートボーン
-    if(i == boneParentRelation_j_length-1){
-      if(diceBones[steveLoadPack.boneParentRelation[j][i]].skinmeshBone == undefined){
-        mulMatRotateX(steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].copyInverseBindPose,diceBones[steveLoadPack.boneParentRelation[j][i]].rotXYZ[0]);
-        mulMatRotateY(steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].copyInverseBindPose,diceBones[steveLoadPack.boneParentRelation[j][i]].rotXYZ[1]);
-        mulMatRotateZ(steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].copyInverseBindPose,diceBones[steveLoadPack.boneParentRelation[j][i]].rotXYZ[2]);
-        diceBones[steveLoadPack.boneParentRelation[j][i]].skinmeshBone = matMul(steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].copyInverseBindPose,steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].bindPose);
-        steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].copyInverseBindPose = steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].inverseBindPose.concat();
+let rowCounter = -1;
+for(let row of steveLoadPack.boneParentRelation){
+  rowCounter += 1;
+  let colCounter = -1;
+  for(let boneParentRelation of row){
+    colCounter += 1;
+    if(colCounter == 0){
+      if(diceBones[boneParentRelation].skinmeshBone == undefined){
+        mulMatTranslate(steveLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,diceBones[boneParentRelation].position[0],
+          diceBones[boneParentRelation].position[1],diceBones[boneParentRelation].position[2]);  
+        mulMatRotateX(steveLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,diceBones[boneParentRelation].rotXYZ[0]);
+        mulMatRotateY(steveLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,diceBones[boneParentRelation].rotXYZ[1]);
+        mulMatRotateZ(steveLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,diceBones[boneParentRelation].rotXYZ[2]);
+        diceBones[boneParentRelation].skinmeshBone = matMul(steveLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,steveLoadPack.bindPosePack[boneParentRelation].bindPose);
+        steveLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose = steveLoadPack.bindPosePack[boneParentRelation].inverseBindPose.concat();
       }
     }else{
-     if(diceBones[steveLoadPack.boneParentRelation[j][i]].parentCrossBone  == undefined){
-        diceBones[steveLoadPack.boneParentRelation[j][i]].parentCrossBone = matMul(diceBones[steveLoadPack.boneParentRelation[j][i+1]].skinmeshBone,steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].inverseBindPose);
-        diceBones[steveLoadPack.boneParentRelation[j][i]].copyParentCrossBone = diceBones[steveLoadPack.boneParentRelation[j][i]].parentCrossBone.concat();
-        mulMatRotateX(diceBones[steveLoadPack.boneParentRelation[j][i]].copyParentCrossBone,diceBones[steveLoadPack.boneParentRelation[j][i]].rotXYZ[0]);
-        mulMatRotateY(diceBones[steveLoadPack.boneParentRelation[j][i]].copyParentCrossBone,diceBones[steveLoadPack.boneParentRelation[j][i]].rotXYZ[1]);
-        mulMatRotateZ(diceBones[steveLoadPack.boneParentRelation[j][i]].copyParentCrossBone,diceBones[steveLoadPack.boneParentRelation[j][i]].rotXYZ[2]);
-        diceBones[steveLoadPack.boneParentRelation[j][i]].skinmeshBone = matMul(diceBones[steveLoadPack.boneParentRelation[j][i]].copyParentCrossBone,steveLoadPack.bindPosePack[steveLoadPack.boneParentRelation[j][i]].bindPose);
-        diceBones[steveLoadPack.boneParentRelation[j][i]].copyParentCrossBone = diceBones[steveLoadPack.boneParentRelation[j][i]].parentCrossBone.concat();
+     if(diceBones[boneParentRelation].parentCrossBone  == undefined){
+        diceBones[boneParentRelation].parentCrossBone = matMul(diceBones[steveLoadPack.boneParentRelation[rowCounter][colCounter-1]].skinmeshBone,steveLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
+        diceBones[boneParentRelation].copyParentCrossBone = diceBones[boneParentRelation].parentCrossBone.concat();
+        mulMatRotateX(diceBones[boneParentRelation].copyParentCrossBone,diceBones[boneParentRelation].rotXYZ[0]);
+        mulMatRotateY(diceBones[boneParentRelation].copyParentCrossBone,diceBones[boneParentRelation].rotXYZ[1]);
+        mulMatRotateZ(diceBones[boneParentRelation].copyParentCrossBone,diceBones[boneParentRelation].rotXYZ[2]);
+        diceBones[boneParentRelation].skinmeshBone = matMul(diceBones[boneParentRelation].copyParentCrossBone,steveLoadPack.bindPosePack[boneParentRelation].bindPose);
+        diceBones[boneParentRelation].copyParentCrossBone = diceBones[boneParentRelation].parentCrossBone.concat();
       }
-    } 
+    }
   }
 }
+
 steveLoadPack.skinmeshBones = diceBones;
   //sphereregister
   /*
@@ -1393,7 +1400,7 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
 var myImageData = ctx.createImageData(screen_size_w, screen_size_h);
 
 let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
-let rowCounter = -1;
+rowCounter = -1;
 for (let row of zBuffering) {
   let colCounter = -1;
   rowCounter += 1;
@@ -1460,7 +1467,7 @@ for (let row of zBuffering) {
 ctx.putImageData(myImageData, 0, 0);
 const end = performance.now();
 console.log(`実行時間: ${end - start} ミリ秒`);
-}, 1000/0);
+}, 1000/60);
 
 document.addEventListener('keydown',e => {
 
