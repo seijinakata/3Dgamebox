@@ -31,9 +31,11 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,bonesNam
   }
 }
 
-let steveLoadPack = {};
+let steve1LoadPack = {};
+let steve2LoadPack = {};
 
-daeLoader("dice3.dae",steveLoadPack);
+daeLoader("dice3.dae",steve1LoadPack);
+daeLoader("dice3.dae",steve2LoadPack);
 
 function daeLoader(fileName,daeLoadPack){
   let xmlhttp = new XMLHttpRequest();
@@ -361,6 +363,18 @@ function daeLoader(fileName,daeLoadPack){
           getAllChildNodesDepth(boneJointList[0].children.length, boneJointList[0].children,tempResult,boneParentRelation,bonesNameList);
           console.log(boneParentRelation);
           daeLoadPack.boneParentRelation = boneParentRelation;
+
+          //bonesInit
+          let bones = [];
+          for(let i in daeLoadPack.bonesNameList){
+            let boneContents = {};
+            boneContents.skinmeshBone = null;
+            boneContents.position = setVector3(0,0,0);
+            boneContents.rotXYZ = setVector3(0,0,0);
+            boneContents.scaleXYZ = setVector3(1,1,1);
+            bones.push(boneContents);
+          }
+          daeLoadPack.bones = bones;
         }
         daeLoadPack.daeLoad = true;
 
@@ -604,7 +618,7 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObje
                     0,0,0,0,
                     0,0,0,0];
     for(let j=0;j<objects.blendBoneIndex[i].length;j++){
-      let bonesMatrix = objects.skinmeshBones[objects.blendBoneIndex[i][j]].skinmeshBone;
+      let bonesMatrix = objects.bones[objects.blendBoneIndex[i][j]].skinmeshBone;
       let matrixWaight = objects.bonesWeight[i][j];
       let waightMatrix = matWaight(bonesMatrix,matrixWaight);
       matPlus(mixMatrix,waightMatrix); 
@@ -732,7 +746,7 @@ function makeSkinMeshBones(bonesJoinIndex,bones,bodys,masterXYZ,masterRotXYZ,mas
     bones.push(mixBoneMatrix);
   }
 }
-function daeMekeSkinMeshBone(daeLoadPack,makeBones){
+function daeMekeSkinMeshBone(daeLoadPack){
   let rowCounter = -1;
   for(let row of daeLoadPack.boneParentRelation){
     rowCounter += 1;
@@ -740,30 +754,30 @@ function daeMekeSkinMeshBone(daeLoadPack,makeBones){
     for(let boneParentRelation of row){
       colCounter += 1;
       if(colCounter == 0){
-        if(makeBones[boneParentRelation].skinmeshBone == undefined){
-          mulMatTranslate(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,makeBones[boneParentRelation].position[0],
-            makeBones[boneParentRelation].position[1],makeBones[boneParentRelation].position[2]);  
-          mulMatRotateX(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,makeBones[boneParentRelation].rotXYZ[0]);
-          mulMatRotateY(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,makeBones[boneParentRelation].rotXYZ[1]);
-          mulMatRotateZ(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,makeBones[boneParentRelation].rotXYZ[2]);
-          makeBones[boneParentRelation].skinmeshBone = matMul(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
+        if(daeLoadPack.bones[boneParentRelation].skinmeshBone == null){
+          mulMatTranslate(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,daeLoadPack.bones[boneParentRelation].position[0],
+            daeLoadPack.bones[boneParentRelation].position[1],daeLoadPack.bones[boneParentRelation].position[2]);  
+          mulMatRotateX(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
+          mulMatRotateY(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
+          mulMatRotateZ(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
+          mulMatScaling(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,daeLoadPack.bones[boneParentRelation].scaleXYZ[0],
+            daeLoadPack.bones[boneParentRelation].scaleXYZ[1],daeLoadPack.bones[boneParentRelation].scaleXYZ[2]);  
+          daeLoadPack.bones[boneParentRelation].skinmeshBone = matMul(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
           daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose = daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose.concat();
         }
       }else{
-      if(makeBones[boneParentRelation].parentCrossBone  == undefined){
-          makeBones[boneParentRelation].parentCrossBone = matMul(makeBones[daeLoadPack.boneParentRelation[rowCounter][colCounter-1]].skinmeshBone,daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
-          makeBones[boneParentRelation].copyParentCrossBone = makeBones[boneParentRelation].parentCrossBone.concat();
-          mulMatRotateX(makeBones[boneParentRelation].copyParentCrossBone,makeBones[boneParentRelation].rotXYZ[0]);
-          mulMatRotateY(makeBones[boneParentRelation].copyParentCrossBone,makeBones[boneParentRelation].rotXYZ[1]);
-          mulMatRotateZ(makeBones[boneParentRelation].copyParentCrossBone,makeBones[boneParentRelation].rotXYZ[2]);
-          makeBones[boneParentRelation].skinmeshBone = matMul(makeBones[boneParentRelation].copyParentCrossBone,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
-          makeBones[boneParentRelation].copyParentCrossBone = makeBones[boneParentRelation].parentCrossBone.concat();
+      if(daeLoadPack.bones[boneParentRelation].skinmeshBone  == null){
+          daeLoadPack.bones[boneParentRelation].parentCrossBone = matMul(daeLoadPack.bones[daeLoadPack.boneParentRelation[rowCounter][colCounter-1]].skinmeshBone,daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
+          daeLoadPack.bones[boneParentRelation].copyParentCrossBone = daeLoadPack.bones[boneParentRelation].parentCrossBone.concat();
+          mulMatRotateX(daeLoadPack.bones[boneParentRelation].copyParentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
+          mulMatRotateY(daeLoadPack.bones[boneParentRelation].copyParentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
+          mulMatRotateZ(daeLoadPack.bones[boneParentRelation].copyParentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
+          daeLoadPack.bones[boneParentRelation].skinmeshBone = matMul(daeLoadPack.bones[boneParentRelation].copyParentCrossBone,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
+          daeLoadPack.bones[boneParentRelation].copyParentCrossBone = daeLoadPack.bones[boneParentRelation].parentCrossBone.concat();
         }
       }
     }
   }
-  daeLoadPack.skinmeshBones = makeBones;
-
 }
 //ボーンなしシャドウマップ付き
 function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix){
@@ -1121,7 +1135,8 @@ let cubePixelImageLoad = false;
 let roadPixelImageLoad = false;
 let sandPixelImageLoad = false;
 let dicePixelImageLoad = false;
-let steveLoad = false;
+let steve1Load = false;
+let steve2Load = false;
 
 var mainLoopId = setInterval(function(){
 //dataLoad
@@ -1141,12 +1156,17 @@ if(dataLoad == false){
   if(dicePixelImage.length != 0 && dicePixelImageLoad == false){
     dicePixelImageLoad = true;
   }
-  if(dicePixelImageLoad == true && steveLoadPack.daeLoad == true && steveLoad == false){
-    steveLoadPack.textureImage = dicePixelImage;
-    steves.push(steveLoadPack) 
-    steveLoad = true;
+  if(dicePixelImageLoad == true && steve1LoadPack.daeLoad == true && steve1Load == false){
+    steve1LoadPack.textureImage = dicePixelImage;
+    steves.push(steve1LoadPack) 
+    steve1Load = true;
   }
-  if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steveLoad){
+  if(dicePixelImageLoad == true && steve2LoadPack.daeLoad == true && steve1Load == true && steve2Load == false){
+    steve2LoadPack.textureImage = dicePixelImage;
+    steves.push(steve2LoadPack) 
+    steve2Load = true;
+  }
+  if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load && steve2Load){
     dataLoad = true;
   }
   ctx.font = '50pt Arial';
@@ -1177,9 +1197,9 @@ const screen_size_w = SCREEN_SIZE_W;
   let projectedObjects = [];
 
 if(rot>80){
-  rotPlus = -15;
+  rotPlus = -5;
 }else if(rot<0){
-  rotPlus = 15;
+  rotPlus = 5;
 }
 rot += rotPlus;
 
@@ -1198,27 +1218,44 @@ bones[steveLoadPack.boneParentRelation[0][1]].copyParentCrossBone = bones[steveL
 dicebones.push(bones[steveLoadPack.boneParentRelation[0][1]].bone);
 */
 
-let steve1Bones = [];
 //bonesInit
-for(let i in steveLoadPack.bonesNameList){
-  let boneContents = {};
-  boneContents.rotXYZ = setVector3(0,0,0);
-  steve1Bones.push(boneContents);
+let steves_length = steves.length;
+for(let j=0;j<steves_length;j++){
+  let steves_bonesNameList_length = steves[j].bonesNameList.length;
+  let currentStave = steves[j];
+  for(let i=0;i<steves_bonesNameList_length;i++){
+    currentStave.bones[i].skinmeshBone = null;
+  }
 }
-steve1Bones[0].position = setVector3(0,0,0);
-steve1Bones[0].rotXYZ = setVector3(0,0,0);
+steves[0].bones[0].position = setVector3(0.5,0,0);
+steves[0].bones[0].rotXYZ = setVector3(0,0,0);
 
-steve1Bones[4].rotXYZ = setVector3(0,0,rot);
-steve1Bones[6].rotXYZ = setVector3(0,0,-1*rot);
+steves[0].bones[4].rotXYZ = setVector3(0,0,rot);
+steves[0].bones[6].rotXYZ = setVector3(0,0,-1*rot);
 
-steve1Bones[8].rotXYZ = setVector3(0,0,-1*rot);
-steve1Bones[10].rotXYZ = setVector3(0,0,rot);
+steves[0].bones[8].rotXYZ = setVector3(0,0,-1*rot);
+steves[0].bones[10].rotXYZ = setVector3(0,0,rot);
 
-steve1Bones[11].rotXYZ = setVector3(-1* rot,0,0);
-steve1Bones[12].rotXYZ = setVector3(rot,0,0);
+steves[0].bones[11].rotXYZ = setVector3(-1* rot,0,0);
+steves[0].bones[12].rotXYZ = setVector3(rot,0,0);
+
+steves[1].bones[0].position = setVector3(-0.5,0,0.5);
+steves[1].bones[0].rotXYZ = setVector3(0,0,0);
+steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
+
+steves[1].bones[4].rotXYZ = setVector3(0,0,rot);
+steves[1].bones[6].rotXYZ = setVector3(0,0,-1*rot);
+
+steves[1].bones[8].rotXYZ = setVector3(0,0,-1*rot);
+steves[1].bones[10].rotXYZ = setVector3(0,0,rot);
+
+steves[1].bones[11].rotXYZ = setVector3(-1* rot,0,0);
+steves[1].bones[12].rotXYZ = setVector3(rot,0,0);
 
 //makeBones
-daeMekeSkinMeshBone(steveLoadPack,steve1Bones);
+for(let i in steves){
+  daeMekeSkinMeshBone(steves[i]);
+}
 /*
 let rowCounter = -1;
 for(let row of steveLoadPack.boneParentRelation){
