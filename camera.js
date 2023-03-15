@@ -1137,6 +1137,10 @@ let sandPixelImageLoad = false;
 let dicePixelImageLoad = false;
 let steve1Load = false;
 let steve2Load = false;
+const screen_size_h = SCREEN_SIZE_H;
+const screen_size_w = SCREEN_SIZE_W;
+
+var myImageData = ctx.createImageData(screen_size_w, screen_size_h);
 
 var mainLoopId = setInterval(function(){
 //dataLoad
@@ -1176,8 +1180,7 @@ if(dataLoad == false){
 }
 
 const start = performance.now();
-const screen_size_h = SCREEN_SIZE_H;
-const screen_size_w = SCREEN_SIZE_W;
+
 //lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
   viewMatrix = matIdentity();
   matCamera(viewMatrix,cameraPos,lookat,up);
@@ -1469,9 +1472,9 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
   }  
 }
 
-var myImageData = ctx.createImageData(screen_size_w, screen_size_h);
 
 let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
+let inverseViewMatrixSunViewMatrix = matMul(sunViewMatrix,inverseViewMatrix);
 let rowCounter = -1;
 for (let row of zBuffering) {
   let colCounter = -1;
@@ -1494,9 +1497,8 @@ for (let row of zBuffering) {
       //pixelVector3 = matVecMul(inverseProjectionMatrix,pixelVector3);
       pixelVector3[0] *= pixelVector3[2];
       pixelVector3[1] *= pixelVector3[2];
-      protMatVecMul(inverseViewMatrix,pixelVector3);
       //view
-      protMatVecMul(sunViewMatrix,pixelVector3);
+      protMatVecMul(inverseViewMatrixSunViewMatrix,pixelVector3);
       //projectionMatrix = matPers(pixelVector3[2]);
       //pixelVector3 = matVecMul(projectionMatrix,pixelVector3);
       pixelVector3[0] /= pixelVector3[2];
