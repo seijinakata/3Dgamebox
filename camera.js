@@ -33,9 +33,11 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,bonesNam
 
 let steve1LoadPack = {};
 let steve2LoadPack = {};
+let cube1LoadPack = {};
 
 daeLoader("dice3.dae",steve1LoadPack);
 daeLoader("dice3.dae",steve2LoadPack);
+daeLoader("cube.dae",cube1LoadPack);
 
 function daeLoader(fileName,daeLoadPack){
   let xmlhttp = new XMLHttpRequest();
@@ -375,9 +377,14 @@ function daeLoader(fileName,daeLoadPack){
             bones.push(boneContents);
           }
           daeLoadPack.bones = bones;
+        }else{
+          let boneContents = {};
+          boneContents.position = setVector3(0,0,0);
+          boneContents.rotXYZ = setVector3(0,0,0);
+          boneContents.scaleXYZ = setVector3(1,1,1);
+          daeLoadPack.bones = boneContents;
         }
         daeLoadPack.daeLoad = true;
-
       } else {
         alert("status = " + xmlhttp.status);
       }
@@ -664,6 +671,63 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObje
   let tempMoveObject = makeProjectedObject(objects,mixMatrix,Poly);
   projectedObjects.push(tempMoveObject);
   let tempShadowMoveObject = makeProjectedObject(objects,mixMatrix,shadowPoly);
+  shadowPprojectedObjects.push(tempShadowMoveObject);
+  //moveCubeInfo.backGroundFlag = object.backGroundFlag;
+    /*
+    if(moveCubeInfo.backGroundFlag == true){
+      backGroundCounter += 1;
+    }
+    */
+}
+//ボーンなしシャドウマップ付き
+function objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix){
+  let worldVerts = [];
+  let projectedVerts = [];
+  let shadowProjectedVerts = [];
+
+  for (var i = 0; i < object.meshVerts.length; i++) {
+    let verts = matVecMul(worldMatrix,object.meshVerts[i]);
+    let nomalVerts = verts.concat();
+    let shadowVerts = verts.concat();
+    worldVerts.push(verts);
+    protMatVecMul(viewMatrix,nomalVerts);
+    protMatVecMul(shadowViewMatrix,shadowVerts);
+   
+
+    let projectionMatrix =  matPers(nomalVerts[2]);
+    let shadowProjectionMatrix =  matPers(shadowVerts[2]);
+
+    protMatVecMul(projectionMatrix,nomalVerts);
+    protMatVecMul(shadowProjectionMatrix,shadowVerts);
+
+    //nomalVerts = matVecMul(viewPortMatrix,nomalVerts);
+    nomalVerts[0] = ((nomalVerts[0] + 0.5)*SCREEN_SIZE_W)|0;
+    nomalVerts[1] = ((nomalVerts[1] + 0.5)*SCREEN_SIZE_H)|0;
+    shadowVerts[0] = ((shadowVerts[0] + 0.5)*SCREEN_SIZE_W)|0;
+    shadowVerts[1] = ((shadowVerts[1] + 0.5)*SCREEN_SIZE_H)|0;
+
+    projectedVerts.push(nomalVerts);
+    shadowProjectedVerts.push(shadowVerts);  
+  }
+ 
+  let Poly = [];
+  let shadowPoly = [];
+  for(let i=0;i<object.meshVertsFaceIndex.length;i++){
+    let triangleFaceIndex = object.meshVertsFaceIndex[i];
+    let meshUV = [
+          object.meshUV[i][0].u, object.meshUV[i][0].v,
+          object.meshUV[i][1].u, object.meshUV[i][1].v,
+          object.meshUV[i][2].u, object.meshUV[i][2].v,
+          ]
+    Poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
+      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],meshUV,object.textureImage));
+    shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));
+
+  }
+
+  let tempMoveObject = makeProjectedObject(object,worldMatrix,Poly);
+  projectedObjects.push(tempMoveObject);
+  let tempShadowMoveObject = makeProjectedObject(object,worldMatrix,shadowPoly);
   shadowPprojectedObjects.push(tempShadowMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
@@ -986,7 +1050,7 @@ skyImage.addEventListener("load", function() {
 //box
 let cubes = [];
 let cubeImage = new Image();
-cubeImage.src = 'box.jpg';
+cubeImage.src = 'dice.png';
 
 let cubePixelImage = [];
 
@@ -1062,8 +1126,6 @@ diceImage.src = "steve.png";
 let dicePixelImage = [];
 diceImage.addEventListener("load", function() {
   dicePixelImage = pictureToPixelMap(backCtx,diceImage);
-  dices.push(new Object(orgCubeVerts,0.0,0,0,0,0,0,1,1,1,0,false,true,dicePixelImage));
-
 },true);
 let tempDiceUV = [
   [{"u":0.625,"v":0.5},{"u":0.625,"v":0.75},{"u":0.875,"v":0.5}],
@@ -1137,6 +1199,8 @@ let sandPixelImageLoad = false;
 let dicePixelImageLoad = false;
 let steve1Load = false;
 let steve2Load = false;
+let cube1Load = false;
+
 const screen_size_h = SCREEN_SIZE_H;
 const screen_size_w = SCREEN_SIZE_W;
 
@@ -1160,6 +1224,17 @@ if(dataLoad == false){
   if(dicePixelImage.length != 0 && dicePixelImageLoad == false){
     dicePixelImageLoad = true;
   }
+  if(cubePixelImageLoad == true && cube1LoadPack.daeLoad == true && cube1Load == false){
+    cube1LoadPack.textureImage = cubePixelImage;
+    cube1LoadPack.bones.position[1] = -1;
+    cube1LoadPack.bones.position[2] = 1;
+    cube1LoadPack.bones.scaleXYZ[0] = 2;
+
+    cube1LoadPack.bones.scaleXYZ[2] = 0.5;
+
+    dices.push(cube1LoadPack) 
+    cube1Load = true;
+  }
   if(dicePixelImageLoad == true && steve1LoadPack.daeLoad == true && steve1Load == false){
     steve1LoadPack.textureImage = dicePixelImage;
     steves.push(steve1LoadPack) 
@@ -1170,7 +1245,8 @@ if(dataLoad == false){
     steves.push(steve2LoadPack) 
     steve2Load = true;
   }
-  if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load && steve2Load){
+  if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load && steve2Load && cube1Load){
+    console.log(dices[0])
     dataLoad = true;
   }
   ctx.font = '50pt Arial';
@@ -1182,22 +1258,10 @@ if(dataLoad == false){
 const start = performance.now();
 
 //lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
-  viewMatrix = matIdentity();
-  matCamera(viewMatrix,cameraPos,lookat,up);
-  matRound4X4(viewMatrix);
-
-  inverseViewMatrix = matIdentity();
-  CalInvMat4x4(viewMatrix,inverseViewMatrix);
-  matRound4X4(inverseViewMatrix);
-
-  sunViewMatrix = matIdentity();
-  matCamera(sunViewMatrix,sunPos,sunLookat,up);
-  matRound4X4(sunViewMatrix);
-
-  //シャドウの投影後の情報格納
-  let shadowProjectedObjects = [];
-  //投影後の情報格納
-  let projectedObjects = [];
+let shadowMap = [];
+renderbufferInit(shadowMap,screen_size_h,screen_size_w);
+let zBuffering = [];
+renderbufferInit(zBuffering,screen_size_h,screen_size_w);
 
 if(rot>80){
   rotPlus = -5;
@@ -1380,7 +1444,24 @@ steveLoadPack.skinmeshBones = diceBones;
   //makeSkinMeshBones(bonesJoinIndex,boxHuman1Bones,bodys1,masterXYZ,masterRotXYZ,masterScalingXYZ);
 
   //skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjects,bodys1,boxHuman1Bones,sunViewMatrix,viewMatrix);
+  
+  //シャドウの投影後の情報格納
+  let shadowProjectedObjects = [];
+  //投影後の情報格納
+  let projectedObjects = [];
 
+  viewMatrix = matIdentity();
+  matCamera(viewMatrix,cameraPos,lookat,up);
+  matRound4X4(viewMatrix);
+
+  inverseViewMatrix = matIdentity();
+  CalInvMat4x4(viewMatrix,inverseViewMatrix);
+  matRound4X4(inverseViewMatrix);
+
+  sunViewMatrix = matIdentity();
+  matCamera(sunViewMatrix,sunPos,sunLookat,up);
+  matRound4X4(sunViewMatrix);
+  /*
 	//cuberegister
   for(let object of cubes){
     let worldMatrix = matIdentity();
@@ -1390,7 +1471,17 @@ steveLoadPack.skinmeshBones = diceBones;
     mulMatRotateZ(worldMatrix,object.objRotZ); 
     mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
     objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
-	}
+	}*/
+  	//dicesregister
+  for(let object of dices){
+    let worldMatrix = matIdentity();
+    mulMatTranslate(worldMatrix,object.bones.position[0],object.bones.position[1],object.bones.position[2]);  
+    mulMatRotateX(worldMatrix,object.bones.rotXYZ[0]);
+    mulMatRotateY(worldMatrix,object.bones.rotXYZ[1]);
+    mulMatRotateZ(worldMatrix,object.bones.rotXYZ[2]); 
+    mulMatScaling(worldMatrix,object.bones.scaleXYZ[0],object.bones.scaleXYZ[1],object.bones.scaleXYZ[2]);
+    objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
+  }
   //steve
   for(let object of steves){
     objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
@@ -1424,11 +1515,6 @@ steveLoadPack.skinmeshBones = diceBones;
   		shadowProjectedObjects[i].orgObject.centerObjY += gravity;
   	}
   }*/
-let shadowMap = [];
-renderbufferInit(shadowMap,screen_size_h,screen_size_w);
-let zBuffering = [];
-renderbufferInit(zBuffering,screen_size_h,screen_size_w);
-
 //shadowと元々のポリゴン数は同じ
 let shadowProjectedObjectsLength  = shadowProjectedObjects.length;
 for(let j=0;j<shadowProjectedObjectsLength;j++){
@@ -1510,7 +1596,7 @@ for (let row of zBuffering) {
       //pixelVector3[1] = Math.floor(pixelVector3[1] + 0.5);
       if(pixelVector3[0]>0 && pixelVector3[0]<screen_size_w){
         if(pixelVector3[1]>0 && pixelVector3[1]<screen_size_h){
-          if(shadowMap[pixelVector3[1]][pixelVector3[0]][0].z+0.2<pixelVector3[2]){
+          if(shadowMap[pixelVector3[1]][pixelVector3[0]][0].z+0.5<pixelVector3[2]){
             getPixel.r = getPixel.r/2.2;
             getPixel.g = getPixel.g/2.2;
             getPixel.b = getPixel.b/2.2;	
@@ -1519,9 +1605,9 @@ for (let row of zBuffering) {
       }
       //ライトシミュレーション
       let sunCosin = culVecDot(sunVec,getPixel.crossWorldVector3);
-      getPixel.r = getPixel.r*sunCosin*1.2;
-      getPixel.g = getPixel.g*sunCosin*1.2;
-      getPixel.b = getPixel.b*sunCosin*1.2;
+        getPixel.r = getPixel.r*sunCosin*1.2;
+        getPixel.g = getPixel.g*sunCosin*1.2;
+        getPixel.b = getPixel.b*sunCosin*1.2;      
       myImageData.data[base + 0] = getPixel.r;  // Red
       myImageData.data[base + 1] = getPixel.g;  // Green
       myImageData.data[base + 2] = getPixel.b  // Blue
