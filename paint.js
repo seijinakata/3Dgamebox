@@ -523,13 +523,14 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,im
         let sr = setVector2(pt[0],pt[2]);
         let y=triangleTop;
         do{
-			//Y座標ごとの切片
-            let se = [];
-            se.min = sl;
-            se.max = sr;
 			if(y>=0){
-            scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,
-				imageData,uMax,uMIn,vMax,vMin,shadowMap,crossWorldVector3);				
+				//Y座標ごとの切片
+				let startX = top_int(sl[0]);
+				let endX = top_int(sr[0]);
+				let startZ = sl[1];
+				let endZ = sr[1];
+				scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,h,w,
+					imageData,uMax,uMIn,vMax,vMin,shadowMap,crossWorldVector3);				
 			}
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
@@ -548,13 +549,14 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,im
 
         let y=m;
         do{
-			//Y座標ごとの切片
-            let se = [];
-            se.min = sl;
-            se.max = sr;
 			if(y>=0){
-			scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,uMax,uMIn,vMax,vMin,
-				shadowMap,crossWorldVector3);				
+			//Y座標ごとの切片
+				let startX = top_int(sl[0]);
+				let endX = top_int(sr[0]);
+				let startZ = sl[1];
+				let endZ = sr[1];
+				scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,h,w,imageData,uMax,uMIn,vMax,vMin,
+					shadowMap,crossWorldVector3);				
 			}
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
@@ -563,45 +565,39 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,im
         }while(y<triangleBtm);
     }
 }
-function scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,uMax,uMIn,vMax,vMin,shadowMap,crossWorldVector3){
-	let orgTexture = imageData;
+function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,f,e,imageData,uMax,uMIn,vMax,vMin,shadowMap,crossWorldVector3){
 	let selectOrgx = 0,selectOrgy = 0;/* アフィン後の座標に対応した元画像の座標 */
 	let orgx,orgy = 0;/* 最近傍補間した元画像の座標 */
 
 	//アフィン変換の平行移動ベクトル
-	let f = h;//縦移動、transform関数のf
-	let e = w;//横移動、transform関数のe
+	//縦移動、transform関数のf
+	//横移動、transform関数のe
 
-    let l,r;
-    l = top_int(se.min[0]);
-    r = top_int(se.max[0]);
-
-    let screenWidth = screen_size_w;
     //if(l<0)l=0;
-    if(screenWidth<r)r=screenWidth;
+    if(screen_size_w<endX)endX=screen_size_w;
 	//ここでlがスクリーンを超えてるか判定できる。
-    if(l<r){
+    if(startX<endX){
 		
-        let xzStep = vec2Minus(se.max,se.min);
+        let zStep = endZ - startZ;
+		let xStep = endX- startX;
 
-        let dz = xzStep[1]/xzStep[0];
+        let dz = zStep/xStep;
 
-        let sz = se.min[1];
-
-        let x = l;
         do{
-			if(x>=0){
-				let z = zBuffering[y][x][0].z;
-				if(z>sz){
+			if(startX>=0){
+				let z = zBuffering[y][startX][0].z;
+				if(z>startZ){
 					if(shadowMap !=null){
 						/* 元画像における縦方向座標を計算 */
 						/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-						selectOrgy = x * iA[2] + y * iA[3]
+						selectOrgy = startX * iA[2] + y * iA[3]
 						- e * iA[2] - f * iA[3];// +  orgTexture.height / 2;
 						orgy = selectOrgy|0;
 						/* 元画像をはみ出る画素の場合ははみ出る前のピクセルを詰める */
-						let textureVMax = (orgTexture.height*vMax)|0;
-						let textureVMin = (orgTexture.height*vMin + 0.5)|0;
+						let textureVMax = imageData.height*vMax;
+						textureVMax |= 0;
+						let textureVMin = imageData.height*vMin + 0.5;
+						textureVMin |= 0;
 						if(orgy >=  textureVMax){
 							//画像配列は０から始まってるからheight,widthともに-1
 							orgy =  textureVMax - 1;
@@ -611,31 +607,33 @@ function scan_horizontal(zBuffering,screen_size_w,y,se,iA,h,w,imageData,uMax,uMI
 
 						/* 元画像における横方向座標を計算 */
 						/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-						selectOrgx = x * iA[0] + y * iA[1]
+						selectOrgx = startX * iA[0] + y * iA[1]
 							- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-						orgx= selectOrgx|0; 
+						orgx = selectOrgx|0; 
 						/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
-						let textureUMax = (orgTexture.width*uMax)|0;
-						let textureUMin = (orgTexture.width*uMIn + 0.5)|0;
+						let textureUMax = imageData.width*uMax;
+						textureUMax |= 0;
+						let textureUMin = (imageData.width*uMIn + 0.5);
+						textureUMin |= 0;
 						if(orgx >= textureUMax){
 							orgx = textureUMax -1;
 						}if(orgx <= textureUMin){
 							orgx = textureUMin
 						}
-						let index = (orgx + orgy * orgTexture.width) * 4;
-						let affinedPixel = setPixel(sz,orgTexture.data[index],orgTexture.data[index + 1],orgTexture.data[index + 2],orgTexture.data[index + 3],crossWorldVector3);
+						let index = (orgx + orgy * imageData.width) * 4;
+						let affinedPixel = setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3);
 
-						zBuffering[y][x].splice(0,1,affinedPixel);
+						zBuffering[y][startX].splice(0,1,affinedPixel);
 					}else{
-						let affinedPixel = setPixelZ(sz);
-						zBuffering[y][x].splice(0,1,affinedPixel);
+						let affinedPixel = setPixelZ(startZ);
+						zBuffering[y][startX].splice(0,1,affinedPixel);
 					}
 				}
 			}
 
-			sz+=dz;
-			x++;
-        }while(x<r);
+			startZ+=dz;
+			startX++;
+        }while(startX<endX);
     }
 }
 export function textureTransform(a,b,c,d,h,w,alpha,imageData,vertex_list,screen_size_h,screen_size_w,clipMinY,clipMaxY,bufferFrame,
