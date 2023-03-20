@@ -1558,59 +1558,79 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
   }  
 }
 
-
+//シャドウがボトルネック
 let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
-let inverseViewMatrixSunViewMatrix = matMul(sunViewMatrix,inverseViewMatrix);
-let rowCounter = -1;
+let shadowMat = matMul(sunViewMatrix,inverseViewMatrix);
+let pixelY = -1;
 for (let row of zBuffering) {
-  let colCounter = -1;
-  rowCounter += 1;
-  for (let col of row) {
-    colCounter += 1;
-    let base = (rowCounter * screen_size_w + colCounter) * 4;
-    if(col[0].z<99999){
-      let getPixel = col[0];
+  pixelY += 1;
+  let pixelX = -1;
+  for (let pixel of row) {
+    pixelX += 1;
+    let base = (pixelY * screen_size_w + pixelX) * 4;
+    let pixelR = pixel[0].r
+    let pixelG = pixel[0].g;
+    let pixelB = pixel[0].b;
+    //let pixela = pixel[0].a;
+    let pixelZ = pixel[0].z;
+    if(pixelZ<99999){
       //シャドウマップ
+      let shadowPixelX = pixelX;
+      let shadowPixelY = pixelY;
       //camera
-      let pixelVector3 = setVector3(colCounter,rowCounter,getPixel.z);
-      //pixelVector3 = matVecMul(inverseViewPortMatrix,pixelVector3);
-      pixelVector3[0] = pixelVector3[0]/screen_size_w  - 0.5;
-      pixelVector3[1] = pixelVector3[1]/screen_size_h  - 0.5;
-      //let projectionMatrix = matPers(pixelVector3[2]);
-      //let inverseProjectionMatrix = matIdentity();
-      //CalInvMat4x4(projectionMatrix,inverseProjectionMatrix);
-      //getInverseMatrix(projectionMatrix);
-      //pixelVector3 = matVecMul(inverseProjectionMatrix,pixelVector3);
-      pixelVector3[0] *= pixelVector3[2];
-      pixelVector3[1] *= pixelVector3[2];
+      //let pixelVector3 = setVector3(pixelX,pixelY,pixelZ);
+      //inverseViewPort
+      shadowPixelX /= screen_size_w;
+      shadowPixelY /= screen_size_h;
+      shadowPixelX -= 0.5;
+      shadowPixelY -= 0.5;
+      //pixelVector3[0] = pixelVector3[0]/screen_size_w  - 0.5;
+      //pixelVector3[1] = pixelVector3[1]/screen_size_h  - 0.5;
+
+      //inverseProjection
+      shadowPixelX *= pixelZ;
+      shadowPixelY *= pixelZ;
       //view
-      protMatVecMul(inverseViewMatrixSunViewMatrix,pixelVector3);
+      //shadowMatrix
+      let x = shadowMat[0]*shadowPixelX + shadowMat[1]*shadowPixelY + shadowMat[2]*pixelZ + shadowMat[3];
+      let y = shadowMat[4]*shadowPixelX + shadowMat[5]*shadowPixelY + shadowMat[6]*pixelZ + shadowMat[7];
+      pixelZ = shadowMat[8]*shadowPixelX + shadowMat[9]*shadowPixelY + shadowMat[10]*pixelZ + shadowMat[11];
+      shadowPixelX = x;
+      shadowPixelY = y;
+
       //projectionMatrix = matPers(pixelVector3[2]);
       //pixelVector3 = matVecMul(projectionMatrix,pixelVector3);
-      pixelVector3[0] /= pixelVector3[2];
-      pixelVector3[1] /= pixelVector3[2];
-      pixelVector3[0] = ((pixelVector3[0]  + 0.5)*screen_size_w)|0;
-      pixelVector3[1] = ((pixelVector3[1]  + 0.5)*screen_size_h)|0;
-      //pixelVector3 = matVecMul(viewPortMatrix,pixelVector3);
-      //pixelVector3[0] = Math.floor(pixelVector3[0] + 0.5);
-      //pixelVector3[1] = Math.floor(pixelVector3[1] + 0.5);
-      if(pixelVector3[0]>0 && pixelVector3[0]<screen_size_w){
-        if(pixelVector3[1]>0 && pixelVector3[1]<screen_size_h){
-          if(shadowMap[pixelVector3[1]][pixelVector3[0]][0].z+0.5<pixelVector3[2]){
-            getPixel.r = getPixel.r/2.2;
-            getPixel.g = getPixel.g/2.2;
-            getPixel.b = getPixel.b/2.2;	
+      //projection
+      shadowPixelX /= pixelZ;
+      shadowPixelY /= pixelZ;
+
+      //viewPort
+      shadowPixelX += 0.5;
+      shadowPixelY += 0.5;
+      shadowPixelX *= screen_size_w;
+      shadowPixelY *= screen_size_h;
+      shadowPixelX |= 0;
+      shadowPixelY |= 0;
+      //pixelVector3[0] = ((pixelVector3[0]  + 0.5)*screen_size_w)|0;
+      //pixelVector3[1] = ((pixelVector3[1]  + 0.5)*screen_size_h)|0;
+      if(shadowPixelX>0 && shadowPixelX<screen_size_w){
+        if(shadowPixelY>0 && shadowPixelY<screen_size_h){
+          if(shadowMap[shadowPixelY][shadowPixelX][0].z+0.2<pixelZ){
+            pixelR /= 2.2;
+            pixelG /= 2.2;
+            pixelB /= 2.2;	
           }
         }
       }
       //ライトシミュレーション
-      let sunCosin = culVecDot(sunVec,getPixel.crossWorldVector3);
-        getPixel.r = getPixel.r*sunCosin*1.2;
-        getPixel.g = getPixel.g*sunCosin*1.2;
-        getPixel.b = getPixel.b*sunCosin*1.2;      
-      myImageData.data[base + 0] = getPixel.r;  // Red
-      myImageData.data[base + 1] = getPixel.g;  // Green
-      myImageData.data[base + 2] = getPixel.b  // Blue
+      let sunCosin = culVecDot(sunVec,pixel[0].crossWorldVector3);
+      sunCosin *= 1.5;
+      pixelR *= sunCosin;
+      pixelG *= sunCosin;
+      pixelB *= sunCosin;      
+      myImageData.data[base + 0] = pixelR;  // Red
+      myImageData.data[base + 1] = pixelG;  // Green
+      myImageData.data[base + 2] = pixelB;  // Blue
       myImageData.data[base + 3] = 255; // Alpha
     //dotPaint(j,i,getPixel.r,getPixel.g,getPixel.b,getPixel.a,ctx);    
     }else{
