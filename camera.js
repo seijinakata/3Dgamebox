@@ -3,7 +3,7 @@
 import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round, roundVector2} from './vector.js';
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
-import {setPixelZ,setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch} from './paint.js';
+import {setPixelZ,setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer} from './paint.js';
 
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
@@ -1258,10 +1258,7 @@ if(dataLoad == false){
 const start = performance.now();
 
 //lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
-let shadowMap = [];
-renderbufferInit(shadowMap,screen_size_h,screen_size_w);
-let zBuffering = [];
-renderbufferInit(zBuffering,screen_size_h,screen_size_w);
+
 
 if(rot>80){
   rotPlus = -5;
@@ -1515,6 +1512,11 @@ steveLoadPack.skinmeshBones = diceBones;
   		shadowProjectedObjects[i].orgObject.centerObjY += gravity;
   	}
   }*/
+
+let shadowMap = [];
+renderbufferInit(shadowMap,screen_size_h,screen_size_w);
+let zBuffering = [];
+renderbufferInit(zBuffering,screen_size_h,screen_size_w);
 //shadowと元々のポリゴン数は同じ
 let shadowProjectedObjectsLength  = shadowProjectedObjects.length;
 for(let j=0;j<shadowProjectedObjectsLength;j++){
@@ -1523,37 +1525,25 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
 	  //-の方がこちらに近くなる座標軸だから
 	  if(shadowProjectedObjects[j].orgObject.backCullingFlag == true){
 	    if(shadowProjectedObjects[j].polygonList[projectedPolyNum].crossZ<0){
-        let image = null;
-        let crossWorldVector3 = null;
-        let UV = null;
-       triangleToBuffer(shadowMap,null,1,image,shadowProjectedObjects[j].polygonList[projectedPolyNum].moveVertices,crossWorldVector3,UV);
-        } 
-	  }else{
-      let image = null;
-      let crossWorldVector3 = null;
-      let UV = null;
-     triangleToBuffer(shadowMap,null,1,image,shadowProjectedObjects[j].polygonList[projectedPolyNum].moveVertices,crossWorldVector3,UV);
-	  }
-	
-	  //-の方がこちらに近くなる座標軸だから
-	  if(projectedObjects[j].orgObject.backCullingFlag == true){
-	    if(projectedObjects[j].polygonList[projectedPolyNum].crossZ<0){
-        triangleToBuffer(zBuffering,shadowMap,1,projectedObjects[j].polygonList[projectedPolyNum].image,projectedObjects[j].polygonList[projectedPolyNum].moveVertices,projectedObjects[j].polygonList[projectedPolyNum].crossWorldVector3,
+      triangleToShadowBuffer(shadowMap,shadowProjectedObjects[j].polygonList[projectedPolyNum].moveVertices,screen_size_h,screen_size_w);
+      }else if(projectedObjects[j].polygonList[projectedPolyNum].crossZ<0){
+        triangleToBuffer(zBuffering,projectedObjects[j].polygonList[projectedPolyNum].image,projectedObjects[j].polygonList[projectedPolyNum].moveVertices,projectedObjects[j].polygonList[projectedPolyNum].crossWorldVector3,
           [
             projectedObjects[j].polygonList[projectedPolyNum].UV[0], projectedObjects[j].polygonList[projectedPolyNum].UV[1],
             projectedObjects[j].polygonList[projectedPolyNum].UV[2], projectedObjects[j].polygonList[projectedPolyNum].UV[3],
             projectedObjects[j].polygonList[projectedPolyNum].UV[4], projectedObjects[j].polygonList[projectedPolyNum].UV[5]
           ]
-           );
+           ,screen_size_h,screen_size_w);
 	    } 
 	  }else{
-      triangleToBuffer(zBuffering,shadowMap,1,projectedObjects[j].polygonList[projectedPolyNum].image,projectedObjects[j].polygonList[projectedPolyNum].moveVertices,projectedObjects[j].polygonList[projectedPolyNum].crossWorldVector3,
+      triangleToShadowBuffer(shadowMap,shadowProjectedObjects[j].polygonList[projectedPolyNum].moveVertices,screen_size_h,screen_size_w);
+      triangleToBuffer(zBuffering,projectedObjects[j].polygonList[projectedPolyNum].image,projectedObjects[j].polygonList[projectedPolyNum].moveVertices,projectedObjects[j].polygonList[projectedPolyNum].crossWorldVector3,
         [
           projectedObjects[j].polygonList[projectedPolyNum].UV[0], projectedObjects[j].polygonList[projectedPolyNum].UV[1],
           projectedObjects[j].polygonList[projectedPolyNum].UV[2], projectedObjects[j].polygonList[projectedPolyNum].UV[3],
           projectedObjects[j].polygonList[projectedPolyNum].UV[4], projectedObjects[j].polygonList[projectedPolyNum].UV[5]
         ]
-         );
+         ,screen_size_h,screen_size_w);
 	  }
   }  
 }

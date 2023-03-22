@@ -482,6 +482,24 @@ export function triangleRasterize(buffer,bufferFrame,z,r,g,b,a,screen_size_h,scr
 		}
 	}
 }
+
+//lengthが高さ、length[0]が横
+export function triangleToShadowBuffer(zBuffering,vertex_list,screen_size_h,screen_size_w)
+{
+  //各点のZ座標がこれより下なら作画しない。
+  if (vertex_list[0][2] > 0.0 && vertex_list[1][2]> 0.0 && vertex_list[2][2] > 0.0) {
+
+	let tempverts = vertex_list.concat();
+
+	sort_index(tempverts,1);//ys
+	let pt = tempverts[0];
+	let pm = tempverts[1];
+	let pb = tempverts[2];
+
+	scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb);		
+  }
+}
+
 //x,yの最初の初期値を０にするのはダメ差分を取るため。shadowMap用
 function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 
@@ -494,9 +512,9 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
     let triangleBtm = pb[1];
 
     if(!(triangleTop<triangleBtm))return;
-	let screenHeight = screen_size_h;
+
 	//if(triangleTop<0)triangleTop=0;
-    if(screenHeight<triangleBtm)triangleBtm=screen_size_h;
+    if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;
 
     let pl = [],pr = [];
 
@@ -510,7 +528,7 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 
     let m = mid;
     //if(m<0)m=0;
-    if(screenHeight<m)m=screenHeight;
+    if(screen_size_h<m)m=screen_size_h;
 
     if(triangleTop<m){//upper 
         let el = vecMinus(pl,pt);//pt->pl
@@ -591,7 +609,7 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 }
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
 function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,imageData,uMax,uMIn,vMax,vMin,
-	shadowMap,crossWorldVector3){
+	crossWorldVector3){
 
 	//viewport前は0から1000で管理4桁で四捨五入0.5は画面の中央
 	let mid = pm[1];
@@ -602,9 +620,9 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,im
     let triangleBtm = pb[1];
 
     if(!(triangleTop<triangleBtm))return;
-	let screenHeight = screen_size_h;
+
 	//if(triangleTop<0)triangleTop=0;
-    if(screenHeight<triangleBtm)triangleBtm=screen_size_h;
+    if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;
 
     let pl = [],pr = [];
 
@@ -616,11 +634,10 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,im
         pr = tmp;           
     }
 
-    let m = mid;
     //if(m<0)m=0;
-    if(screenHeight<m)m=screenHeight;
+    if(screen_size_h<mid)mid=screen_size_h;
 
-    if(triangleTop<m){//upper 
+    if(triangleTop<mid){//upper 
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
@@ -628,23 +645,22 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,im
         //start position
         let sl = setVector2(pt[0],pt[2]);
         let sr = setVector2(pt[0],pt[2]);
-        let y=triangleTop;
         do{
-			if(y>=0){
+			if(triangleTop>=0){
 				//Y座標ごとの切片
 				let startX = top_int(sl[0]);
 				let endX = top_int(sr[0]);
 				let startZ = sl[1];
 				let endZ = sr[1];
-				scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,h,w,
+				scan_horizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,iA,h,w,
 					imageData,uMax,uMIn,vMax,vMin,crossWorldVector3);				
 			}
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
-            y++;
-        }while(y<m);
+            triangleTop++;
+        }while(triangleTop<mid);
     }
-    if(m<triangleBtm){//lower
+    if(mid<triangleBtm){//lower
 		let el = vecMinus(pb,pl);//pl->pb
 		let er = vecMinus(pb,pr);//pr->pb
         let dl = delta_xz(el);
@@ -653,26 +669,23 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,im
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
 
-        let y=m;
         do{
-			if(y>=0){
+			if(mid>=0){
 			//Y座標ごとの切片
 				let startX = top_int(sl[0]);
 				let endX = top_int(sr[0]);
 				let startZ = sl[1];
 				let endZ = sr[1];
-				scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,h,w,imageData,uMax,uMIn,vMax,vMin,
+				scan_horizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,iA,h,w,imageData,uMax,uMIn,vMax,vMin,
 					crossWorldVector3);				
 			}
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
-            y++;
-        }while(y<triangleBtm);
+            mid++;
+        }while(mid<triangleBtm);
     }
 }
 function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,f,e,imageData,uMax,uMIn,vMax,vMin,crossWorldVector3){
-	let selectOrgx = 0,selectOrgy = 0;/* アフィン後の座標に対応した元画像の座標 */
-	let orgx,orgy = 0;/* 最近傍補間した元画像の座標 */
 
 	//アフィン変換の平行移動ベクトル
 	//縦移動、transform関数のf
@@ -694,9 +707,9 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,f
 				if(z>startZ){
 					/* 元画像における縦方向座標を計算 */
 					/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-					selectOrgy = startX * iA[2] + y * iA[3]
+					let selectOrgy = startX * iA[2] + y * iA[3]/* アフィン後の座標に対応した元画像の座標 */
 					- e * iA[2] - f * iA[3];// +  orgTexture.height / 2;
-					orgy = selectOrgy|0;
+					let orgy = selectOrgy|0;/* 最近傍補間した元画像の座標 */
 					/* 元画像をはみ出る画素の場合ははみ出る前のピクセルを詰める */
 					let textureVMax = imageData.height*vMax;
 					textureVMax |= 0;
@@ -711,9 +724,9 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,f
 
 					/* 元画像における横方向座標を計算 */
 					/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-					selectOrgx = startX * iA[0] + y * iA[1]
+					let selectOrgx = startX * iA[0] + y * iA[1]/* アフィン後の座標に対応した元画像の座標 */
 						- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-					orgx = selectOrgx|0; 
+					let orgx = selectOrgx|0; /* 最近傍補間した元画像の座標 */
 					/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
 					let textureUMax = imageData.width*uMax;
 					textureUMax |= 0;
@@ -868,7 +881,7 @@ export function textureTransform(a,b,c,d,h,w,alpha,imageData,vertex_list,screen_
 }
 
 //lengthが高さ、length[0]が横
-export function triangleToBuffer(zBuffering,shadowMap,textureAlpha,img,vertex_list,crossWorldVector3,uv_list)
+export function triangleToBuffer(zBuffering,img,vertex_list,crossWorldVector3,uv_list,screen_size_h,screen_size_w)
 {
   //各点のZ座標がこれより下なら作画しない。
   if (vertex_list[0][2] > 0.0 && vertex_list[1][2]> 0.0 && vertex_list[2][2] > 0.0) {
@@ -893,7 +906,6 @@ export function triangleToBuffer(zBuffering,shadowMap,textureAlpha,img,vertex_li
     b = mi._11 * _Ay + mi._12 * _By;
     d = mi._21 * _Ay + mi._22 * _By;
 	*/
-	if(shadowMap != null){
 		//マトリックス変換値を求める
 		var Ax = (uv_list[2] - uv_list[0]) * img.width;
 		var Ay = (uv_list[3] - uv_list[1]) * img.height;
@@ -933,19 +945,8 @@ export function triangleToBuffer(zBuffering,shadowMap,textureAlpha,img,vertex_li
 		let pm = tempverts[1];
 		let pb = tempverts[2];
 
-		scan_vertical(zBuffering,SCREEN_SIZE_H,SCREEN_SIZE_W,pt,pm,pb,iA,h,w,img,uMax,uMIn,vMax,vMin,
-			shadowMap,crossWorldVector3);
-	}else{
-	
-		let tempverts = vertex_list.concat();
-
-		sort_index(tempverts,1);//ys
-		let pt = tempverts[0];
-		let pm = tempverts[1];
-		let pb = tempverts[2];
-
-		scan_ShadowVertical(zBuffering,SCREEN_SIZE_H,SCREEN_SIZE_W,pt,pm,pb);		
-	}
+		scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,img,uMax,uMIn,vMax,vMin,
+			crossWorldVector3);
 
  	/*
 	let triangleFrame = new Array(SCREEN_SIZE_H);
