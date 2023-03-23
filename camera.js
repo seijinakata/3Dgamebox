@@ -1551,18 +1551,15 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
 //シャドウがボトルネック
 let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
 let shadowMat = matMul(sunViewMatrix,inverseViewMatrix);
-let pixelY = -1;
-for (let row of zBuffering) {
-  pixelY += 1;
-  let pixelX = -1;
-  for (let pixel of row) {
-    pixelX += 1;
+for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
+  for (let pixelX=0;pixelX<screen_size_w;pixelX++) {
     let base = (pixelY * screen_size_w + pixelX) * 4;
-    let pixelR = pixel[0].r
-    let pixelG = pixel[0].g;
-    let pixelB = pixel[0].b;
-    //let pixela = pixel[0].a;
-    let pixelZ = pixel[0].z;
+    let pixel = zBuffering[pixelY][pixelX][0];
+    let pixelR = pixel.r
+    let pixelG = pixel.g;
+    let pixelB = pixel.b;
+    //let pixela = pixel.a;
+    let pixelZ = pixel.z;
     if(pixelZ<99999){
       //シャドウマップ
       let shadowPixelX = pixelX;
@@ -1613,7 +1610,7 @@ for (let row of zBuffering) {
         }
       }
       //ライトシミュレーション
-      let sunCosin = culVecDot(sunVec,pixel[0].crossWorldVector3);
+      let sunCosin = culVecDot(sunVec,pixel.crossWorldVector3);
       sunCosin *= 1.5;
       pixelR *= sunCosin;
       pixelG *= sunCosin;
