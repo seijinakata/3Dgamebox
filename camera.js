@@ -619,12 +619,15 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObje
   let shadowProjectedVerts = [];
   let mixMatrix = [];
 
-  for (var i = 0; i < objects.meshVerts.length; i++) {
+  let meshVets_Length = objects.meshVerts.length;
+
+  for (let i = 0; i < meshVets_Length; i++) {
     let mixMatrix = [0,0,0,0,
                     0,0,0,0,
                     0,0,0,0,
                     0,0,0,0];
-    for(let j=0;j<objects.blendBoneIndex[i].length;j++){
+    let blendBoneIndex_Length = objects.blendBoneIndex[i].length;
+    for(let j=0;j<blendBoneIndex_Length;j++){
       let bonesMatrix = objects.bones[objects.blendBoneIndex[i][j]].skinmeshBone;
       let matrixWaight = objects.bonesWeight[i][j];
       let waightMatrix = matWaight(bonesMatrix,matrixWaight);
@@ -655,7 +658,8 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObje
  
   let Poly = [];
   let shadowPoly = [];
-  for(let i=0;i<objects.meshVertsFaceIndex.length;i++){
+  let meshVertsFaceIndex_Length = objects.meshVertsFaceIndex.length;
+  for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = objects.meshVertsFaceIndex[i];
     let meshUV = [
           objects.meshUV[i][0].u, objects.meshUV[i][0].v,
@@ -665,7 +669,6 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObje
     Poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
       worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],meshUV,objects.textureImage));
     shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));
-
   }
 
   let tempMoveObject = makeProjectedObject(objects,mixMatrix,Poly);
@@ -849,7 +852,8 @@ function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedO
   let projectedVerts = [];
   let shadowProjectedVerts = [];
 
-  for (var i = 0; i < object.verts.length; i++) {
+  let meshVerts_Length = object.verts.length;
+  for (let i = 0; i < meshVerts_Length; i++) {
     let verts = matVecMul(worldMatrix,object.verts[i]);
     let nomalVerts = verts.concat();
     let shadowVerts = verts.concat();
@@ -857,7 +861,6 @@ function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedO
     protMatVecMul(viewMatrix,nomalVerts);
     protMatVecMul(shadowViewMatrix,shadowVerts);
    
-
     let projectionMatrix =  matPers(nomalVerts[2]);
     let shadowProjectionMatrix =  matPers(shadowVerts[2]);
 
@@ -876,7 +879,8 @@ function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedO
  
   let Poly = [];
   let shadowPoly = [];
-  for(let i=0;i<object.faceIndex.length;i++){
+  let meshVertsFaceIndex_Length = object.faceIndex.length;
+  for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.faceIndex[i];
     let UV = [
           object.UV[i][0].u, object.UV[i][0].v,
@@ -886,7 +890,6 @@ function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedO
     Poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
       worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],UV,object.image));
     shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));
-
   }
 
   let tempMoveObject = makeProjectedObject(object,worldMatrix,Poly);
@@ -1246,7 +1249,6 @@ if(dataLoad == false){
     steve2Load = true;
   }
   if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load && steve2Load && cube1Load){
-    console.log(dices[0])
     dataLoad = true;
   }
   ctx.font = '50pt Arial';

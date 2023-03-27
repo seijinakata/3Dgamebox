@@ -512,6 +512,7 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
     let triangleBtm = pb[1];
 
     if(!(triangleTop<triangleBtm))return;
+	if(triangleBtm<0) return;
 
 	//if(triangleTop<0)triangleTop=0;
     if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;
@@ -586,7 +587,7 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
     //if(l<0)l=0;
     if(screen_size_w<endX)endX=screen_size_w;
 	//ここでstartXがスクリーンを超えてるか判定できる。
-    if(startX<endX){
+    if(startX<endX && endX>=0){
 		
         let zStep = endZ - startZ;
 		let xStep = endX- startX;
@@ -597,8 +598,7 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 			if(startX>=0){
 				let z = zBuffering[y][startX][0].z;
 				if(z>startZ){
-					let shadowPixelZ = setPixelZ(startZ);
-					zBuffering[y][startX].splice(0,1,shadowPixelZ);
+					zBuffering[y][startX].splice(0,1,setPixelZ(startZ));
 				}
 			}
 
@@ -620,6 +620,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,im
     let triangleBtm = pb[1];
 
     if(!(triangleTop<triangleBtm))return;
+	if(triangleBtm<0) return;
 
 	//if(triangleTop<0)triangleTop=0;
     if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;
@@ -694,7 +695,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,f
     //if(l<0)l=0;
     if(screen_size_w<endX)endX=screen_size_w;
 	//ここでstartXがスクリーンを超えてるか判定できる。
-    if(startX<endX){
+    if(startX<endX && endX>=0){
 		
         let zStep = endZ - startZ;
 		let xStep = endX- startX;
@@ -711,28 +712,29 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,f
 					- e * iA[2] - f * iA[3];// +  orgTexture.height / 2;
 					selectOrgy |= 0;/* 最近傍補間した元画像の座標 */
 					/* 元画像をはみ出る画素の場合ははみ出る前のピクセルを詰める */
+					/*
 					if(selectOrgy >=  textureVMax){
 						//画像配列は０から始まってるからheight,widthともに-1
 						selectOrgy =  textureVMax - 1;
 					}if(selectOrgy <= textureVMin){
 						selectOrgy = textureVMin;
-					}
+					}*/
 					/* 元画像における横方向座標を計算 */
 					/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
 					let selectOrgx = startX * iA[0] + y * iA[1]/* アフィン後の座標に対応した元画像の座標 */
 						- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
 					selectOrgx |= 0; /* 最近傍補間した元画像の座標 */
 					/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
+					/*
 					if(selectOrgx >= textureUMax){
 						//画像配列は０から始まってるからheight,widthともに-1
 						selectOrgx = textureUMax -1;
 					}if(selectOrgx <= textureUMin){
 						selectOrgx = textureUMin
-					}
+					}*/
 					let index = (selectOrgx + selectOrgy * imageData.width) * 4;
-					let affinedPixel = setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3);
 
-					zBuffering[y][startX].splice(0,1,affinedPixel);
+					zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3));
 				}
 			}
 			startZ+=dz;
