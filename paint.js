@@ -701,15 +701,22 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,f
 		let xStep = endX- startX;
 
         let dz = zStep/xStep;
-
+		let tmpOrgy = null;
+		let tmpOrgx = null;
         do{
 			if(startX>=0){
 				let z = zBuffering[y][startX][0].z;
 				if(z>startZ){
+					if(tmpOrgy == null){
+						tmpOrgy = y * iA[3] - e * iA[2] - f * iA[3];
+						tmpOrgx = y * iA[1] - e * iA[0] - f * iA[1];
+					}
 					/* 元画像における縦方向座標を計算 */
 					/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-					let selectOrgy = startX * iA[2] + y * iA[3]/* アフィン後の座標に対応した元画像の座標 */
-					- e * iA[2] - f * iA[3];// +  orgTexture.height / 2;
+					let selectOrgy = tmpOrgy + startX * iA[2];
+					
+					//let selectOrgy = startX * iA[2] + y * iA[3]/* アフィン後の座標に対応した元画像の座標 */
+					//- e * iA[2] - f * iA[3];// +  orgTexture.height / 2;
 					selectOrgy |= 0;/* 最近傍補間した元画像の座標 */
 					/* 元画像をはみ出る画素の場合ははみ出る前のピクセルを詰める */
 					/*
@@ -721,8 +728,9 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,f
 					}*/
 					/* 元画像における横方向座標を計算 */
 					/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-					let selectOrgx = startX * iA[0] + y * iA[1]/* アフィン後の座標に対応した元画像の座標 */
-						- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
+					let selectOrgx = tmpOrgx + startX * iA[0];
+					//let selectOrgx = startX * iA[0] + y * iA[1]/* アフィン後の座標に対応した元画像の座標 */
+					//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
 					selectOrgx |= 0; /* 最近傍補間した元画像の座標 */
 					/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
 					/*
