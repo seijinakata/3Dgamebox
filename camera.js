@@ -937,8 +937,7 @@ function renderbufferInit(buffer,pixelY,pixelX){
   for(let y=0;y<pixelY;y++){
     let pixelColumn = [];
     for(let x=0;x<pixelX;x++){
-      let pixel = [];
-      pixel.push({z:99999});
+      let pixel = {z:99999};
       pixelColumn.push(pixel);
     }
     buffer.push(pixelColumn);
@@ -1556,13 +1555,13 @@ let shadowMat = matMul(sunViewMatrix,inverseViewMatrix);
 for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   for (let pixelX=0;pixelX<screen_size_w;pixelX++) {
     let base = (pixelY * screen_size_w + pixelX) * 4;
-    let pixel = zBuffering[pixelY][pixelX][0];
-    let pixelR = pixel.r
-    let pixelG = pixel.g;
-    let pixelB = pixel.b;
-    //let pixela = pixel.a;
-    let pixelZ = pixel.z;
-    if(pixelZ<99999){
+    let pixel = zBuffering[pixelY][pixelX];
+    if(pixel.z<99999){
+      let pixelR = pixel.r;
+      let pixelG = pixel.g;
+      let pixelB = pixel.b;
+      let pixelZ = pixel.z;
+      //let pixela = pixel.a;
       //シャドウマップ
       let shadowPixelX = pixelX;
       let shadowPixelY = pixelY;
@@ -1604,7 +1603,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       //pixelVector3[1] = ((pixelVector3[1]  + 0.5)*screen_size_h)|0;
       if(shadowPixelX>0 && shadowPixelX<screen_size_w){
         if(shadowPixelY>0 && shadowPixelY<screen_size_h){
-          if(shadowMap[shadowPixelY][shadowPixelX][0].z+0.2<pixelZ){
+          if(shadowMap[shadowPixelY][shadowPixelX].z+0.2<pixelZ){
             pixelR /= 2.2;
             pixelG /= 2.2;
             pixelB /= 2.2;	
@@ -1627,7 +1626,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       //dotPaint(j,i,0,0,0,255,ctx);
       myImageData.data[base + 0] = 0;  // Red
       myImageData.data[base + 1] = 0;  // Green
-      myImageData.data[base + 2] = 0  // Blue
+      myImageData.data[base + 2] = 0;  // Blue
       myImageData.data[base + 3] = 255; // Alpha
     }
   }
