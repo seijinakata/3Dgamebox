@@ -1529,21 +1529,13 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
       triangleToShadowBuffer(shadowMap,shadowProjectedObjects[j].polygonList[projectedPolyNum].moveVertices,screen_size_h,screen_size_w);
       }else if(projectedObjects[j].polygonList[projectedPolyNum].crossZ<0){
         triangleToBuffer(zBuffering,projectedObjects[j].polygonList[projectedPolyNum].image,projectedObjects[j].polygonList[projectedPolyNum].moveVertices,projectedObjects[j].polygonList[projectedPolyNum].crossWorldVector3,
-          [
-            projectedObjects[j].polygonList[projectedPolyNum].UV[0], projectedObjects[j].polygonList[projectedPolyNum].UV[1],
-            projectedObjects[j].polygonList[projectedPolyNum].UV[2], projectedObjects[j].polygonList[projectedPolyNum].UV[3],
-            projectedObjects[j].polygonList[projectedPolyNum].UV[4], projectedObjects[j].polygonList[projectedPolyNum].UV[5]
-          ]
+            projectedObjects[j].polygonList[projectedPolyNum].UV
            ,screen_size_h,screen_size_w);
 	    } 
 	  }else{
       triangleToShadowBuffer(shadowMap,shadowProjectedObjects[j].polygonList[projectedPolyNum].moveVertices,screen_size_h,screen_size_w);
       triangleToBuffer(zBuffering,projectedObjects[j].polygonList[projectedPolyNum].image,projectedObjects[j].polygonList[projectedPolyNum].moveVertices,projectedObjects[j].polygonList[projectedPolyNum].crossWorldVector3,
-        [
-          projectedObjects[j].polygonList[projectedPolyNum].UV[0], projectedObjects[j].polygonList[projectedPolyNum].UV[1],
-          projectedObjects[j].polygonList[projectedPolyNum].UV[2], projectedObjects[j].polygonList[projectedPolyNum].UV[3],
-          projectedObjects[j].polygonList[projectedPolyNum].UV[4], projectedObjects[j].polygonList[projectedPolyNum].UV[5]
-        ]
+          projectedObjects[j].polygonList[projectedPolyNum].UV
          ,screen_size_h,screen_size_w);
 	  }
   }  
