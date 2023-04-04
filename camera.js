@@ -190,7 +190,17 @@ function daeLoader(fileName,daeLoadPack){
             }
           }              
         }
-        daeLoadPack.meshUV = meshUV;
+        let faceIndexMeshUV = [];
+        let meshVertsFaceIndex_Length = meshVertsFaceIndex.length;
+        for(let i=0;i<meshVertsFaceIndex_Length;i++){
+          let tempMeshUV = [
+                meshUV[i][0].u, meshUV[i][0].v,
+                meshUV[i][1].u, meshUV[i][1].v,
+                meshUV[i][2].u, meshUV[i][2].v,
+                ]
+          faceIndexMeshUV.push(tempMeshUV);
+        }
+        daeLoadPack.faceIndexMeshUV = faceIndexMeshUV;
         //armature
         var armatures = docelem.getElementsByTagName("library_controllers");
         if(armatures.length != 0){
@@ -539,7 +549,19 @@ class Object{
     this.faceIndex = verts.faceIndex;
     this.bonesIndex = verts.bonesIndex;
     this.bonesWaight = verts.bonesWaight;
-    this.UV = verts.uv;
+
+    let faceIndexMeshUV = [];
+    //エラーはmonkey
+    let meshVertsFaceIndex_Length = this.faceIndex.length;
+    for(let i=0;i<meshVertsFaceIndex_Length;i++){
+      let tempMeshUV = [
+            verts.uv[i][0].u, verts.uv[i][0].v,
+            verts.uv[i][1].u, verts.uv[i][1].v,
+            verts.uv[i][2].u, verts.uv[i][2].v,
+            ]
+      faceIndexMeshUV.push(tempMeshUV);
+    }
+    this.UV = faceIndexMeshUV;
     this.faceUV = [];
   }
 }
@@ -661,13 +683,8 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObje
   let meshVertsFaceIndex_Length = objects.meshVertsFaceIndex.length;
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = objects.meshVertsFaceIndex[i];
-    let meshUV = [
-          objects.meshUV[i][0].u, objects.meshUV[i][0].v,
-          objects.meshUV[i][1].u, objects.meshUV[i][1].v,
-          objects.meshUV[i][2].u, objects.meshUV[i][2].v,
-          ]
     Poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],meshUV,objects.textureImage));
+      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]], objects.faceIndexMeshUV[i],objects.textureImage));
     shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));
   }
 
@@ -688,7 +705,8 @@ function objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowPproject
   let projectedVerts = [];
   let shadowProjectedVerts = [];
 
-  for (var i = 0; i < object.meshVerts.length; i++) {
+  let object_meshVerts_length = object.meshVerts.length;
+  for (var i = 0; i < object_meshVerts_length; i++) {
     let verts = matVecMul(worldMatrix,object.meshVerts[i]);
     let nomalVerts = verts.concat();
     let shadowVerts = verts.concat();
@@ -696,7 +714,6 @@ function objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowPproject
     protMatVecMul(viewMatrix,nomalVerts);
     protMatVecMul(shadowViewMatrix,shadowVerts);
    
-
     let projectionMatrix =  matPers(nomalVerts[2]);
     let shadowProjectionMatrix =  matPers(shadowVerts[2]);
 
@@ -715,15 +732,11 @@ function objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowPproject
  
   let Poly = [];
   let shadowPoly = [];
-  for(let i=0;i<object.meshVertsFaceIndex.length;i++){
+  let object_meshVertsFaceIndex_length = object.meshVertsFaceIndex.length;
+  for(let i=0;i<object_meshVertsFaceIndex_length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
-    let meshUV = [
-          object.meshUV[i][0].u, object.meshUV[i][0].v,
-          object.meshUV[i][1].u, object.meshUV[i][1].v,
-          object.meshUV[i][2].u, object.meshUV[i][2].v,
-          ]
     Poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],meshUV,object.textureImage));
+      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.faceIndexMeshUV[i],object.textureImage));
     shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));
 
   }
@@ -882,13 +895,8 @@ function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedO
   let meshVertsFaceIndex_Length = object.faceIndex.length;
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.faceIndex[i];
-    let UV = [
-          object.UV[i][0].u, object.UV[i][0].v,
-          object.UV[i][1].u, object.UV[i][1].v,
-          object.UV[i][2].u, object.UV[i][2].v,
-          ]
     Poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],UV,object.image));
+      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UV[i],object.image));
     shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));
   }
 
