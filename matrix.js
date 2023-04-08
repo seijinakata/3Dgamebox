@@ -4,6 +4,10 @@
 import {setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize,round} from './vector.js';
 import {sinLut,cosLut} from './camera.js';
 //一次元配列
+export function matCopy(m){
+    let copyMat = [m[0],m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8],m[9],m[10],m[11]];
+    return copyMat;
+}
 export function matRound4X4(mat){
     mat[0] = round( mat[0]);
     mat[4] = round( mat[4]);
@@ -90,22 +94,22 @@ export function matPlus(m1,m2) {
 ;
 }
 export function matWaight(m,w) {
-    let tmp = matIdentity();
+    let tmp = matCopy(m);
 
-    tmp[0] = m[0] * w;
-    tmp[1] = m[1] * w;
-    tmp[2] = m[2] * w;
-    tmp[3] = m[3] * w;
+    tmp[0] *= w;
+    tmp[1] *= w;
+    tmp[2] *= w;
+    tmp[3] *= w;
 
-    tmp[4] = m[4] * w;
-    tmp[5] = m[5] * w;
-    tmp[6] = m[6] * w;
-    tmp[7] = m[7] * w;
+    tmp[4] *= w;
+    tmp[5] *= w;
+    tmp[6] *= w;
+    tmp[7] *= w;
 
-    tmp[8] = m[8] * w;
-    tmp[9] = m[9] * w;
-    tmp[10] = m[10] * w;
-    tmp[11] = m[11] * w;
+    tmp[8] *= w;
+    tmp[9] *= w;
+    tmp[10] *= w;
+    tmp[11] *= w;
 
     //tmp[12] = m[12] * w;
     //tmp[13] = m[13] * w;
@@ -172,6 +176,7 @@ export function protMatVecMul(m,v){
         //proj以外の掛け算
         //return tmp;
     }
+
 export function matPers(z) {
         //float s = 1.0f / tan(angle * 0.5f);
         //float a = f / (-f + n);
@@ -476,16 +481,17 @@ export function getInvert2(_11,_12,_21,_22){
     var out = [[1,0],
 				[0,1]]
     //逆行列の公式 ad - bc の部分
-    var det = _11 * _22 - _12 * _21;
-    if (det > -0.0001 && det < 0.0001)
+    let  det = _11 * _22 - _12 * _21;
+    if (det == 0)
       return null;
+    let  inv_det = 1.0/det;
 
     //逆行列の公式 det=(ad - bc) で各値(a,b,c,d)を割る
-    out[0][0] = _22 / det;  // a = d / det
-    out[1][1] = _11 / det;  // d = a / det
+    out[0][0] = _22 * inv_det;  // a = d / det
+    out[1][1] = _11 * inv_det;  // d = a / det
 
-    out[0][1] = -_12 / det; // b = -b / det
-    out[1][0]= -_21 / det; // c = -c / det
+    out[0][1] = -_12 * inv_det; // b = -b / det
+    out[1][0]= -_21 * inv_det; // c = -c / det
 
     return out;
   }

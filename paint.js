@@ -25,13 +25,8 @@ export class renderBuffer{
 	}
 }
 export function setPixel(z,r,g,b,a,crossWorldVector3){
-	let pixel = {"z":z,"r":r,"g":g,"b":b,"a":a,"crossWorldVector3":crossWorldVector3};
+	let pixel = [z,r,g,b,a,crossWorldVector3];
 	return pixel;
-}
-//シャドウマップ用
-export function setPixelZ(z){
-	let pixelZ = {"z":z};
-	return pixelZ;
 }
 //minZはminXのZ値、maxZはmaxXのZ値,Y列で管理
 export class lineYItem{
@@ -126,6 +121,18 @@ class scan_entry{
 	}
 
 };
+//projectedVertsCopy
+function projectedVertsCopy(verts){
+    let copyVerts = [[verts[0][0],verts[0][1],verts[0][2]],
+					[verts[1][0],verts[1][1],verts[1][2]],
+					[verts[2][0],verts[2][1],verts[2][2]]];
+    return copyVerts;
+}
+//vertsCopy
+export function vertsCopy(verts){
+    let copyVerts = [verts[0],verts[1],verts[2]];
+    return copyVerts;
+}
 //整数座標を求める
 export function top_int(x){
     return (x+0.5)|0;
@@ -489,7 +496,7 @@ export function triangleToShadowBuffer(zBuffering,vertex_list,screen_size_h,scre
   //各点のZ座標がこれより下なら作画しない。
   if (vertex_list[0][2] > 0.0 && vertex_list[1][2]> 0.0 && vertex_list[2][2] > 0.0) {
 
-	let tempverts = vertex_list.concat();
+	let tempverts = projectedVertsCopy(vertex_list);
 
 	sort_index(tempverts,1);//ys
 	let pt = tempverts[0];
@@ -596,9 +603,9 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 
         do{
 			if(startX>=0){
-				let z = zBuffering[y][startX].z;
+				let z = zBuffering[y][startX];
 				if(z>startZ){
-					zBuffering[y][startX] = setPixelZ(startZ);
+					zBuffering[y][startX] = startZ;
 				}
 			}
 
@@ -698,14 +705,14 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,f
     if(startX<endX && endX>=0){
 		
         let zStep = endZ - startZ;
-		let xStep = endX- startX;
+		let xStep = endX - startX;
 
         let dz = zStep/xStep;
 		let tmpOrgy = null;
 		let tmpOrgx = null;
         do{
 			if(startX>=0){
-				let z = zBuffering[y][startX].z;
+				let z = zBuffering[y][startX][0];
 				if(z>startZ){
 					if(tmpOrgy == null){
 						tmpOrgy = y * iA[3] - e * iA[2] - f * iA[3];
@@ -941,15 +948,17 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 	if(det == 0) {
 		return -1;
 	}
+	let  inv_det = 1.0/det;
+
 	let iA = [0,0,0,0];//Aの逆行列
-	iA[0] = d / det;
-	iA[1] = - c/ det;
-	iA[2] = - b / det;
-	iA[3] = a / det;
+	iA[0] = d * inv_det;
+	iA[1] = - c * inv_det;
+	iA[2] = - b * inv_det;
+	iA[3] = a * inv_det;
 	let h = vertex_list[0][1] - (b * uv_list[0] * imageData.width + d * uv_list[1] * imageData.height);
 	let w = vertex_list[0][0] - (a * uv_list[0] * imageData.width + c * uv_list[1] * imageData.height);
 		
-	let tempverts = vertex_list.concat();
+	let tempverts = projectedVertsCopy(vertex_list);
 
 	sort_index(tempverts,1);//ys
 	let pt = tempverts[0];

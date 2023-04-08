@@ -3,7 +3,7 @@
 import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round, roundVector2} from './vector.js';
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
-import {setPixelZ,setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer} from './paint.js';
+import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer, vertsCopy} from './paint.js';
 
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
@@ -656,8 +656,8 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObje
       matPlus(mixMatrix,waightMatrix); 
     }
     let boneWeightVerts = matVecMul(mixMatrix,objects.meshVerts[i]);
-    let nomalBoneWeightVerts = boneWeightVerts.concat();
-    let boneShadowWeightVerts = boneWeightVerts.concat();
+    let nomalBoneWeightVerts = vertsCopy(boneWeightVerts); 
+    let boneShadowWeightVerts = vertsCopy(boneWeightVerts);
 
     worldVerts.push(boneWeightVerts);
     protMatVecMul(viewMatrix,nomalBoneWeightVerts);
@@ -708,8 +708,8 @@ function objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowPproject
   let object_meshVerts_length = object.meshVerts.length;
   for (var i = 0; i < object_meshVerts_length; i++) {
     let verts = matVecMul(worldMatrix,object.meshVerts[i]);
-    let nomalVerts = verts.concat();
-    let shadowVerts = verts.concat();
+    let nomalVerts = vertsCopy(verts);
+    let shadowVerts = vertsCopy(verts);
     worldVerts.push(verts);
     protMatVecMul(viewMatrix,nomalVerts);
     protMatVecMul(shadowViewMatrix,shadowVerts);
@@ -941,12 +941,22 @@ function objectShadowMapPolygonPush(objects,worldMatrix,objectNumber,projectedOb
     }
     */
 }
-function renderbufferInit(buffer,pixelY,pixelX){
+function renderBufferInit(buffer,pixelY,pixelX){
   for(let y=0;y<pixelY;y++){
     let pixelColumn = [];
     for(let x=0;x<pixelX;x++){
-      let pixel = {z:99999};
+      let pixel = [99999];
       pixelColumn.push(pixel);
+    }
+    buffer.push(pixelColumn);
+  }
+}
+function shdowBufferInit(buffer,pixelY,pixelX){
+  for(let y=0;y<pixelY;y++){
+    let pixelColumn = [];
+    for(let x=0;x<pixelX;x++){
+      let z = 99999;
+      pixelColumn.push(z);
     }
     buffer.push(pixelColumn);
   }
@@ -1522,10 +1532,11 @@ steveLoadPack.skinmeshBones = diceBones;
   	}
   }*/
 
+//ピクセル処理がボトルネック
 let shadowMap = [];
-renderbufferInit(shadowMap,screen_size_h,screen_size_w);
+shdowBufferInit(shadowMap,screen_size_h,screen_size_w);
 let zBuffering = [];
-renderbufferInit(zBuffering,screen_size_h,screen_size_w);
+renderBufferInit(zBuffering,screen_size_h,screen_size_w);
 //shadowと元々のポリゴン数は同じ
 let shadowProjectedObjectsLength  = shadowProjectedObjects.length;
 for(let j=0;j<shadowProjectedObjectsLength;j++){
@@ -1548,21 +1559,21 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
 	  }
   }  
 }
-
-//シャドウがボトルネック
+//Zバッファ pixel = [z,r,g,b,a,crossWorldVector3]で送られてくる。
 let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
 let shadowMat = matMul(sunViewMatrix,inverseViewMatrix);
 for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   for (let pixelX=0;pixelX<screen_size_w;pixelX++) {
     let base = (pixelY * screen_size_w + pixelX) * 4;
     let pixel = zBuffering[pixelY][pixelX];
-    if(pixel.z<99999){
-      let pixelR = pixel.r;
-      let pixelG = pixel.g;
-      let pixelB = pixel.b;
-      let pixelZ = pixel.z;
-      //let pixela = pixel.a;
-      //シャドウマップ
+    if(pixel[0]<99999){
+      let pixelZ = pixel[0];
+      let pixelR = pixel[1];
+      let pixelG = pixel[2];
+      let pixelB = pixel[3];
+      //let pixela = pixel[4];
+      let pixelcrossWorldVector3 = pixel[5];
+      //シャドウマップに照らし合わせる。
       let shadowPixelX = pixelX;
       let shadowPixelY = pixelY;
       //camera
@@ -1603,7 +1614,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       //pixelVector3[1] = ((pixelVector3[1]  + 0.5)*screen_size_h)|0;
       if(shadowPixelX>0 && shadowPixelX<screen_size_w){
         if(shadowPixelY>0 && shadowPixelY<screen_size_h){
-          if(shadowMap[shadowPixelY][shadowPixelX].z+0.2<pixelZ){
+          if(shadowMap[shadowPixelY][shadowPixelX]+0.2<pixelZ){
             pixelR /= 2.2;
             pixelG /= 2.2;
             pixelB /= 2.2;	
@@ -1611,7 +1622,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         }
       }
       //ライトシミュレーション
-      let sunCosin = culVecDot(sunVec,pixel.crossWorldVector3);
+      let sunCosin = culVecDot(sunVec,pixelcrossWorldVector3);
       sunCosin *= 1.5;
       pixelR *= sunCosin;
       pixelG *= sunCosin;
