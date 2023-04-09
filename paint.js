@@ -96,9 +96,9 @@ export class M22
     this._22 = 1;  //d 
   }
   getInvert(){
-    var out = new M22();
+    let out = new M22();
     //逆行列の公式 ad - bc の部分
-    var det = this._11 * this._22 - this._12 * this._21;
+    let det = this._11 * this._22 - this._12 * this._21;
     if (det > -0.0001 && det < 0.0001)
       return null;
 
@@ -169,7 +169,7 @@ export function pictureToPixelMap(ctx,image){
 
 	ctx.clearRect(0,0,1500,1500);
 	ctx.drawImage(image,0,0,image.width, image.height);
-	var imageData = ctx.getImageData(0,0,image.width, image.height);
+	let imageData = ctx.getImageData(0,0,image.width, image.height);
 	return imageData;
 }
 
@@ -896,21 +896,21 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 {
   //各点のZ座標がこれより下なら作画しない。
   if (vertex_list[0][2] > 0.0 && vertex_list[1][2]> 0.0 && vertex_list[2][2] > 0.0) {
-    var _Ax = vertex_list[1][0] - vertex_list[0][0];
-    var _Ay = vertex_list[1][1] - vertex_list[0][1];
-    var _Bx = vertex_list[2][0] - vertex_list[0][0];
-    var _By = vertex_list[2][1] - vertex_list[0][1];
+    let _Ax = vertex_list[1][0] - vertex_list[0][0];
+    let _Ay = vertex_list[1][1] - vertex_list[0][1];
+    let _Bx = vertex_list[2][0] - vertex_list[0][0];
+    let _By = vertex_list[2][1] - vertex_list[0][1];
 	/*
 	//逆行列を求める
-    var m = new M22();
+    let m = new M22();
     m._11 = Ax;
     m._12 = Ay;
     m._21 = Bx;
     m._22 = By;
-    var mi = m.getInvert();
+    let mi = m.getInvert();
     if (!mi) return;
 	//マトリックス変換値を求める
-	var a, b, c, d;
+	let a, b, c, d;
     a = mi._11 * _Ax + mi._12 * _Bx;
     c = mi._21 * _Ax + mi._22 * _Bx;
 
@@ -918,11 +918,11 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
     d = mi._21 * _Ay + mi._22 * _By;
 	*/
 	//マトリックス変換値を求める
-	var Ax = (uv_list[2] - uv_list[0]) * imageData.width;
-	var Ay = (uv_list[3] - uv_list[1]) * imageData.height;
-	var Bx = (uv_list[4] - uv_list[0]) * imageData.width;
-	var By = (uv_list[5] - uv_list[1]) * imageData.height;
-	var mi = getInvert2(Ax,Ay,Bx,By);
+	let Ax = (uv_list[2] - uv_list[0]) * imageData.width;
+	let Ay = (uv_list[3] - uv_list[1]) * imageData.height;
+	let Bx = (uv_list[4] - uv_list[0]) * imageData.width;
+	let By = (uv_list[5] - uv_list[1]) * imageData.height;
+	let mi = getInvert2(Ax,Ay,Bx,By);
 	if (!mi) return;
 	
 	// let textureVMax = imageData.height*Math.max(uv_list[1],uv_list[3],uv_list[5]);

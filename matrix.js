@@ -478,7 +478,7 @@ export function CalInvMat4x4(m,invm)
     }
 }*/
 export function getInvert2(_11,_12,_21,_22){
-    var out = [[1,0],
+    let out = [[1,0],
 				[0,1]]
     //逆行列の公式 ad - bc の部分
     let  det = _11 * _22 - _12 * _21;
@@ -549,10 +549,10 @@ export function matRound4X4(mat){
 }
 
 export function getInvert2(_11,_12,_21,_22){
-    var out = [[1,0],
+    let out = [[1,0],
 				[0,1]]
     //逆行列の公式 ad - bc の部分
-    var det = _11 * _22 - _12 * _21;
+    let det = _11 * _22 - _12 * _21;
     if (det > -0.0001 && det < 0.0001)
       return null;
 
