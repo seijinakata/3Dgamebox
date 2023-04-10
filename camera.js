@@ -1,10 +1,10 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
 import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round, roundVector2} from './vector.js';
-import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus} from './matrix.js';
+import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer, vertsCopy} from './paint.js';
-
+import { cross_Z, pixel_B, pixel_Cross_World_Vector3, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, poly_UV, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_backCulling_Flag } from './enum.js';
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
 
@@ -540,7 +540,7 @@ class Object{
     this.scaleY = scaley;
     this.scaleZ = scalez;
 
-    this.image = img;
+    this.textureImage = img;
     
     this.backGroundFlag = backGroundFlag;
     this.backCullingFlag = backCullingFlag;
@@ -567,71 +567,54 @@ class Object{
 }
 
 //projectedObject
-function makeProjectedObject(orgObject,worldMatrix,polyList){
-  let projectedObject = {};
-  projectedObject.orgObject = orgObject;
-  projectedObject.worldMatrix = worldMatrix;
-  if(polyList != undefined){
-    projectedObject.polygonList = polyList;
-    projectedObject.polygonNum = polyList.length
-  }
-  projectedObject.gravityCollision = false;
+function makeProjectedObject(orgObject,polyList){
+  let projectedObject = [];
+  projectedObject[poly_List] = polyList;
+  projectedObject[obj_backCulling_Flag] = orgObject.backCullingFlag;
+  projectedObject[obj_Image] = orgObject.textureImage;
   return projectedObject;
 }
-//jsonポリゴン製造
-function setPolygon(Pos1,Pos2,Pos3,worldPos1,worldPos2,worldPos3,UV,image){
-  let polygonElement = {};
-  let moveVertices =   [[0,0,0],
-                        [0,0,0],
-                        [0,0,0]];
-  //[0]=x,[1]=y,[2]=z
-  moveVertices[0][0] = Pos1[0];
-  moveVertices[0][1] = Pos1[1];
-  moveVertices[0][2] = Pos1[2];
+//projectedObject
+function makeShaddowProjectedObject(orgObject,polyList){
+  let projectedObject = [];
+  projectedObject[poly_List] = polyList;
+  projectedObject[obj_backCulling_Flag] = orgObject.backCullingFlag;
+  return projectedObject;
+}
+//ポリゴン製造
+function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UV){
+  let polygonElement = [];
+  let projectedVertices =   [[pos1[position_X],pos1[position_Y],pos1[position_Z]],
+                            [pos2[position_X],pos2[position_Y],pos2[position_Z]],
+                            [pos3[position_X],pos3[position_Y],pos3[position_Z]]];
 
-  moveVertices[1][0] = Pos2[0];
-  moveVertices[1][1] = Pos2[1];
-  moveVertices[1][2] = Pos2[2];
+  let Va = vecMinus(pos1,pos2);
+  let Vb = vecMinus(pos3,pos1);
+  polygonElement[cross_Z] = culVecCrossZ(Va,Vb);
+  polygonElement[projected_Verts] = projectedVertices;
+  polygonElement[poly_UV] = UV;
 
-  moveVertices[2][0] = Pos3[0];
-  moveVertices[2][1] = Pos3[1];
-  moveVertices[2][2] = Pos3[2];
-
-  polygonElement.moveVertices = moveVertices;
-  polygonElement.image = image;
-  polygonElement.UV = UV;
-  let Va = vecMinus(Pos1,Pos2);
-  let Vb = vecMinus(Pos3,Pos1);
-  polygonElement.crossZ = culVecCrossZ(Va,Vb);
   //ライトシミュレーション用
   Va = vecMinus(worldPos1,worldPos2);
   Vb = vecMinus(worldPos3,worldPos1);
-  polygonElement.crossWorldVector3 = culVecNormalize(culVecCross(Va,Vb));
+  polygonElement[poly_Cross_World_Vector3] = culVecNormalize(culVecCross(Va,Vb));
   return polygonElement;
 }
-//jsonシャドウマップ用ポリゴン製造
-function setShadowPolygon(Pos1,Pos2,Pos3){
-  let polygonElement = {};
-  let moveVertices =   [[0,0,0],
-                        [0,0,0],
-                        [0,0,0]];
-  //[0]=x,[1]=y,[2]=z
-  moveVertices[0][0] = Pos1[0];
-  moveVertices[0][1] = Pos1[1];
-  moveVertices[0][2] = Pos1[2];
 
-  moveVertices[1][0] = Pos2[0];
-  moveVertices[1][1] = Pos2[1];
-  moveVertices[1][2] = Pos2[2];
+//シャドウマップ用ポリゴン製造
+function setShadowPolygon(pos1,pos2,pos3){
+  let polygonElement = [];
 
-  moveVertices[2][0] = Pos3[0];
-  moveVertices[2][1] = Pos3[1];
-  moveVertices[2][2] = Pos3[2];
+  let Va = vecMinus(pos1,pos2);
+  let Vb = vecMinus(pos3,pos1);
+  polygonElement[cross_Z] = culVecCrossZ(Va,Vb);
 
-  polygonElement.moveVertices = moveVertices;
-  let Va = vecMinus(Pos1,Pos2);
-  let Vb = vecMinus(Pos3,Pos1);
-  polygonElement.crossZ = culVecCrossZ(Va,Vb);
+  let projectedVertices =   [[pos1[position_X],pos1[position_Y],pos1[position_Z]],
+                            [pos2[position_X],pos2[position_Y],pos2[position_Z]],
+                            [pos3[position_X],pos3[position_Y],pos3[position_Z]]];
+
+  polygonElement[projected_Verts] = projectedVertices;
+
   return polygonElement;
 }
 
@@ -685,13 +668,13 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObje
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = objects.meshVertsFaceIndex[i];
     Poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]], objects.faceIndexMeshUV[i],objects.textureImage);
+      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]], objects.faceIndexMeshUV[i]);
     shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);
   }
 
-  let tempMoveObject = makeProjectedObject(objects,mixMatrix,Poly);
+  let tempMoveObject = makeProjectedObject(objects,Poly);
   projectedObjects.push(tempMoveObject);
-  let tempShadowMoveObject = makeProjectedObject(objects,mixMatrix,shadowPoly);
+  let tempShadowMoveObject = makeShaddowProjectedObject(objects,shadowPoly);
   shadowPprojectedObjects.push(tempShadowMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
@@ -737,13 +720,13 @@ function objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowPproject
   for(let i=0;i<object_meshVertsFaceIndex_length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     Poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.faceIndexMeshUV[i],object.textureImage);
+      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.faceIndexMeshUV[i]);
     shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);
   }
 
-  let tempMoveObject = makeProjectedObject(object,worldMatrix,Poly);
+  let tempMoveObject = makeProjectedObject(object,Poly);
   projectedObjects.push(tempMoveObject);
-  let tempShadowMoveObject = makeProjectedObject(object,worldMatrix,shadowPoly);
+  let tempShadowMoveObject = makeShaddowProjectedObject(object,shadowPoly);
   shadowPprojectedObjects.push(tempShadowMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
@@ -843,17 +826,17 @@ function daeMekeSkinMeshBone(daeLoadPack){
           mulMatScaling(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,daeLoadPack.bones[boneParentRelation].scaleXYZ[0],
             daeLoadPack.bones[boneParentRelation].scaleXYZ[1],daeLoadPack.bones[boneParentRelation].scaleXYZ[2]);  
           daeLoadPack.bones[boneParentRelation].skinmeshBone = matMul(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
-          daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose = daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose.concat();
+          daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose = matCopy(daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
         }
       }else{
       if(daeLoadPack.bones[boneParentRelation].skinmeshBone  == null){
           daeLoadPack.bones[boneParentRelation].parentCrossBone = matMul(daeLoadPack.bones[daeLoadPack.boneParentRelation[rowCounter][colCounter-1]].skinmeshBone,daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
-          daeLoadPack.bones[boneParentRelation].copyParentCrossBone = daeLoadPack.bones[boneParentRelation].parentCrossBone.concat();
+          daeLoadPack.bones[boneParentRelation].copyParentCrossBone = matCopy(daeLoadPack.bones[boneParentRelation].parentCrossBone);
           mulMatRotateX(daeLoadPack.bones[boneParentRelation].copyParentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
           mulMatRotateY(daeLoadPack.bones[boneParentRelation].copyParentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
           mulMatRotateZ(daeLoadPack.bones[boneParentRelation].copyParentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
           daeLoadPack.bones[boneParentRelation].skinmeshBone = matMul(daeLoadPack.bones[boneParentRelation].copyParentCrossBone,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
-          daeLoadPack.bones[boneParentRelation].copyParentCrossBone = daeLoadPack.bones[boneParentRelation].parentCrossBone.concat();
+          daeLoadPack.bones[boneParentRelation].copyParentCrossBone = matCopy(daeLoadPack.bones[boneParentRelation].parentCrossBone);
         }
       }
     }
@@ -896,13 +879,13 @@ function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedO
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.faceIndex[i];
     Poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UV[i],object.image);
+      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UV[i]);
     shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);
   }
 
-  let tempMoveObject = makeProjectedObject(object,worldMatrix,Poly);
+  let tempMoveObject = makeProjectedObject(object,Poly);
   projectedObjects.push(tempMoveObject);
-  let tempShadowMoveObject = makeProjectedObject(object,worldMatrix,shadowPoly);
+  let tempShadowMoveObject = makeShaddowProjectedObject(object,shadowPoly);
   shadowPprojectedObjects.push(tempShadowMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
@@ -947,7 +930,7 @@ function renderBufferInit(buffer,pixelY,pixelX){
     buffer[y] = [];
     for(let x=0;x<pixelX;x++){
       buffer[y][x] = [];
-      buffer[y][x][0] = 99999;
+      buffer[y][x][pixel_Z] = 99999;
     }
   }
 }
@@ -963,7 +946,7 @@ function shdowBufferInit(buffer,pixelY,pixelX){
 function setZmaxRenderBuffer(buffer,pixelY,pixelX){
   for(let y=0;y<pixelY;y++){
     for(let x=0;x<pixelX;x++){
-        buffer[y][x][0] = 99999;
+        buffer[y][x][pixel_Z] = 99999;
     }
   }
 }
@@ -1055,6 +1038,7 @@ function vertsCulAABBMaxMinCenter(orgObject,worldMatrix,offsetX,offsetY,offsetZ)
 }
 //blenderLoad
 let monkeys = [];
+let a = [];
 let monkeysImage = new Image();
 monkeysImage.src = 'box.jpg';
 let monkeyPixelImage = [];
@@ -1265,11 +1249,10 @@ if(dataLoad == false){
   }
   if(cubePixelImageLoad == true && cube1LoadPack.daeLoad == true && cube1Load == false){
     cube1LoadPack.textureImage = cubePixelImage;
-    cube1LoadPack.bones.position[1] = -1;
-    cube1LoadPack.bones.position[2] = 1;
-    cube1LoadPack.bones.scaleXYZ[0] = 2;
-
-    cube1LoadPack.bones.scaleXYZ[2] = 0.5;
+    cube1LoadPack.bones.position[position_Y] = -1;
+    cube1LoadPack.bones.position[position_Z] = 1;
+    cube1LoadPack.bones.scaleXYZ[scale_X] = 2;
+    cube1LoadPack.bones.scaleXYZ[scale_Z] = 0.5;
 
     dices.push(cube1LoadPack) 
     cube1Load = true;
@@ -1509,11 +1492,11 @@ steveLoadPack.skinmeshBones = diceBones;
   	//dicesregister
   for(let object of dices){
     let worldMatrix = matIdentity();
-    mulMatTranslate(worldMatrix,object.bones.position[0],object.bones.position[1],object.bones.position[2]);  
-    mulMatRotateX(worldMatrix,object.bones.rotXYZ[0]);
-    mulMatRotateY(worldMatrix,object.bones.rotXYZ[1]);
-    mulMatRotateZ(worldMatrix,object.bones.rotXYZ[2]); 
-    mulMatScaling(worldMatrix,object.bones.scaleXYZ[0],object.bones.scaleXYZ[1],object.bones.scaleXYZ[2]);
+    mulMatTranslate(worldMatrix,object.bones.position[position_X],object.bones.position[position_Y],object.bones.position[position_Z]);  
+    mulMatRotateX(worldMatrix,object.bones.rotXYZ[rot_X]);
+    mulMatRotateY(worldMatrix,object.bones.rotXYZ[rot_Y]);
+    mulMatRotateZ(worldMatrix,object.bones.rotXYZ[rot_Z]); 
+    mulMatScaling(worldMatrix,object.bones.scaleXYZ[scale_X],object.bones.scaleXYZ[scale_Y],object.bones.scaleXYZ[scale_Z]);
     objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
   }
   //steve
@@ -1556,22 +1539,22 @@ setZmaxRenderBuffer(zBuffering,screen_size_h,screen_size_w);
 //shadowと元々のポリゴン数は同じ
 let shadowProjectedObjectsLength  = shadowProjectedObjects.length;
 for(let j=0;j<shadowProjectedObjectsLength;j++){
-  let shadowProjectedObjects_j_polygonNum = shadowProjectedObjects[j].polygonNum
+  let shadowProjectedObjects_j_polygonNum = shadowProjectedObjects[j][poly_List].length;
 	for(let projectedPolyNum=0;projectedPolyNum<shadowProjectedObjects_j_polygonNum;projectedPolyNum++){
 	  //-の方がこちらに近くなる座標軸だから
-	  if(shadowProjectedObjects[j].orgObject.backCullingFlag == true){
-	    if(shadowProjectedObjects[j].polygonList[projectedPolyNum].crossZ<0){
-      triangleToShadowBuffer(shadowMap,shadowProjectedObjects[j].polygonList[projectedPolyNum].moveVertices,screen_size_h,screen_size_w);
-      }else if(projectedObjects[j].polygonList[projectedPolyNum].crossZ<0){
-        triangleToBuffer(zBuffering,projectedObjects[j].polygonList[projectedPolyNum].image,projectedObjects[j].polygonList[projectedPolyNum].moveVertices,projectedObjects[j].polygonList[projectedPolyNum].crossWorldVector3,
-            projectedObjects[j].polygonList[projectedPolyNum].UV
+	  if(shadowProjectedObjects[j][obj_backCulling_Flag] == true){
+	    if(shadowProjectedObjects[j][poly_List][projectedPolyNum][cross_Z]<0){
+      triangleToShadowBuffer(shadowMap,shadowProjectedObjects[j][poly_List][projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
+      }else if(projectedObjects[j][poly_List][projectedPolyNum][cross_Z]<0){
+        triangleToBuffer(zBuffering,projectedObjects[j][obj_Image],projectedObjects[j][poly_List][projectedPolyNum][projected_Verts],projectedObjects[j][poly_List][projectedPolyNum][poly_Cross_World_Vector3],
+            projectedObjects[j][poly_List][projectedPolyNum][poly_UV]
            ,screen_size_h,screen_size_w);
 	    } 
 	  }else{
-      triangleToShadowBuffer(shadowMap,shadowProjectedObjects[j].polygonList[projectedPolyNum].moveVertices,screen_size_h,screen_size_w);
-      triangleToBuffer(zBuffering,projectedObjects[j].polygonList[projectedPolyNum].image,projectedObjects[j].polygonList[projectedPolyNum].moveVertices,projectedObjects[j].polygonList[projectedPolyNum].crossWorldVector3,
-          projectedObjects[j].polygonList[projectedPolyNum].UV
-         ,screen_size_h,screen_size_w);
+      triangleToShadowBuffer(shadowMap,shadowProjectedObjects[j][poly_List][projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
+      triangleToBuffer(zBuffering,projectedObjects[j][obj_Image],projectedObjects[j][poly_List][projectedPolyNum][projected_Verts],projectedObjects[j][poly_List][projectedPolyNum][poly_Cross_World_Vector3],
+        projectedObjects[j][poly_List][projectedPolyNum][poly_UV]
+       ,screen_size_h,screen_size_w);
 	  }
   }  
 }
@@ -1582,13 +1565,13 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   for (let pixelX=0;pixelX<screen_size_w;pixelX++) {
     let base = (pixelY * screen_size_w + pixelX) * 4;
     let pixel = zBuffering[pixelY][pixelX];
-    if(pixel[0]<99999){
-      let pixelZ = pixel[0];
-      let pixelR = pixel[1];
-      let pixelG = pixel[2];
-      let pixelB = pixel[3];
+    if(pixel[pixel_Z]<99999){
+      let pixelZ = pixel[pixel_Z];
+      let pixelR = pixel[pixel_R];
+      let pixelG = pixel[pixel_G];
+      let pixelB = pixel[pixel_B];
       //let pixela = pixel[4];
-      let pixelcrossWorldVector3 = pixel[5];
+      let pixelcrossWorldVector3 = pixel[pixel_Cross_World_Vector3];
       //シャドウマップに照らし合わせる。
       let shadowPixelX = pixelX;
       let shadowPixelY = pixelY;
@@ -1614,7 +1597,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       shadowPixelY *= pixelZ;
       */
       //view
-      //shadowMatrix
+      //shadowMatrixmul
       let shadowMatrixPixelX = shadowMat[0]*shadowPixelX + shadowMat[1]*shadowPixelY + shadowMat[2]*pixelZ + shadowMat[3];
       let shadowMatrixPixelY = shadowMat[4]*shadowPixelX + shadowMat[5]*shadowPixelY + shadowMat[6]*pixelZ + shadowMat[7];
       pixelZ = shadowMat[8]*shadowPixelX + shadowMat[9]*shadowPixelY + shadowMat[10]*pixelZ + shadowMat[11];
@@ -1676,22 +1659,22 @@ document.addEventListener('keydown',e => {
 
   switch(e.key){
     case 'ArrowLeft':
-      cameraPos[0] -= 0.1;
+      cameraPos[position_X] -= 0.1;
       break;
     case 'ArrowRight':
-      cameraPos[0]  += 0.1;
+      cameraPos[position_X]  += 0.1;
       break;
     case 'ArrowUp': 
-      cameraPos[1]  -= 0.1;
+      cameraPos[position_Y]  -= 0.1;
       break;
     case 'ArrowDown':
-      cameraPos[1]  += 0.1;
+      cameraPos[position_Y]  += 0.1;
       break;
     case 'u':
-      cameraPos[2]  += 0.1;
+      cameraPos[position_Z]  += 0.1;
       break;   
     case 'd':
-      cameraPos[2]  -= 0.1;
+      cameraPos[position_Z]  -= 0.1;
       break;
     case '1':
       lookatIndex += 1;

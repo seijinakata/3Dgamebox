@@ -2,6 +2,7 @@
 import { matVecMul,matIdentity,matPers,getInverseMatrix, matMul,getInvert2, CalInvMat4x4,protMatVecMul } from "./matrix.js";
 import { round, roundVector2, setVector2,setVector3, vec2Minus, vec2Plus, vecMinus, vecMul } from "./vector.js";
 import { SCREEN_SIZE_W,SCREEN_SIZE_H} from "./camera.js";
+import { delta_X, delta_Z, position_X, position_Y, position_Z } from './enum.js';
 
 export class renderBuffer{
 
@@ -149,7 +150,7 @@ export function delta_xz(edge){
 }
 //ソート関数
 function swap(a,b){
-	let t = a.concat();
+	let t = vertsCopy(a);
 	for(let i=0;i<3;i++){
 		a[i]=b[i];
 		b[i]=t[i];
@@ -473,7 +474,7 @@ export function triangleRasterize(buffer,bufferFrame,z,r,g,b,a,screen_size_h,scr
 	 if(startX < 0 && endX < 0){
 	 	continue;
 	 }
-	 if(startX > screen_size_w&& endX > screen_size_w){
+	 if(startX > screen_size_w && endX > screen_size_w){
 	 	continue;
 	 }
 	 //その列の始点終点が画面内にあるがその相方がが飛び出している場合
@@ -494,7 +495,7 @@ export function triangleRasterize(buffer,bufferFrame,z,r,g,b,a,screen_size_h,scr
 export function triangleToShadowBuffer(zBuffering,vertex_list,screen_size_h,screen_size_w)
 {
   //各点のZ座標がこれより下なら作画しない。
-  if (vertex_list[0][2] > 0.0 && vertex_list[1][2]> 0.0 && vertex_list[2][2] > 0.0) {
+  if (vertex_list[0][position_Z] > 0.0 && vertex_list[1][position_Z]> 0.0 && vertex_list[2][position_Z] > 0.0) {
 
 	let tempverts = projectedVertsCopy(vertex_list);
 
@@ -511,12 +512,12 @@ export function triangleToShadowBuffer(zBuffering,vertex_list,screen_size_h,scre
 function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 
 	//viewport前は0から1000で管理4桁で四捨五入0.5は画面の中央
-	let mid = pm[1];
+	let mid = pm[position_Y];
 
     let tmp = branch(pt,pb,mid);//pt->
 
-    let triangleTop = pt[1];
-    let triangleBtm = pb[1];
+    let triangleTop = pt[position_Y];
+    let triangleBtm = pb[position_Y];
 
     if(!(triangleTop<triangleBtm))return;
 	if(triangleBtm<0) return;
@@ -526,7 +527,7 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 
     let pl = [],pr = [];
 
-    if(tmp[0]<pm[0]){
+    if(tmp[position_X]<pm[position_X]){
         pl = tmp;
         pr = pm;
     }else{
@@ -544,16 +545,16 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         let dl = delta_xz(el);
         let dr = delta_xz(er);
         //start position
-        let sl = setVector2(pt[0],pt[2]);
-        let sr = setVector2(pt[0],pt[2]);
+        let sl = setVector2(pt[position_X],pt[position_Z]);
+        let sr = setVector2(pt[position_X],pt[position_Z]);
         let y=triangleTop;
         do{
 			if(y>=0){
 				//Y座標ごとの切片
-				let startX = top_int(sl[0]);
-				let endX = top_int(sr[0]);
-				let startZ = sl[1];
-				let endZ = sr[1];
+				let startX = top_int(sl[delta_X]);
+				let endX = top_int(sr[delta_X]);
+				let startZ = sl[delta_Z];
+				let endZ = sr[delta_Z];
 				scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ);				
 			}
             sl = vec2Plus(sl,dl);//
@@ -568,17 +569,17 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         let dl = delta_xz(el);
         let dr = delta_xz(er);
         //start position
-        let sl = setVector2(pl[0],pl[2]);
-        let sr = setVector2(pr[0],pr[2]);
+        let sl = setVector2(pl[position_X],pl[position_Z]);
+        let sr = setVector2(pr[position_X],pr[position_Z]);
 
         let y=m;
         do{
 			if(y>=0){
 			//Y座標ごとの切片
-				let startX = top_int(sl[0]);
-				let endX = top_int(sr[0]);
-				let startZ = sl[1];
-				let endZ = sr[1];
+				let startX = top_int(sl[delta_X]);
+				let endX = top_int(sr[delta_X]);
+				let startZ = sl[delta_Z];
+				let endZ = sr[delta_Z];
 				scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ);				
 			}
             sl = vec2Plus(sl,dl);//
