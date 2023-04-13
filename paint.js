@@ -893,7 +893,7 @@ export function textureTransform(a,b,c,d,h,w,alpha,imageData,vertex_list,screen_
 }
 
 //lengthが高さ、length[0]が横
-export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVector3,uv_list,screen_size_h,screen_size_w)
+export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVector3,mi,screen_size_h,screen_size_w)
 {
   //各点のZ座標がこれより下なら作画しない。
   if (vertex_list[0][2] > 0.0 && vertex_list[1][2]> 0.0 && vertex_list[2][2] > 0.0) {
@@ -918,13 +918,14 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
     b = mi._11 * _Ay + mi._12 * _By;
     d = mi._21 * _Ay + mi._22 * _By;
 	*/
-	//マトリックス変換値を求める
+	/*
+	//マトリックス変換値を求める。ロード時にあらかじめ計算してある。プロジェクションされたvertsは無理
 	let Ax = (uv_list[2] - uv_list[0]) * imageData.width;
 	let Ay = (uv_list[3] - uv_list[1]) * imageData.height;
 	let Bx = (uv_list[4] - uv_list[0]) * imageData.width;
 	let By = (uv_list[5] - uv_list[1]) * imageData.height;
 	let mi = getInvert2(Ax,Ay,Bx,By);
-	if (!mi) return;
+	if (!mi) return;*/
 	
 	// let textureVMax = imageData.height*Math.max(uv_list[1],uv_list[3],uv_list[5]);
 	// textureVMax |= 0;
@@ -956,8 +957,10 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 	iA[1] = - c * inv_det;
 	iA[2] = - b * inv_det;
 	iA[3] = a * inv_det;
-	let h = vertex_list[0][1] - (b * uv_list[0] * imageData.width + d * uv_list[1] * imageData.height);
-	let w = vertex_list[0][0] - (a * uv_list[0] * imageData.width + c * uv_list[1] * imageData.height);
+	// let h = vertex_list[0][1] - (b * uv_list[0] * imageData.width + d * uv_list[1] * imageData.height);
+	// let w = vertex_list[0][0] - (a * uv_list[0] * imageData.width + c * uv_list[1] * imageData.height);
+	let h = vertex_list[0][1] - (b * mi[2] + d * mi[3]);
+	let w = vertex_list[0][0] - (a * mi[2] + c * mi[3]);
 		
 	let tempverts = projectedVertsCopy(vertex_list);
 

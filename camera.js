@@ -1,10 +1,10 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
 import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round, roundVector2} from './vector.js';
-import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy} from './matrix.js';
+import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer, vertsCopy} from './paint.js';
-import { cross_Z, pixel_B, pixel_Cross_World_Vector3, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, poly_UV, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_backCulling_Flag } from './enum.js';
+import { cross_Z, pixel_B, pixel_Cross_World_Vector3, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_backCulling_Flag, UV_Vector } from './enum.js';
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
 
@@ -562,6 +562,22 @@ class Object{
       faceIndexMeshUV.push(tempMeshUV);
     }
     this.UV = faceIndexMeshUV;
+    let faceIndexMeshUV_Length = this.UV.length;
+    let UVVector = [];
+    for(let i=0;i<faceIndexMeshUV_Length;i++){
+      let Ax = (this.UV[i][2] - this.UV[i][0]) * this.textureImage.width;
+      let Ay = (this.UV[i][3] - this.UV[i][1]) * this.textureImage.height;
+      let Bx = (this.UV[i][4] - this.UV[i][0]) * this.textureImage.width;
+      let By = (this.UV[i][5] - this.UV[i][1]) * this.textureImage.height;
+      let mi = getInvert2(Ax,Ay,Bx,By);
+      if (!mi) return;
+      let preUV_List0 = this.UV[i][0] * this.textureImage.width;
+      mi.push(preUV_List0);
+      let preUV_List1 = this.UV[i][1] * this.textureImage.height;
+      mi.push(preUV_List1);
+      UVVector.push(mi);
+    }
+    this.UVVector = UVVector;
     this.faceUV = [];
   }
 }
@@ -582,7 +598,7 @@ function makeShaddowProjectedObject(orgObject,polyList){
   return projectedObject;
 }
 //ポリゴン製造
-function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UV){
+function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector){
   let polygonElement = [];
   let projectedVertices =   [[pos1[position_X],pos1[position_Y],pos1[position_Z]],
                             [pos2[position_X],pos2[position_Y],pos2[position_Z]],
@@ -592,8 +608,7 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UV){
   let Vb = vecMinus(pos3,pos1);
   polygonElement[cross_Z] = culVecCrossZ(Va,Vb);
   polygonElement[projected_Verts] = projectedVertices;
-  polygonElement[poly_UV] = UV;
-
+  polygonElement[UV_Vector] = UVVector;
   //ライトシミュレーション用
   Va = vecMinus(worldPos1,worldPos2);
   Vb = vecMinus(worldPos3,worldPos1);
@@ -668,7 +683,7 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObje
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = objects.meshVertsFaceIndex[i];
     Poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]], objects.faceIndexMeshUV[i]);
+      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objects.UVVector[i]);
     shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);
   }
 
@@ -720,7 +735,7 @@ function objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowPproject
   for(let i=0;i<object_meshVertsFaceIndex_length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     Poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.faceIndexMeshUV[i]);
+      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i]);
     shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);
   }
 
@@ -879,7 +894,7 @@ function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedO
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.faceIndex[i];
     Poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UV[i]);
+      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i]);
     shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);
   }
 
@@ -930,7 +945,6 @@ function renderBufferInit(buffer,pixelY,pixelX){
     buffer[y] = [];
     for(let x=0;x<pixelX;x++){
       buffer[y][x] = [];
-      buffer[y][x][pixel_Z] = 99999;
     }
   }
 }
@@ -946,7 +960,7 @@ function shdowBufferInit(buffer,pixelY,pixelX){
 function setZmaxRenderBuffer(buffer,pixelY,pixelX){
   for(let y=0;y<pixelY;y++){
     for(let x=0;x<pixelX;x++){
-        buffer[y][x][pixel_Z] = 99999;
+        buffer[y][x] = [99999];
     }
   }
 }
@@ -1203,6 +1217,25 @@ groundImage.addEventListener("load", function() {
   planes.push(new Object(orgPlaneVerts,1.25,0,3.0,0,0,0,2.5,1,3,0,false,false,sandPixelImage));
 }, true);
 
+function culUVVector(daeLoadPack){
+  let faceIndexMeshUV_Length = daeLoadPack.faceIndexMeshUV.length;
+  let UVVector = [];
+  for(let i=0;i<faceIndexMeshUV_Length;i++){
+    let Ax = (daeLoadPack.faceIndexMeshUV[i][2] - daeLoadPack.faceIndexMeshUV[i][0]) * daeLoadPack.textureImage.width;
+    let Ay = (daeLoadPack.faceIndexMeshUV[i][3] - daeLoadPack.faceIndexMeshUV[i][1]) * daeLoadPack.textureImage.height;
+    let Bx = (daeLoadPack.faceIndexMeshUV[i][4] - daeLoadPack.faceIndexMeshUV[i][0]) * daeLoadPack.textureImage.width;
+    let By = (daeLoadPack.faceIndexMeshUV[i][5] - daeLoadPack.faceIndexMeshUV[i][1]) * daeLoadPack.textureImage.height;
+    let mi = getInvert2(Ax,Ay,Bx,By);
+    if (!mi) return;
+    let preUV_List0 = daeLoadPack.faceIndexMeshUV[i][0] * daeLoadPack.textureImage.width;
+    mi.push(preUV_List0);
+    let preUV_List1 = daeLoadPack.faceIndexMeshUV[i][1] * daeLoadPack.textureImage.height;
+    mi.push(preUV_List1);
+    UVVector.push(mi);
+  }
+  daeLoadPack.UVVector = UVVector;
+}
+
 let rot = 0;
 let rotPlus = 5;
 
@@ -1253,18 +1286,21 @@ if(dataLoad == false){
     cube1LoadPack.bones.position[position_Z] = 1;
     cube1LoadPack.bones.scaleXYZ[scale_X] = 2;
     cube1LoadPack.bones.scaleXYZ[scale_Z] = 0.5;
-
+    culUVVector(cube1LoadPack)
     dices.push(cube1LoadPack) 
     cube1Load = true;
   }
   if(dicePixelImageLoad == true && steve1LoadPack.daeLoad == true && steve1Load == false){
     steve1LoadPack.textureImage = dicePixelImage;
-    steves.push(steve1LoadPack) 
+    culUVVector(steve1LoadPack)
+    steves.push(steve1LoadPack);
     steve1Load = true;
   }
   if(dicePixelImageLoad == true && steve2LoadPack.daeLoad == true && steve1Load == true && steve2Load == false){
     steve2LoadPack.textureImage = dicePixelImage;
-    steves.push(steve2LoadPack) 
+    culUVVector(steve2LoadPack)
+
+    steves.push(steve2LoadPack); 
     steve2Load = true;
   }
   if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load && steve2Load && cube1Load){
@@ -1547,13 +1583,13 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
       triangleToShadowBuffer(shadowMap,shadowProjectedObjects[j][poly_List][projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
       }else if(projectedObjects[j][poly_List][projectedPolyNum][cross_Z]<0){
         triangleToBuffer(zBuffering,projectedObjects[j][obj_Image],projectedObjects[j][poly_List][projectedPolyNum][projected_Verts],projectedObjects[j][poly_List][projectedPolyNum][poly_Cross_World_Vector3],
-            projectedObjects[j][poly_List][projectedPolyNum][poly_UV]
+            projectedObjects[j][poly_List][projectedPolyNum][UV_Vector]
            ,screen_size_h,screen_size_w);
 	    } 
 	  }else{
       triangleToShadowBuffer(shadowMap,shadowProjectedObjects[j][poly_List][projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
       triangleToBuffer(zBuffering,projectedObjects[j][obj_Image],projectedObjects[j][poly_List][projectedPolyNum][projected_Verts],projectedObjects[j][poly_List][projectedPolyNum][poly_Cross_World_Vector3],
-        projectedObjects[j][poly_List][projectedPolyNum][poly_UV]
+        projectedObjects[j][poly_List][projectedPolyNum][UV_Vector]
        ,screen_size_h,screen_size_w);
 	  }
   }  

@@ -20,7 +20,7 @@ export const rot_Z = 2;
 //polygon
 export const cross_Z = 0;
 export const projected_Verts = 1;
-export const poly_UV = 2;
+export const UV_Vector = 2;
 export const poly_Cross_World_Vector3 = 3;
 
 //projectedObject
