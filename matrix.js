@@ -196,15 +196,15 @@ export function matPers(z) {
     m[12] = 0;            m[13] = 0;        m[14] = 0;            m[15] = 1;
     */
     }
-export function matCamera(m,camPos,lookat,up) {
+export function matCamera(camPos,lookat,up) {
         //カメラのローカル軸座標を求める(正規直交ベクトル)
         let z = culVecNormalize(vecMinus(lookat,camPos));
         let x = culVecNormalize(culVecCross(up, z));
         let y = culVecCross(z, x);
-        m[0] = x[0];    m[1] = x[1];    m[2] = x[2];    m[3] = x[0] * -camPos[0] + x[1] * -camPos[1] + x[2] * -camPos[2];
-        m[4] = y[0];    m[5] = y[1];    m[6] = y[2];    m[7] = y[0] * -camPos[0] + y[1] * -camPos[1] + y[2] * -camPos[2];
-        m[8] = z[0];    m[9] = z[1];    m[10] = z[2];    m[11] = z[0] * -camPos[0] + z[1] * -camPos[1] + z[2] * -camPos[2];
-        //m[12] = 0;      m[13] = 0;      m[14] = 0;      m[15] = 1;
+        return [x[0], x[1], x[2], (x[0] * -camPos[0] + x[1] * -camPos[1] + x[2] * -camPos[2]),
+                y[0], y[1], y[2], (y[0] * -camPos[0] + y[1] * -camPos[1] + y[2] * -camPos[2]),
+                z[0], z[1], z[2], (z[0] * -camPos[0] + z[1] * -camPos[1] + z[2] * -camPos[2])];
+
     }
 export function mulMatRotateX(m,r) {
         let c = 0;
@@ -417,32 +417,30 @@ function CalDetMat4x4(m)
  * @param[out] invm 逆行列
  * @return 逆行列の存在
  */
-export function CalInvMat4x4(m,invm)
+export function CalInvMat4x4(m)
 {
     let det = CalDetMat4x4(m);
     if(det == 0){
-        return false;
+        return null;
     }
-    else{
         let  inv_det = 1.0/det;
  
-        invm[0]  = inv_det*(m[5]*m[10]-m[6]*m[9]);
-        invm[1]  = inv_det*(m[2]*m[9]-m[1]*m[10]);
-        invm[2]  = inv_det*(m[1]*m[6]-m[2]*m[5]);
-        invm[3]  = inv_det*(m[1]*m[7]*m[10]+m[2]*m[5]*m[11]+m[3]*m[6]*m[9]-m[1]*m[6]*m[11]-m[2]*m[7]*m[9]-m[3]*m[5]*m[10]);
+        let m0  = inv_det*(m[5]*m[10]-m[6]*m[9]);
+        let m1  = inv_det*(m[2]*m[9]-m[1]*m[10]);
+        let m2  = inv_det*(m[1]*m[6]-m[2]*m[5]);
+        let m3  = inv_det*(m[1]*m[7]*m[10]+m[2]*m[5]*m[11]+m[3]*m[6]*m[9]-m[1]*m[6]*m[11]-m[2]*m[7]*m[9]-m[3]*m[5]*m[10]);
  
-        invm[4]  = inv_det*(m[6]*m[8]-m[4]*m[10]);
-        invm[5]  = inv_det*(m[0]*m[10]-m[2]*m[8]);
-        invm[6]  = inv_det*(m[2]*m[4]-m[0]*m[6]);
-        invm[7]  = inv_det*(m[0]*m[6]*m[11]+m[2]*m[7]*m[8]+m[3]*m[4]*m[10]-m[0]*m[7]*m[10]-m[2]*m[4]*m[11]-m[3]*m[6]*m[8]);
+        let m4  = inv_det*(m[6]*m[8]-m[4]*m[10]);
+        let m5  = inv_det*(m[0]*m[10]-m[2]*m[8]);
+        let m6  = inv_det*(m[2]*m[4]-m[0]*m[6]);
+        let m7  = inv_det*(m[0]*m[6]*m[11]+m[2]*m[7]*m[8]+m[3]*m[4]*m[10]-m[0]*m[7]*m[10]-m[2]*m[4]*m[11]-m[3]*m[6]*m[8]);
  
-        invm[8]  = inv_det*(m[4]*m[9]-m[5]*m[8]);
-        invm[9]  = inv_det*(m[1]*m[8]-m[0]*m[9]);
-        invm[10]  = inv_det*(m[0]*m[5]-m[1]*m[4]);
-        invm[11]  = inv_det*(m[0]*m[7]*m[9]+m[1]*m[4]*m[11]+m[3]*m[5]*m[8]-m[0]*m[5]*m[11]-m[1]*m[7]*m[8]-m[3]*m[4]*m[9]);
+        let m8  = inv_det*(m[4]*m[9]-m[5]*m[8]);
+        let m9  = inv_det*(m[1]*m[8]-m[0]*m[9]);
+        let m10  = inv_det*(m[0]*m[5]-m[1]*m[4]);
+        let m11  = inv_det*(m[0]*m[7]*m[9]+m[1]*m[4]*m[11]+m[3]*m[5]*m[8]-m[0]*m[5]*m[11]-m[1]*m[7]*m[8]-m[3]*m[4]*m[9]);
 
-        return true;
-    }
+        return [m0,m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11];
 }
 /*
 export function CalInvMat4x4(m,invm)
@@ -478,8 +476,6 @@ export function CalInvMat4x4(m,invm)
     }
 }*/
 export function getInvert2(_11,_12,_21,_22){
-    let out = [[1,0],
-				[0,1]]
     //逆行列の公式 ad - bc の部分
     let  det = _11 * _22 - _12 * _21;
     if (det == 0)
@@ -487,13 +483,11 @@ export function getInvert2(_11,_12,_21,_22){
     let  inv_det = 1.0/det;
 
     //逆行列の公式 det=(ad - bc) で各値(a,b,c,d)を割る
-    out[0][0] = _22 * inv_det;  // a = d / det
-    out[1][1] = _11 * inv_det;  // d = a / det
-
-    out[0][1] = -_12 * inv_det; // b = -b / det
-    out[1][0]= -_21 * inv_det; // c = -c / det
-
-    return out;
+    let a = _22 * inv_det;  // a = d / det
+    let b = -_12 * inv_det; // b = -b / det
+    let c = -_21 * inv_det; // c = -c / det
+    let d = _11 * inv_det;  // d = a / det
+    return [[a,b],[c,d]];
   }
 export function getInverseMatrix(matrix){
 

@@ -276,11 +276,10 @@ function daeLoader(fileName,daeLoadPack){
                 tempBind.push(tempFloat)
                 if(tempBind.length >= 4*4){
                   let boneContents = {};
-                  let inverseBindPose = matIdentity();
-                  CalInvMat4x4(tempBind,inverseBindPose);
-                  boneContents.bindPose = tempBind.concat();
+                  let inverseBindPose = CalInvMat4x4(tempBind);
+                  boneContents.bindPose = matCopy(tempBind);
                   boneContents.inverseBindPose = inverseBindPose;
-                  boneContents.copyInverseBindPose = inverseBindPose.concat();
+                  boneContents.copyInverseBindPose = matCopy(inverseBindPose);
                   bindPosePack.push(boneContents);
                   tempBind = [];  
           
@@ -428,8 +427,8 @@ let viewPortMatrix = [
   [ 0, 0, 1, 0],
   [ 0, 0, 0, 1]
 ];
-let inverseViewPortMatrix = matIdentity();
-CalInvMat4x4(viewPortMatrix,inverseViewPortMatrix);
+let inverseViewPortMatrix = CalInvMat4x4(viewPortMatrix);
+
 let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
@@ -945,6 +944,7 @@ function renderBufferInit(buffer,pixelY,pixelX){
     buffer[y] = [];
     for(let x=0;x<pixelX;x++){
       buffer[y][x] = [];
+      buffer[y][x] = [99999];
     }
   }
 }
@@ -960,7 +960,7 @@ function shdowBufferInit(buffer,pixelY,pixelX){
 function setZmaxRenderBuffer(buffer,pixelY,pixelX){
   for(let y=0;y<pixelY;y++){
     for(let x=0;x<pixelX;x++){
-        buffer[y][x] = [99999];
+        buffer[y][x][0] = 99999;
     }
   }
 }
@@ -1503,16 +1503,13 @@ steveLoadPack.skinmeshBones = diceBones;
   //投影後の情報格納
   let projectedObjects = [];
 
-  viewMatrix = matIdentity();
-  matCamera(viewMatrix,cameraPos,lookat,up);
+  viewMatrix = matCamera(cameraPos,lookat,up);
   matRound4X4(viewMatrix);
 
-  inverseViewMatrix = matIdentity();
-  CalInvMat4x4(viewMatrix,inverseViewMatrix);
+  inverseViewMatrix = CalInvMat4x4(viewMatrix);
   matRound4X4(inverseViewMatrix);
 
-  sunViewMatrix = matIdentity();
-  matCamera(sunViewMatrix,sunPos,sunLookat,up);
+  sunViewMatrix = matCamera(sunPos,sunLookat,up);
   matRound4X4(sunViewMatrix);
   /*
 	//cuberegister
@@ -1657,7 +1654,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       shadowMatrixPixelY = ((shadowMatrixPixelY  + 0.5)*screen_size_h)|0;
       if(shadowMatrixPixelX>0 && shadowMatrixPixelX<screen_size_w){
         if(shadowMatrixPixelY>0 && shadowMatrixPixelY<screen_size_h){
-          if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.2<pixelZ){
+          if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.25<pixelZ){
             pixelR /= 2.2;
             pixelG /= 2.2;
             pixelB /= 2.2;	
