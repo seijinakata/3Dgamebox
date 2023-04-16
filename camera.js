@@ -577,7 +577,6 @@ class Object{
       UVVector.push(mi);
     }
     this.UVVector = UVVector;
-    this.faceUV = [];
   }
 }
 
@@ -637,10 +636,8 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObje
   let worldVerts = [];
   let projectedVerts = [];
   let shadowProjectedVerts = [];
-  let mixMatrix = [];
 
   let meshVets_Length = objects.meshVerts.length;
-
   for (let i = 0; i < meshVets_Length; i++) {
     let mixMatrix = [0,0,0,0,
                     0,0,0,0,
@@ -850,7 +847,6 @@ function daeMekeSkinMeshBone(daeLoadPack){
           mulMatRotateY(daeLoadPack.bones[boneParentRelation].copyParentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
           mulMatRotateZ(daeLoadPack.bones[boneParentRelation].copyParentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
           daeLoadPack.bones[boneParentRelation].skinmeshBone = matMul(daeLoadPack.bones[boneParentRelation].copyParentCrossBone,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
-          daeLoadPack.bones[boneParentRelation].copyParentCrossBone = matCopy(daeLoadPack.bones[boneParentRelation].parentCrossBone);
         }
       }
     }
@@ -1338,7 +1334,7 @@ bones[steveLoadPack.boneParentRelation[0][1]].copyParentCrossBone = bones[steveL
 dicebones.push(bones[steveLoadPack.boneParentRelation[0][1]].bone);
 */
 
-//bonesInit
+//bonesReset
 let steves_length = steves.length;
 for(let j=0;j<steves_length;j++){
   let steves_bonesNameList_length = steves[j].bonesNameList.length;
