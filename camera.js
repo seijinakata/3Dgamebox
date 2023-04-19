@@ -276,10 +276,8 @@ function daeLoader(fileName,daeLoadPack){
                 tempBind.push(tempFloat)
                 if(tempBind.length >= 4*4){
                   let boneContents = {};
-                  let inverseBindPose = CalInvMat4x4(tempBind);
-                  boneContents.bindPose = matCopy(tempBind);
-                  boneContents.inverseBindPose = inverseBindPose;
-                  boneContents.copyInverseBindPose = matCopy(inverseBindPose);
+                  boneContents.bindPose = tempBind;
+                  boneContents.inverseBindPose = CalInvMat4x4(tempBind);;
                   bindPosePack.push(boneContents);
                   tempBind = [];  
           
@@ -821,32 +819,30 @@ function makeSkinMeshBones(bonesJoinIndex,bones,bodys,masterXYZ,masterRotXYZ,mas
   }
 }
 function daeMekeSkinMeshBone(daeLoadPack){
-  let rowCounter = -1;
-  for(let row of daeLoadPack.boneParentRelation){
-    rowCounter += 1;
-    let colCounter = -1;
-    for(let boneParentRelation of row){
-      colCounter += 1;
-      if(colCounter == 0){
+  let boneParentRelationRow = daeLoadPack.boneParentRelation.length;
+  for(let j=0;j<boneParentRelationRow;j++){
+    let boneParentRelationCol = daeLoadPack.boneParentRelation[j].length;
+    for(let i=0;i<boneParentRelationCol;i++){
+       let boneParentRelation = daeLoadPack.boneParentRelation[j][i];
+      if(i == 0){
         if(daeLoadPack.bones[boneParentRelation].skinmeshBone == null){
-          mulMatTranslate(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,daeLoadPack.bones[boneParentRelation].position[0],
+          let copyInverseBindPose = matCopy(daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
+          mulMatTranslate(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].position[0],
             daeLoadPack.bones[boneParentRelation].position[1],daeLoadPack.bones[boneParentRelation].position[2]);  
-          mulMatRotateX(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
-          mulMatRotateY(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
-          mulMatRotateZ(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
-          mulMatScaling(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,daeLoadPack.bones[boneParentRelation].scaleXYZ[0],
+          mulMatRotateX(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
+          mulMatRotateY(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
+          mulMatRotateZ(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
+          mulMatScaling(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].scaleXYZ[0],
             daeLoadPack.bones[boneParentRelation].scaleXYZ[1],daeLoadPack.bones[boneParentRelation].scaleXYZ[2]);  
-          daeLoadPack.bones[boneParentRelation].skinmeshBone = matMul(daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
-          daeLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose = matCopy(daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
+          daeLoadPack.bones[boneParentRelation].skinmeshBone = matMul(copyInverseBindPose,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
         }
       }else{
       if(daeLoadPack.bones[boneParentRelation].skinmeshBone  == null){
-          daeLoadPack.bones[boneParentRelation].parentCrossBone = matMul(daeLoadPack.bones[daeLoadPack.boneParentRelation[rowCounter][colCounter-1]].skinmeshBone,daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
-          daeLoadPack.bones[boneParentRelation].copyParentCrossBone = matCopy(daeLoadPack.bones[boneParentRelation].parentCrossBone);
-          mulMatRotateX(daeLoadPack.bones[boneParentRelation].copyParentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
-          mulMatRotateY(daeLoadPack.bones[boneParentRelation].copyParentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
-          mulMatRotateZ(daeLoadPack.bones[boneParentRelation].copyParentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
-          daeLoadPack.bones[boneParentRelation].skinmeshBone = matMul(daeLoadPack.bones[boneParentRelation].copyParentCrossBone,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
+          let parentCrossBone = matMul(daeLoadPack.bones[daeLoadPack.boneParentRelation[j][i-1]].skinmeshBone,daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
+          mulMatRotateX(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
+          mulMatRotateY(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
+          mulMatRotateZ(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
+          daeLoadPack.bones[boneParentRelation].skinmeshBone = matMul(parentCrossBone,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
         }
       }
     }
