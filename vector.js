@@ -1,3 +1,4 @@
+
 export function round(orgValue){
     let newFloorValue = ((orgValue * 1000)|0) / 1000;
     return newFloorValue;
@@ -101,11 +102,38 @@ export   function culVecCross(ver1,ver2,ver3){
     return N_x,N_y,N_z;
   }
   */
+const NR_ITERATIONS = 100;
+const TOLERANCE =  0.0000000001
+function fx(x,param){
+    return x * x - param;
+}
+   
+function NewtonMethod(x,param){
+    let  f;
+    let  df;
+    const dx = 0.00001;
+    let  i;
+      /* Newton's Method. */
+    for (i = 0; i < NR_ITERATIONS; i++) {
+      f = fx(x,param);
+      df = (fx(x + dx,param) - fx(x - dx,param)) / (2 * dx);
+      x -= f / df;
+    
+      /* Is f(x) convergent? */
+      //f(x)=限りなく0に近づきましたか？
+      let absf = (f)>0 ? (f) : -(f);
+      if (absf < TOLERANCE) {
+        return x;
+      }
+      }
+}
+
  export function culVecNormalize(vector3){
-    let length = Math.sqrt(vector3[0] * vector3[0] + vector3[1] * vector3[1] + vector3[2] * vector3[2]);
-    let normalizeVector3x =  vector3[0] /= length;
-    let normalizeVector3y =  vector3[1] /= length;
-    let normalizeVector3z =  vector3[2] /= length;
-    let normalizeVector3 = setVector3(normalizeVector3x,normalizeVector3y,normalizeVector3z);
-    return normalizeVector3;
-    }
+    let distance = vector3[0] * vector3[0] + vector3[1] * vector3[1] + vector3[2] * vector3[2];
+    let absDistance = (distance)>0 ? (distance) : -(distance);
+    let invLength = 1/NewtonMethod(1,absDistance);
+    let normalizeVector3x =  vector3[0] * invLength;
+    let normalizeVector3y =  vector3[1] * invLength;
+    let normalizeVector3z =  vector3[2] * invLength;
+    return [normalizeVector3x,normalizeVector3y,normalizeVector3z];
+}

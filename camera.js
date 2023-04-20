@@ -630,7 +630,7 @@ function setShadowPolygon(pos1,pos2,pos3){
 }
 
 //スキンメッシュ用シャドウマップ付き
-function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix){
+function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,screen_size_h,screen_size_w){
   let worldVerts = [];
   let projectedVerts = [];
   let shadowProjectedVerts = [];
@@ -662,10 +662,10 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObje
     protMatVecMul(shadowProjectionMatrix,boneShadowWeightVerts);
 
     //boneWeightVerts = matVecMul(viewPortMatrix,boneWeightVerts);
-    nomalBoneWeightVerts[0] = ((nomalBoneWeightVerts[0] + 0.5)*SCREEN_SIZE_W)|0;
-    nomalBoneWeightVerts[1] = ((nomalBoneWeightVerts[1] + 0.5)*SCREEN_SIZE_H)|0;
-    boneShadowWeightVerts[0] = ((boneShadowWeightVerts[0] + 0.5)*SCREEN_SIZE_W)|0;
-    boneShadowWeightVerts[1] = ((boneShadowWeightVerts[1] + 0.5)*SCREEN_SIZE_H)|0;
+    nomalBoneWeightVerts[0] = ((nomalBoneWeightVerts[0] + 0.5)*screen_size_w)|0;
+    nomalBoneWeightVerts[1] = ((nomalBoneWeightVerts[1] + 0.5)*screen_size_h)|0;
+    boneShadowWeightVerts[0] = ((boneShadowWeightVerts[0] + 0.5)*screen_size_w)|0;
+    boneShadowWeightVerts[1] = ((boneShadowWeightVerts[1] + 0.5)*screen_size_h)|0;
 
     projectedVerts[i] = nomalBoneWeightVerts;
     shadowProjectedVerts[i] = boneShadowWeightVerts;
@@ -693,7 +693,7 @@ function objectSkinMeshPolygonPush(objects,projectedObjects,shadowPprojectedObje
     */
 }
 //ボーンなしシャドウマップ付き
-function objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix){
+function objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,screen_size_h,screen_size_w){
   let worldVerts = [];
   let projectedVerts = [];
   let shadowProjectedVerts = [];
@@ -714,10 +714,10 @@ function objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowPproject
     protMatVecMul(shadowProjectionMatrix,shadowVerts);
 
     //nomalVerts = matVecMul(viewPortMatrix,nomalVerts);
-    nomalVerts[0] = ((nomalVerts[0] + 0.5)*SCREEN_SIZE_W)|0;
-    nomalVerts[1] = ((nomalVerts[1] + 0.5)*SCREEN_SIZE_H)|0;
-    shadowVerts[0] = ((shadowVerts[0] + 0.5)*SCREEN_SIZE_W)|0;
-    shadowVerts[1] = ((shadowVerts[1] + 0.5)*SCREEN_SIZE_H)|0;
+    nomalVerts[0] = ((nomalVerts[0] + 0.5)*screen_size_w)|0;
+    nomalVerts[1] = ((nomalVerts[1] + 0.5)*screen_size_h)|0;
+    shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
+    shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;
 
     projectedVerts[i] = nomalVerts;
     shadowProjectedVerts[i] = shadowVerts;  
@@ -849,7 +849,7 @@ function daeMekeSkinMeshBone(daeLoadPack){
   }
 }
 //ボーンなしシャドウマップ付き
-function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix){
+function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,screen_size_h,screen_size_w){
   let worldVerts = [];
   let projectedVerts = [];
   let shadowProjectedVerts = [];
@@ -870,10 +870,10 @@ function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedO
     protMatVecMul(shadowProjectionMatrix,shadowVerts);
 
     //nomalVerts = matVecMul(viewPortMatrix,nomalVerts);
-    nomalVerts[0] = ((nomalVerts[0] + 0.5)*SCREEN_SIZE_W)|0;
-    nomalVerts[1] = ((nomalVerts[1] + 0.5)*SCREEN_SIZE_H)|0;
-    shadowVerts[0] = ((shadowVerts[0] + 0.5)*SCREEN_SIZE_W)|0;
-    shadowVerts[1] = ((shadowVerts[1] + 0.5)*SCREEN_SIZE_H)|0;
+    nomalVerts[0] = ((nomalVerts[0] + 0.5)*screen_size_w)|0;
+    nomalVerts[1] = ((nomalVerts[1] + 0.5)*screen_size_h)|0;
+    shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
+    shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;
 
     projectedVerts[i] = nomalVerts;
     shadowProjectedVerts[i] = shadowVerts;  
@@ -1247,6 +1247,9 @@ let cube1Load = false;
 const screen_size_h = SCREEN_SIZE_H;
 const screen_size_w = SCREEN_SIZE_W;
 
+const invScreen_size_h = 1/screen_size_h;
+const invScreen_size_w = 1/screen_size_w;
+
 //zBufferInit
 let shadowMap = [];
 shdowBufferInit(shadowMap,screen_size_h,screen_size_w);
@@ -1522,11 +1525,11 @@ steveLoadPack.skinmeshBones = diceBones;
     mulMatRotateY(worldMatrix,object.bones.rotXYZ[rot_Y]);
     mulMatRotateZ(worldMatrix,object.bones.rotXYZ[rot_Z]); 
     mulMatScaling(worldMatrix,object.bones.scaleXYZ[scale_X],object.bones.scaleXYZ[scale_Y],object.bones.scaleXYZ[scale_Z]);
-    objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
+    objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   //steve
   for(let object of steves){
-    objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
+    objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
 	}
 	//planesregister
   for(let object of planes){
@@ -1536,7 +1539,7 @@ steveLoadPack.skinmeshBones = diceBones;
     mulMatRotateY(worldMatrix,object.objRotY);
     mulMatRotateZ(worldMatrix,object.objRotZ); 
     mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
-    objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
+    objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   
   /*
@@ -1604,8 +1607,8 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       //let pixelVector3 = setVector3(pixelX,pixelY,pixelZ);
 
       //inverseViewPort and inverseProjection
-      shadowPixelX = (shadowPixelX/screen_size_w  - 0.5) * pixelZ;
-      shadowPixelY = (shadowPixelY/screen_size_h  - 0.5) * pixelZ;
+      shadowPixelX = (shadowPixelX*invScreen_size_w  - 0.5) * pixelZ;
+      shadowPixelY = (shadowPixelY*invScreen_size_h  - 0.5) * pixelZ;
 
       /*
       //inverseViewPort
@@ -1626,13 +1629,14 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       let shadowMatrixPixelX = shadowMat[0]*shadowPixelX + shadowMat[1]*shadowPixelY + shadowMat[2]*pixelZ + shadowMat[3];
       let shadowMatrixPixelY = shadowMat[4]*shadowPixelX + shadowMat[5]*shadowPixelY + shadowMat[6]*pixelZ + shadowMat[7];
       pixelZ = shadowMat[8]*shadowPixelX + shadowMat[9]*shadowPixelY + shadowMat[10]*pixelZ + shadowMat[11];
+      let invPixelZ = 1/pixelZ;
 
       //projectionMatrix = matPers(pixelVector3[2]);
       //pixelVector3 = matVecMul(projectionMatrix,pixelVector3);
    
       //projection
-      shadowMatrixPixelX /= pixelZ;
-      shadowMatrixPixelY /= pixelZ;
+      shadowMatrixPixelX *= invPixelZ;
+      shadowMatrixPixelY *= invPixelZ;
       /*
       //viewPort
       shadowPixelX += 0.5;
@@ -1647,9 +1651,9 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       if(shadowMatrixPixelX>0 && shadowMatrixPixelX<screen_size_w){
         if(shadowMatrixPixelY>0 && shadowMatrixPixelY<screen_size_h){
           if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.25<pixelZ){
-            pixelR /= 2.2;
-            pixelG /= 2.2;
-            pixelB /= 2.2;	
+            pixelR *= 0.5;
+            pixelG *= 0.5;
+            pixelB *= 0.5;	
           }
         }
       }
