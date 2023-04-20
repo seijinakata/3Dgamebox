@@ -102,30 +102,29 @@ export   function culVecCross(ver1,ver2,ver3){
     return N_x,N_y,N_z;
   }
   */
-const NR_ITERATIONS = 100;
-const TOLERANCE =  0.0000000001
 function fx(x,param){
     return x * x - param;
 }
    
 function NewtonMethod(x,param){
-    let  f;
-    let  df;
-    const dx = 0.00001;
-    let  i;
-      /* Newton's Method. */
-    for (i = 0; i < NR_ITERATIONS; i++) {
-      f = fx(x,param);
-      df = (fx(x + dx,param) - fx(x - dx,param)) / (2 * dx);
-      x -= f / df;
-    
-      /* Is f(x) convergent? */
-      //f(x)=限りなく0に近づきましたか？
-      let absf = (f)>0 ? (f) : -(f);
-      if (absf < TOLERANCE) {
-        return x;
-      }
-      }
+let  f;
+let  df;
+const dx = 0.00001;
+const TOLERANCE =  0.0000000001
+let  i;
+/* Newton's Method. */
+while(true){
+    f = fx(x,param);
+    df = (fx(x + dx,param) - fx(x - dx,param)) / (2 * dx);
+    x -= f / df;
+
+    /* Is f(x) convergent? */
+    //f(x)=限りなく0に近づきましたか？
+    let absf = (f)>0 ? (f) : -(f);
+        if (absf < TOLERANCE) {
+            return x;
+        }  
+    }
 }
 
  export function culVecNormalize(vector3){
