@@ -105,25 +105,24 @@ export   function culVecCross(ver1,ver2,ver3){
 function fx(x,param){
     return x * x - param;
 }
-   
+//x*xを微分したやつ
+function dfx(x){
+    return x*2;
+}
 function NewtonMethod(x,param){
-let  f;
-let  df;
-const dx = 0.00001;
-const TOLERANCE =  0.0000000001
-let  i;
+const TOLERANCE =  0.00001
+let  beforeX = x;
 /* Newton's Method. */
 while(true){
-    f = fx(x,param);
-    df = (fx(x + dx,param) - fx(x - dx,param)) / (2 * dx);
-    x -= f / df;
-
-    /* Is f(x) convergent? */
+    let nextX = beforeX - fx(beforeX,param)/dfx(beforeX);
     //f(x)=限りなく0に近づきましたか？
-    let absf = (f)>0 ? (f) : -(f);
-        if (absf < TOLERANCE) {
-            return x;
-        }  
+    let nextBeforeX = nextX - beforeX;
+    let absNextBeforeX = (nextBeforeX)>0 ? (nextBeforeX) : -(nextBeforeX);
+        if (absNextBeforeX < TOLERANCE) {
+            return nextX;
+        }else{
+            beforeX = nextX;
+        } 
     }
 }
 
