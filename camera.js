@@ -540,7 +540,7 @@ class Object{
     this.textureImage = img;
     
     this.backGroundFlag = backGroundFlag;
-    this.backCullingFlag = backCullingFlag;
+    this.backCullingFlag = true;//backCullingFlag;
     
     this.verts = verts.vertsPosition.concat();
     this.faceIndex = verts.faceIndex;
@@ -1277,6 +1277,7 @@ if(dataLoad == false){
   }
   if(cubePixelImageLoad == true && cube1LoadPack.daeLoad == true && cube1Load == false){
     cube1LoadPack.textureImage = cubePixelImage;
+    cube1LoadPack.backCullingFlag = true;
     cube1LoadPack.bones.position[position_Y] = -1;
     cube1LoadPack.bones.position[position_Z] = 1;
     cube1LoadPack.bones.scaleXYZ[scale_X] = 2;
@@ -1287,12 +1288,14 @@ if(dataLoad == false){
   }
   if(dicePixelImageLoad == true && steve1LoadPack.daeLoad == true && steve1Load == false){
     steve1LoadPack.textureImage = dicePixelImage;
+    steve1LoadPack.backCullingFlag = true;
     culUVVector(steve1LoadPack)
     steves.push(steve1LoadPack);
     steve1Load = true;
   }
   if(dicePixelImageLoad == true && steve2LoadPack.daeLoad == true && steve1Load == true && steve2Load == false){
     steve2LoadPack.textureImage = dicePixelImage;
+    steve2LoadPack.backCullingFlag = true;
     culUVVector(steve2LoadPack)
 
     steves.push(steve2LoadPack); 
@@ -1572,8 +1575,9 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
 	  //-の方がこちらに近くなる座標軸だから
 	  if(shadowProjectedObjects[j][obj_backCulling_Flag] == true){
 	    if(shadowProjectedObjects[j][poly_List][projectedPolyNum][cross_Z]<0){
-      triangleToShadowBuffer(shadowMap,shadowProjectedObjects[j][poly_List][projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
-      }else if(projectedObjects[j][poly_List][projectedPolyNum][cross_Z]<0){
+        triangleToShadowBuffer(shadowMap,shadowProjectedObjects[j][poly_List][projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
+      }
+      if(projectedObjects[j][poly_List][projectedPolyNum][cross_Z]<0){
         triangleToBuffer(zBuffering,projectedObjects[j][obj_Image],projectedObjects[j][poly_List][projectedPolyNum][projected_Verts],projectedObjects[j][poly_List][projectedPolyNum][poly_Cross_World_Vector3],
             projectedObjects[j][poly_List][projectedPolyNum][UV_Vector]
            ,screen_size_h,screen_size_w);
