@@ -171,6 +171,19 @@ export function pictureToPixelMap(ctx,image){
 	ctx.clearRect(0,0,1500,1500);
 	ctx.drawImage(image,0,0,image.width, image.height);
 	let imageData = ctx.getImageData(0,0,image.width, image.height);
+	imageData.twoDimensionsimageData = [];
+	for(let j=0;j<image.height;j++){
+		imageData.twoDimensionsimageData[j] = [];
+		for(let i=0;i<image.width;i++){
+			let index = (i + j * image.width) * 4;
+			let data = {};
+			data.r = imageData.data[index];
+			data.g = imageData.data[index+1];
+			data.b = imageData.data[index+2];
+			data.a = imageData.data[index+3];
+			imageData.twoDimensionsimageData[j][i] = data;
+		}
+	}
 	return imageData;
 }
 
@@ -726,6 +739,12 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,f
 					//let selectOrgy = startX * iA[2] + y * iA[3]/* アフィン後の座標に対応した元画像の座標 */
 					//- e * iA[2] - f * iA[3];// +  orgTexture.height / 2;
 					selectOrgy |= 0;/* 最近傍補間した元画像の座標 */
+					if(selectOrgy > imageData.height-1){
+						selectOrgy = imageData.height-1;
+					}
+					if(selectOrgy < 0){
+						selectOrgy = 0
+					}
 					/* 元画像をはみ出る画素の場合ははみ出る前のピクセルを詰める */
 					/*
 					if(selectOrgy >=  textureVMax){
@@ -741,6 +760,12 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,f
 					//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
 					selectOrgx |= 0; /* 最近傍補間した元画像の座標 */
 					/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
+					if(selectOrgx > imageData.width-1){
+						selectOrgx = imageData.width-1;
+					}
+					if(selectOrgx < 0){
+						selectOrgx = 0
+					}
 					/*
 					if(selectOrgx >= textureUMax){
 						//画像配列は０から始まってるからheight,widthともに-1
@@ -748,10 +773,8 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,f
 					}if(selectOrgx <= textureUMin){
 						selectOrgx = textureUMin
 					}*/
-					let index = (selectOrgx + selectOrgy * imageData.width) * 4;
-
 					//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3));
-					zBuffering[y][startX] = setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3);
+					zBuffering[y][startX] = setPixel(startZ,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].r,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].g,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].b,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].a,crossWorldVector3);
 
 				}
 			}
