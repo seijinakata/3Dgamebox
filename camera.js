@@ -542,14 +542,14 @@ class Object{
     this.backGroundFlag = backGroundFlag;
     this.backCullingFlag = true;//backCullingFlag;
     
-    this.verts = verts.vertsPosition.concat();
-    this.faceIndex = verts.faceIndex;
+    this.meshVerts = verts.vertsPosition.concat();
+    this.meshVertsFaceIndex = verts.faceIndex;
     this.bonesIndex = verts.bonesIndex;
     this.bonesWaight = verts.bonesWaight;
 
     let faceIndexMeshUV = [];
     //エラーはmonkey
-    let meshVertsFaceIndex_Length = this.faceIndex.length;
+    let meshVertsFaceIndex_Length = this.meshVertsFaceIndex.length;
     for(let i=0;i<meshVertsFaceIndex_Length;i++){
       let tempMeshUV = [
             verts.uv[i][0].u, verts.uv[i][0].v,
@@ -671,193 +671,20 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
     shadowProjectedVerts[i] = boneShadowWeightVerts;
   }
  
-  let Poly = [];
+  let poly = [];
   let shadowPoly = [];
   let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
-    Poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
+    poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
       worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i]);
     shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);
   }
 
-  let tempMoveObject = makeProjectedObject(object,Poly);
-  //projectedObjects.push(tempMoveObject);
   //ｚソート
-  if(projectedObjects.length == 0){
-    projectedObjects[0] = tempMoveObject;
-  }else{
-    let loopEndFlag = false;
-    for(let j=0;j<projectedObjects.length;j++){
-      if(projectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>Poly[0][projected_Verts][0][position_Z]){
-        for(let i=projectedObjects.length-1;j<=i;i--){
-          projectedObjects[i+1] = projectedObjects[i]
-        }
-        projectedObjects[j] = tempMoveObject;
-        loopEndFlag = true;
-        break;
-      }
-    }
-    if(loopEndFlag == false){
-      projectedObjects[projectedObjects.length] = tempMoveObject;
-    }
-  }
+  objectZsort(projectedObjects,object,poly);
+  objectShadowZsort(shadowPprojectedObjects,object,shadowPoly);
 
-  let tempShadowMoveObject = makeShaddowProjectedObject(object,shadowPoly);
-  //shadowPprojectedObjects.push(tempShadowMoveObject);
-  //ｚソート
-  if(shadowPprojectedObjects.length == 0){
-    shadowPprojectedObjects[0] = tempShadowMoveObject;
-  }else{
-    let loopEndFlag = false;
-    for(let j=0;j<shadowPprojectedObjects.length;j++){
-      if(shadowPprojectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>shadowPoly[0][projected_Verts][0][position_Z]){
-        for(let i=shadowPprojectedObjects.length-1;j<=i;i--){
-          shadowPprojectedObjects[i+1] = shadowPprojectedObjects[i]
-        }
-        shadowPprojectedObjects[j] = tempShadowMoveObject;
-        loopEndFlag = true;
-        break;
-      }
-    }
-    if(loopEndFlag == false){
-      shadowPprojectedObjects[shadowPprojectedObjects.length] = tempShadowMoveObject;
-    }
-  }
-
-  //moveCubeInfo.backGroundFlag = object.backGroundFlag;
-    /*
-    if(moveCubeInfo.backGroundFlag == true){
-      backGroundCounter += 1;
-    }
-    */
-}
-//ボーンなしシャドウマップ付き
-function objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,screen_size_h,screen_size_w){
-  let worldVerts = [];
-  let projectedVerts = [];
-  let shadowProjectedVerts = [];
-
-  let object_meshVerts_length = object.meshVerts.length;
-  for (let i = 0; i < object_meshVerts_length; i++) {
-    let verts = matVecMul(worldMatrix,object.meshVerts[i]);
-    let nomalVerts = vertsCopy(verts);
-    let shadowVerts = vertsCopy(verts);
-    worldVerts[i] = verts;
-    protMatVecMul(viewMatrix,nomalVerts);
-    protMatVecMul(shadowViewMatrix,shadowVerts);
-   
-    let projectionMatrix =  matPers(nomalVerts[2]);
-    let shadowProjectionMatrix =  matPers(shadowVerts[2]);
-
-    protMatVecMul(projectionMatrix,nomalVerts);
-    protMatVecMul(shadowProjectionMatrix,shadowVerts);
-
-    //nomalVerts = matVecMul(viewPortMatrix,nomalVerts);
-    nomalVerts[0] = ((nomalVerts[0] + 0.5)*screen_size_w)|0;
-    nomalVerts[1] = ((nomalVerts[1] + 0.5)*screen_size_h)|0;
-    shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
-    shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;
-
-    projectedVerts[i] = nomalVerts;
-    shadowProjectedVerts[i] = shadowVerts;  
-  }
- 
-  let Poly = [];
-  let shadowPoly = [];
-  let object_meshVertsFaceIndex_length = object.meshVertsFaceIndex.length;
-  for(let i=0;i<object_meshVertsFaceIndex_length;i++){
-    let triangleFaceIndex = object.meshVertsFaceIndex[i];
-    Poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i]);
-    shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);
-  }
-
-  let tempMoveObject = makeProjectedObject(object,Poly);
-  //projectedObjects.push(tempMoveObject);
-  //ｚソート
-  if(projectedObjects.length == 0){
-    projectedObjects[0] = tempMoveObject;
-  }else{
-    let loopEndFlag = false;
-    for(let j=0;j<projectedObjects.length;j++){
-      if(projectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>Poly[0][projected_Verts][0][position_Z]){
-        for(let i=projectedObjects.length-1;j<=i;i--){
-          projectedObjects[i+1] = projectedObjects[i]
-        }
-        projectedObjects[j] = tempMoveObject;
-        loopEndFlag = true;
-        break;
-      }
-    }
-    if(loopEndFlag == false){
-      projectedObjects[projectedObjects.length] = tempMoveObject;
-    }
-  }
-
-  let tempShadowMoveObject = makeShaddowProjectedObject(object,shadowPoly);
-  //shadowPprojectedObjects.push(tempShadowMoveObject);
-  //ｚソート
-  if(shadowPprojectedObjects.length == 0){
-    shadowPprojectedObjects[0] = tempShadowMoveObject;
-  }else{
-    let loopEndFlag = false;
-    for(let j=0;j<shadowPprojectedObjects.length;j++){
-      if(shadowPprojectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>shadowPoly[0][projected_Verts][0][position_Z]){
-        for(let i=shadowPprojectedObjects.length-1;j<=i;i--){
-          shadowPprojectedObjects[i+1] = shadowPprojectedObjects[i]
-        }
-        shadowPprojectedObjects[j] = tempShadowMoveObject;
-        loopEndFlag = true;
-        break;
-      }
-    }
-    if(loopEndFlag == false){
-      shadowPprojectedObjects[shadowPprojectedObjects.length] = tempShadowMoveObject;
-    }
-  }
-  //moveCubeInfo.backGroundFlag = object.backGroundFlag;
-    /*
-    if(moveCubeInfo.backGroundFlag == true){
-      backGroundCounter += 1;
-    }
-    */
-}
-//シャドウマップ用ポリゴン格納
-function objectShadowMapSkinMeshPolygonPush(objects,bones,objectNumber,projectedObjects,viewMatrix){
-  let projectedVerts = [];
-  let object = objects[objectNumber];
-  let mixMatrix = [];
-  for (let i = 0; i < object.verts.length; i++) {
-    mixMatrix = [0,0,0,0,
-                  0,0,0,0,
-                  0,0,0,0,
-                  0,0,0,0];
-    roundVector2(object.verts[i][0],object.verts[i][1]);
-    object.verts[i][2] = round(object.verts[i][2]);
-    for(let j=0;j<object.bonesIndex[i].length;j++){
-      let bonesMatrix = bones[object.bonesIndex[i][j]].skinmeshBone;
-      let matrixWaight = object.bonesWaight[i][j];
-      let waightMatrix = matWaight(bonesMatrix,matrixWaight);
-      mixMatrix = matPlus(mixMatrix,waightMatrix); 
-    }
-    let verts = matVecMul(mixMatrix,object.verts[i])
-    projectedVerts.push(matVecMul(viewMatrix,verts));     
-    let projectionMatrix =  matPers(projectedVerts[i][2]);
-    protMatVecMul(projectionMatrix,projectedVerts[i]);
-    //projectedVerts[i] = matVecMul(viewPortMatrix,projectedVerts[i]);
-    projectedVerts[i][0] = Math.floor((projectedVerts[i][0] + 0.5)*SCREEN_SIZE_W);
-    projectedVerts[i][1] = Math.floor((projectedVerts[i][1] + 0.5)*SCREEN_SIZE_H);
-  }
- 
-  let Poly = []
-  for(let i=0;i<object.faceIndex.length;i++){
-    let triangleFaceIndex = object.faceIndex[i]; 
-    Poly.push(setShadowPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]]));
-    
-  }
-  let tempMoveObject = makeProjectedObject(object,mixMatrix,Poly);
-  projectedObjects.push(tempMoveObject);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
     if(moveCubeInfo.backGroundFlag == true){
@@ -933,9 +760,9 @@ function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedO
   let projectedVerts = [];
   let shadowProjectedVerts = [];
 
-  let meshVerts_Length = object.verts.length;
+  let meshVerts_Length = object.meshVerts.length;
   for (let i = 0; i < meshVerts_Length; i++) {
-    let verts = matVecMul(worldMatrix,object.verts[i]);
+    let verts = matVecMul(worldMatrix,object.meshVerts[i]);
     let nomalVerts = vertsCopy(verts);
     let shadowVerts = vertsCopy(verts);
     worldVerts[i] = verts;
@@ -958,59 +785,19 @@ function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedO
     shadowProjectedVerts[i] = shadowVerts;  
   }
  
-  let Poly = [];
+  let poly = [];
   let shadowPoly = [];
-  let meshVertsFaceIndex_Length = object.faceIndex.length;
+  let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
-    let triangleFaceIndex = object.faceIndex[i];
-    Poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
+    let triangleFaceIndex = object.meshVertsFaceIndex[i];
+    poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
       worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i]);
     shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);
   }
 
-  let tempMoveObject = makeProjectedObject(object,Poly);
-  //projectedObjects.push(tempMoveObject);
   //ｚソート
-  if(projectedObjects.length == 0){
-    projectedObjects[0] = tempMoveObject;
-  }else{
-    let loopEndFlag = false;
-    for(let j=0;j<projectedObjects.length;j++){
-      if(projectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>Poly[0][projected_Verts][0][position_Z]){
-        for(let i=projectedObjects.length-1;j<=i;i--){
-          projectedObjects[i+1] = projectedObjects[i]
-        }
-        projectedObjects[j] = tempMoveObject;
-        loopEndFlag = true;
-        break;
-      }
-    }
-    if(loopEndFlag == false){
-      projectedObjects[projectedObjects.length] = tempMoveObject;
-    }
-  }
-
-  let tempShadowMoveObject = makeShaddowProjectedObject(object,shadowPoly);
-  //shadowPprojectedObjects.push(tempShadowMoveObject);
-  //ｚソート
-  if(shadowPprojectedObjects.length == 0){
-    shadowPprojectedObjects[0] = tempShadowMoveObject;
-  }else{
-    let loopEndFlag = false;
-    for(let j=0;j<shadowPprojectedObjects.length;j++){
-      if(shadowPprojectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>shadowPoly[0][projected_Verts][0][position_Z]){
-        for(let i=shadowPprojectedObjects.length-1;j<=i;i--){
-          shadowPprojectedObjects[i+1] = shadowPprojectedObjects[i]
-        }
-        shadowPprojectedObjects[j] = tempShadowMoveObject;
-        loopEndFlag = true;
-        break;
-      }
-    }
-    if(loopEndFlag == false){
-      shadowPprojectedObjects[shadowPprojectedObjects.length] = tempShadowMoveObject;
-    }
-  }
+  objectZsort(projectedObjects,object,poly);
+  objectShadowZsort(shadowPprojectedObjects,object,shadowPoly);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
     if(moveCubeInfo.backGroundFlag == true){
@@ -1018,35 +805,49 @@ function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedO
     }
     */
 }
-//シャドウマップ用ポリゴン格納
-function objectShadowMapPolygonPush(objects,worldMatrix,objectNumber,projectedObjects,viewMatrix){
-  let projectedVerts = [];
-  let object = objects[objectNumber];
-  let worldViewMatrix = matMul(viewMatrix,worldMatrix);
-  for (let i = 0; i < object.verts.length; i++) {
-    roundVector2(object.verts[i][0],object.verts[i][1]);
-    object.verts[i][2] = round(object.verts[i][2]);
-    projectedVerts.push(matVecMul(worldViewMatrix,object.verts[i]));
-    let projectionMatrix =  matPers(projectedVerts[i][2]);
-    protMatVecMul(projectionMatrix,projectedVerts[i]);
-    //projectedVerts[i] = matVecMul(viewPortMatrix,projectedVerts[i]);
-    projectedVerts[i][0] = Math.floor((projectedVerts[i][0] + 0.5)*SCREEN_SIZE_W);
-    projectedVerts[i][1] = Math.floor((projectedVerts[i][1] + 0.5)*SCREEN_SIZE_H);
-  }
- 
-  let Poly = []
-  for(let i=0;i<object.faceIndex.length;i++){
-    let triangleFaceIndex = object.faceIndex[i]; 
-    Poly.push(setShadowPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]]));
-  }
-  let tempMoveObject = makeProjectedObject(object,worldMatrix,Poly);
-  projectedObjects.push(tempMoveObject);
-  //moveCubeInfo.backGroundFlag = object.backGroundFlag;
-    /*
-    if(moveCubeInfo.backGroundFlag == true){
-      backGroundCounter += 1;
+
+//ｚソート
+function objectZsort(projectedObjects,object,poly){
+    let projectedObjectLength = projectedObjects.length;
+    if(projectedObjectLength == 0){
+      projectedObjects[0] = makeProjectedObject(object,poly);
+    }else{
+      let loopEndFlag = false;
+      for(let j=0;j<projectedObjectLength;j++){
+        if(projectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>poly[0][projected_Verts][0][position_Z]){
+          for(let i=projectedObjectLength-1;j<=i;i--){
+            projectedObjects[i+1] = projectedObjects[i]
+          }
+          projectedObjects[j] = makeProjectedObject(object,poly);
+          loopEndFlag = true;
+          break;
+        }
+      }
+      if(loopEndFlag == false){
+        projectedObjects[projectedObjectLength] = makeProjectedObject(object,poly);
+      }
     }
-    */
+}
+function objectShadowZsort(shadowPprojectedObjects,object,shadowPoly){
+  let shadowPprojectedObjectsLength = shadowPprojectedObjects.length;
+  if(shadowPprojectedObjectsLength == 0){
+    shadowPprojectedObjects[0] = makeShaddowProjectedObject(object,shadowPoly);
+  }else{
+    let loopEndFlag = false;
+    for(let j=0;j<shadowPprojectedObjectsLength;j++){
+      if(shadowPprojectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>shadowPoly[0][projected_Verts][0][position_Z]){
+        for(let i=shadowPprojectedObjectsLength-1;j<=i;i--){
+          shadowPprojectedObjects[i+1] = shadowPprojectedObjects[i]
+        }
+        shadowPprojectedObjects[j] = makeShaddowProjectedObject(object,shadowPoly);
+        loopEndFlag = true;
+        break;
+      }
+    }
+    if(loopEndFlag == false){
+      shadowPprojectedObjects[shadowPprojectedObjectsLength] = makeShaddowProjectedObject(object,shadowPoly);
+    }
+  }
 }
 //ループに入る前に生成 z = 99999;pushを使わないようにするため
 function renderBufferInit(buffer,pixelY,pixelX){
@@ -1432,12 +1233,6 @@ const start = performance.now();
 
 //lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
 
-if(rot>80){
-  rotPlus = -5;
-}else if(rot<0){
-  rotPlus = 5;
-}
-rot += rotPlus;
 
 /*
 mulMatRotateZ(bones[steveLoadPack.boneParentRelation[0][2]].copyInverseBindPose,0);
@@ -1454,7 +1249,15 @@ bones[steveLoadPack.boneParentRelation[0][1]].copyParentCrossBone = bones[steveL
 dicebones.push(bones[steveLoadPack.boneParentRelation[0][1]].bone);
 */
 
-//bonesReset
+//bonesResetスキンメッシュ
+
+if(rot>80){
+  rotPlus = -5;
+}else if(rot<0){
+  rotPlus = 5;
+}
+rot += rotPlus;
+
 let steves_length = steves.length;
 for(let j=0;j<steves_length;j++){
   let steves_bonesNameList_length = steves[j].bonesNameList.length;
@@ -1493,38 +1296,6 @@ for(let i in steves){
   daeMekeSkinMeshBone(steves[i]);
 }
 /*
-let rowCounter = -1;
-for(let row of steveLoadPack.boneParentRelation){
-  rowCounter += 1;
-  let colCounter = -1;
-  for(let boneParentRelation of row){
-    colCounter += 1;
-    if(colCounter == 0){
-      if(diceBones[boneParentRelation].skinmeshBone == undefined){
-        mulMatTranslate(steveLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,diceBones[boneParentRelation].position[0],
-          diceBones[boneParentRelation].position[1],diceBones[boneParentRelation].position[2]);  
-        mulMatRotateX(steveLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,diceBones[boneParentRelation].rotXYZ[0]);
-        mulMatRotateY(steveLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,diceBones[boneParentRelation].rotXYZ[1]);
-        mulMatRotateZ(steveLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,diceBones[boneParentRelation].rotXYZ[2]);
-        diceBones[boneParentRelation].skinmeshBone = matMul(steveLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose,steveLoadPack.bindPosePack[boneParentRelation].bindPose);
-        steveLoadPack.bindPosePack[boneParentRelation].copyInverseBindPose = steveLoadPack.bindPosePack[boneParentRelation].inverseBindPose.concat();
-      }
-    }else{
-     if(diceBones[boneParentRelation].parentCrossBone  == undefined){
-        diceBones[boneParentRelation].parentCrossBone = matMul(diceBones[steveLoadPack.boneParentRelation[rowCounter][colCounter-1]].skinmeshBone,steveLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
-        diceBones[boneParentRelation].copyParentCrossBone = diceBones[boneParentRelation].parentCrossBone.concat();
-        mulMatRotateX(diceBones[boneParentRelation].copyParentCrossBone,diceBones[boneParentRelation].rotXYZ[0]);
-        mulMatRotateY(diceBones[boneParentRelation].copyParentCrossBone,diceBones[boneParentRelation].rotXYZ[1]);
-        mulMatRotateZ(diceBones[boneParentRelation].copyParentCrossBone,diceBones[boneParentRelation].rotXYZ[2]);
-        diceBones[boneParentRelation].skinmeshBone = matMul(diceBones[boneParentRelation].copyParentCrossBone,steveLoadPack.bindPosePack[boneParentRelation].bindPose);
-        diceBones[boneParentRelation].copyParentCrossBone = diceBones[boneParentRelation].parentCrossBone.concat();
-      }
-    }
-  }
-}
-
-steveLoadPack.skinmeshBones = diceBones;
-*/
   //sphereregister
   /*
   for(let num =0;num<spheres.length;num++){
@@ -1570,50 +1341,8 @@ steveLoadPack.skinmeshBones = diceBones;
     //objectShadowMapPolygonPush(monkeys,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
     //objectPolygonPush(monkeys,worldMatrix,num,projectedObjects,viewMatrix);	
   }*/
-  /*
-  let s = Math.sin(theta);
-  let ns = s<0 ? -s : s;
-  bodys[1].objRotX =  Math.floor(60 * s);
-  bodys[2].objRotX =  Math.floor(-60 * s);
 
-  bodys[3].objRotX =  Math.floor(-60 * s);
-  bodys[4].objRotX =  Math.floor(60 * s);
-
-  bodys[5].objRotX =  Math.floor(60 * ns);
-
-  bodys[6].objRotY =  Math.floor(-60 * s);
-  bodys[7].objRotY =  Math.floor(-60 * s);
-
-  bodys[8].objRotY =  Math.floor(-60 * s);
-  bodys[9].objRotY =  Math.floor(-60 * s);
-
-  bodys[10].objRotX =  Math.floor(60 * ns);
-
-  bodys1[1].objRotX =  Math.floor(-60 * s);
-  bodys1[2].objRotX =  Math.floor(60 * s);
-
-  bodys1[3].objRotX =  Math.floor(60 * s);
-  bodys1[4].objRotX =  Math.floor(-60 * s);
-
-  bodys1[5].objRotX =  Math.floor(60 * ns);
-
-  bodys1[6].objRotY =  Math.floor(-60 * s);
-  bodys1[7].objRotY =  Math.floor(-60 * s);
-
-  bodys1[8].objRotY =  Math.floor(60 * s);
-  bodys1[9].objRotY =  Math.floor(60 * s);
-
-  bodys1[10].objRotX =  Math.floor(-60 * ns);
-
-  //bodys[0].objRotZ += 10;
-  theta += 0.4;
-  if(theta >=2000){
-    theta = 0;
-  }*/
-  //makeSkinMeshBones(bonesJoinIndex,boxHuman1Bones,bodys1,masterXYZ,masterRotXYZ,masterScalingXYZ);
-
-  //skinmeshSPolygonAndShadowMapnPush(shadowProjectedObjects,projectedObjects,bodys1,boxHuman1Bones,sunViewMatrix,viewMatrix);
-  
+  //プロジェクション
   //シャドウの投影後の情報格納
   let shadowProjectedObjects = [];
   //投影後の情報格納
@@ -1636,9 +1365,9 @@ steveLoadPack.skinmeshBones = diceBones;
     mulMatRotateY(worldMatrix,object.objRotY);
     mulMatRotateZ(worldMatrix,object.objRotZ); 
     mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
-    objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix);
+    objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
 	}*/
-  	//dicesregister
+  //dicesregister
   for(let object of dices){
     let worldMatrix = matIdentity();
     mulMatTranslate(worldMatrix,object.bones.position[position_X],object.bones.position[position_Y],object.bones.position[position_Z]);  
@@ -1646,7 +1375,7 @@ steveLoadPack.skinmeshBones = diceBones;
     mulMatRotateY(worldMatrix,object.bones.rotXYZ[rot_Y]);
     mulMatRotateZ(worldMatrix,object.bones.rotXYZ[rot_Z]); 
     mulMatScaling(worldMatrix,object.bones.scaleXYZ[scale_X],object.bones.scaleXYZ[scale_Y],object.bones.scaleXYZ[scale_Z]);
-    objectDaePolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   //steve
   for(let object of steves){
@@ -1681,7 +1410,7 @@ steveLoadPack.skinmeshBones = diceBones;
   	}
   }*/
 
-//ピクセル処理がボトルネック
+//ピクセル処理がボトルネック、ラスタライズ
 setZmaxShdowBufferInit(shadowMap,screen_size_h,screen_size_w);
 setZmaxRenderBuffer(zBuffering,screen_size_h,screen_size_w);
 //camera
@@ -1703,7 +1432,7 @@ for(let j=0;j<projectedObjectsLength;j++){
 	  }
   }  
 }
-//shadowmap
+//shadowMap
 let shadowProjectedObjectsLength  = shadowProjectedObjects.length;
 for(let j=0;j<shadowProjectedObjectsLength;j++){
   let shadowProjectedObjects_j_polygonNum = shadowProjectedObjects[j][poly_List].length;
@@ -1718,7 +1447,7 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
 	  }
   }  
 }
-//Zバッファ pixel = [z,r,g,b,a,crossWorldVector3]で送られてくる。
+//作画
 let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
 let shadowMat = matMul(sunViewMatrix,inverseViewMatrix);
 for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
