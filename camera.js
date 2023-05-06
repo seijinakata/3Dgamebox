@@ -431,7 +431,7 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(0,-1,-4);
+let cameraPos = setVector3(0,0,-7);
 let lookat = setVector3(0.0,-1,1);
 let sunPos = setVector3(0,-3,-2);
 let sunLookat = setVector3(0.0,-0.0,0);
@@ -762,7 +762,8 @@ function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedO
 
   let meshVerts_Length = object.meshVerts.length;
   for (let i = 0; i < meshVerts_Length; i++) {
-    let verts = matVecMul(worldMatrix,object.meshVerts[i]);
+    console.log(434343)
+    let verts =  Vector3QuaternionMul(worldMatrix,object.meshVerts[i]);
     let nomalVerts = vertsCopy(verts);
     let shadowVerts = vertsCopy(verts);
     worldVerts[i] = verts;
@@ -1147,6 +1148,42 @@ function culUVVector(daeLoadPack){
   daeLoadPack.UVVector = UVVector;
 }
 
+function Quaternion(x,y, z, w){
+        return [x,y,z,w];
+}
+/// 共役Quaternion
+function Conjugated(x,y,z,w){
+        return Quaternion(-x, -y, -z, w);
+}
+function QuaternionMul(a,b)
+{
+      // Quaternion同士の積の計算
+      return Quaternion(
+          a[0] * b[3] + a[3] * b[0] - a[2] * b[1] + a[1] * b[2],
+          a[1] * b[3] + a[2] * b[0] + a[3] * b[1] - a[0] * b[2],
+          a[2] * b[3] - a[1] * b[0] + a[0] * b[1] + a[3] * b[2],
+          a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
+      );
+}
+function Vector3QuaternionMul(a,b)
+{
+    // ベクトルをQuaternionに変換
+    var bQuaternion = Quaternion(b[0], b[1], b[2], 1);
+    // q * p * q^-1 でベクトルを回転
+    let aConjugated = Conjugated(a[0],a[1],a[2],a[3]);
+    let abQuaternion = QuaternionMul(a,bQuaternion);
+    var pos = QuaternionMul(abQuaternion,aConjugated);
+    return setVector3(pos[0], pos[1], pos[2]);
+}
+/// 回転角度と回転軸からQuaternionを作成する
+function QuaternionAngleAxis(angle,axis){
+            var rad = angle * DEG_TO_RAD;
+            var halfRad = rad * 0.5;
+            var sin = Math.sin(halfRad);
+            var cos = Math.cos(halfRad);
+            culVecNormalize(axis);
+            return Quaternion(axis[0] * sin, axis[1] * sin, axis[2] * sin, cos);
+}
 let rot = 0;
 let rotPlus = 5;
 
@@ -1251,7 +1288,7 @@ dicebones.push(bones[steveLoadPack.boneParentRelation[0][1]].bone);
 
 //bonesResetスキンメッシュ
 
-if(rot>80){
+if(rot>360){
   rotPlus = -5;
 }else if(rot<0){
   rotPlus = 5;
@@ -1356,7 +1393,6 @@ for(let i in steves){
 
   sunViewMatrix = matCamera(sunPos,sunLookat,up);
   matRound4X4(sunViewMatrix);
-  /*
 	//cuberegister
   for(let object of cubes){
     let worldMatrix = matIdentity();
@@ -1365,8 +1401,8 @@ for(let i in steves){
     mulMatRotateY(worldMatrix,object.objRotY);
     mulMatRotateZ(worldMatrix,object.objRotZ); 
     mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
-    objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
-	}*/
+    //objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+	}
   //dicesregister
   for(let object of dices){
     let worldMatrix = matIdentity();
@@ -1375,11 +1411,15 @@ for(let i in steves){
     mulMatRotateY(worldMatrix,object.bones.rotXYZ[rot_Y]);
     mulMatRotateZ(worldMatrix,object.bones.rotXYZ[rot_Z]); 
     mulMatScaling(worldMatrix,object.bones.scaleXYZ[scale_X],object.bones.scaleXYZ[scale_Y],object.bones.scaleXYZ[scale_Z]);
-    objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    let rox = QuaternionAngleAxis(rot,[1,0,0]);
+    let roy = QuaternionAngleAxis(rot,[0,0,1]);
+    let roz = QuaternionMul(rox,roy);
+
+    objectPolygonPush(object,roz,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   //steve
   for(let object of steves){
-    objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    //objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
 	}
 	//planesregister
   for(let object of planes){
@@ -1389,7 +1429,7 @@ for(let i in steves){
     mulMatRotateY(worldMatrix,object.objRotY);
     mulMatRotateZ(worldMatrix,object.objRotZ); 
     mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
-    objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    //objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   /*
   lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
@@ -1512,18 +1552,18 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       if(shadowMatrixPixelX>0 && shadowMatrixPixelX<screen_size_w){
         if(shadowMatrixPixelY>0 && shadowMatrixPixelY<screen_size_h){
           if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.25<pixelZ){
-            pixelR *= 0.5;
-            pixelG *= 0.5;
-            pixelB *= 0.5;	
+            // pixelR *= 0.5;
+            // pixelG *= 0.5;
+            // pixelB *= 0.5;	
           }
         }
       }
       //ライトシミュレーション
       let sunCosin = culVecDot(sunVec,pixelcrossWorldVector3);
       sunCosin *= 1.5;
-      pixelR *= sunCosin;
-      pixelG *= sunCosin;
-      pixelB *= sunCosin;      
+      // pixelR *= sunCosin;
+      // pixelG *= sunCosin;
+      // pixelB *= sunCosin;      
       myImageData.data[base + 0] = pixelR;  // Red
       myImageData.data[base + 1] = pixelG;  // Green
       myImageData.data[base + 2] = pixelB;  // Blue
