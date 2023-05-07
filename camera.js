@@ -431,7 +431,7 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(0,0,-7);
+let cameraPos = setVector3(0,-1,-4);
 let lookat = setVector3(0.0,-1,1);
 let sunPos = setVector3(0,-3,-2);
 let sunLookat = setVector3(0.0,-0.0,0);
@@ -745,10 +745,17 @@ function daeMekeSkinMeshBone(daeLoadPack){
       }else{
       if(daeLoadPack.bones[boneParentRelation].skinmeshBone  == null){
           let parentCrossBone = matMul(daeLoadPack.bones[daeLoadPack.boneParentRelation[j][i-1]].skinmeshBone,daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
-          mulMatRotateX(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
-          mulMatRotateY(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
-          mulMatRotateZ(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
-          daeLoadPack.bones[boneParentRelation].skinmeshBone = matMul(parentCrossBone,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
+          let rox = QuaternionAngleAxis(daeLoadPack.bones[boneParentRelation].rotXYZ[0],[1,0,0]);
+          let roy = QuaternionAngleAxis(daeLoadPack.bones[boneParentRelation].rotXYZ[1],[0,1,0]);
+          let roz = QuaternionAngleAxis(daeLoadPack.bones[boneParentRelation].rotXYZ[2],[0,0,1]);
+          let roxy = QuaternionMul(rox,roy);
+          let roxyz = QuaternionMul(roxy,roz);
+          let QuaternionMatrix = makeQuaternionMatrix(roxyz);
+          let QuaternionParentCrossBone = matMul(parentCrossBone,QuaternionMatrix);
+          // mulMatRotateX(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
+          // mulMatRotateY(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
+          // mulMatRotateZ(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
+          daeLoadPack.bones[boneParentRelation].skinmeshBone = matMul(QuaternionParentCrossBone,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
         }
       }
     }
@@ -762,8 +769,7 @@ function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedO
 
   let meshVerts_Length = object.meshVerts.length;
   for (let i = 0; i < meshVerts_Length; i++) {
-    console.log(434343)
-    let verts =  Vector3QuaternionMul(worldMatrix,object.meshVerts[i]);
+    let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
     let nomalVerts = vertsCopy(verts);
     let shadowVerts = vertsCopy(verts);
     worldVerts[i] = verts;
@@ -1184,6 +1190,22 @@ function QuaternionAngleAxis(angle,axis){
             culVecNormalize(axis);
             return Quaternion(axis[0] * sin, axis[1] * sin, axis[2] * sin, cos);
 }
+function makeQuaternionMatrix(q){
+  let pow2qx = q[0]*q[0];
+  let qxqy = q[0]*q[1];
+  let qxqz = q[0]*q[2];
+  let qxqw = q[0]*q[3];
+  let pow2qy = q[1]*q[1];
+  let qyqz = q[1]*q[2];
+  let qyqw = q[1]*q[3];
+  let pow2qz = q[2]*q[2];
+  let qzqw = q[2]*q[3];
+  let pow2qw = q[3]*q[3];
+  
+   return [2*pow2qw+2*pow2qx-1,2*qxqy-2*qzqw,2*qxqz+2*qyqw,0,
+          2*qxqy+2*qzqw,2*pow2qw+2*pow2qy-1,2*qyqz-2*qxqw,0,
+          2*qxqz-2*qyqw,2*qyqz+2*qxqw,2*pow2qw+2*pow2qz-1,0];
+}
 let rot = 0;
 let rotPlus = 5;
 
@@ -1288,7 +1310,7 @@ dicebones.push(bones[steveLoadPack.boneParentRelation[0][1]].bone);
 
 //bonesResetスキンメッシュ
 
-if(rot>360){
+if(rot>90){
   rotPlus = -5;
 }else if(rot<0){
   rotPlus = 5;
@@ -1411,15 +1433,11 @@ for(let i in steves){
     mulMatRotateY(worldMatrix,object.bones.rotXYZ[rot_Y]);
     mulMatRotateZ(worldMatrix,object.bones.rotXYZ[rot_Z]); 
     mulMatScaling(worldMatrix,object.bones.scaleXYZ[scale_X],object.bones.scaleXYZ[scale_Y],object.bones.scaleXYZ[scale_Z]);
-    let rox = QuaternionAngleAxis(rot,[1,0,0]);
-    let roy = QuaternionAngleAxis(rot,[0,0,1]);
-    let roz = QuaternionMul(rox,roy);
-
-    objectPolygonPush(object,roz,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   //steve
   for(let object of steves){
-    //objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
 	}
 	//planesregister
   for(let object of planes){
@@ -1429,7 +1447,7 @@ for(let i in steves){
     mulMatRotateY(worldMatrix,object.objRotY);
     mulMatRotateZ(worldMatrix,object.objRotZ); 
     mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
-    //objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   /*
   lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
@@ -1552,18 +1570,18 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       if(shadowMatrixPixelX>0 && shadowMatrixPixelX<screen_size_w){
         if(shadowMatrixPixelY>0 && shadowMatrixPixelY<screen_size_h){
           if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.25<pixelZ){
-            // pixelR *= 0.5;
-            // pixelG *= 0.5;
-            // pixelB *= 0.5;	
+            pixelR *= 0.5;
+            pixelG *= 0.5;
+            pixelB *= 0.5;	
           }
         }
       }
       //ライトシミュレーション
       let sunCosin = culVecDot(sunVec,pixelcrossWorldVector3);
       sunCosin *= 1.5;
-      // pixelR *= sunCosin;
-      // pixelG *= sunCosin;
-      // pixelB *= sunCosin;      
+      pixelR *= sunCosin;
+      pixelG *= sunCosin;
+      pixelB *= sunCosin;      
       myImageData.data[base + 0] = pixelR;  // Red
       myImageData.data[base + 1] = pixelG;  // Green
       myImageData.data[base + 2] = pixelB;  // Blue
