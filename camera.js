@@ -733,13 +733,22 @@ function daeMekeSkinMeshBone(daeLoadPack){
       if(i == 0){
         if(daeLoadPack.bones[boneParentRelation].skinmeshBone == null){
           let copyInverseBindPose = matCopy(daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
-          mulMatTranslate(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].position[0],
-            daeLoadPack.bones[boneParentRelation].position[1],daeLoadPack.bones[boneParentRelation].position[2]);  
-          mulMatRotateX(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
-          mulMatRotateY(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
-          mulMatRotateZ(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
-          mulMatScaling(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].scaleXYZ[0],
-            daeLoadPack.bones[boneParentRelation].scaleXYZ[1],daeLoadPack.bones[boneParentRelation].scaleXYZ[2]);  
+          let rox = QuaternionAngleAxis(daeLoadPack.bones[boneParentRelation].rotXYZ[0],[1,0,0]);
+          let roy = QuaternionAngleAxis(daeLoadPack.bones[boneParentRelation].rotXYZ[1],[0,1,0]);
+          let roz = QuaternionAngleAxis(daeLoadPack.bones[boneParentRelation].rotXYZ[2],[0,0,1]);
+          let roxy = QuaternionMul(rox,roy);
+          let roxyz = QuaternionMul(roxy,roz);
+          let quaternionMatrix = makeQuaternionMatrix(roxyz);
+          quaternionMatrixTranstation(quaternionMatrix,daeLoadPack.bones[boneParentRelation].position[0],daeLoadPack.bones[boneParentRelation].position[1],daeLoadPack.bones[boneParentRelation].position[2]);
+          quaternionMatrixScaling(quaternionMatrix,daeLoadPack.bones[boneParentRelation].scaleXYZ[0],daeLoadPack.bones[boneParentRelation].scaleXYZ[1],daeLoadPack.bones[boneParentRelation].scaleXYZ[2]);
+          copyInverseBindPose = matMul(copyInverseBindPose,quaternionMatrix);
+          // mulMatTranslate(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].position[0],
+          //   daeLoadPack.bones[boneParentRelation].position[1],daeLoadPack.bones[boneParentRelation].position[2]);
+          // mulMatRotateX(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
+          // mulMatRotateY(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
+          // mulMatRotateZ(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
+          // mulMatScaling(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].scaleXYZ[0],
+          // daeLoadPack.bones[boneParentRelation].scaleXYZ[1],daeLoadPack.bones[boneParentRelation].scaleXYZ[2]);  
           daeLoadPack.bones[boneParentRelation].skinmeshBone = matMul(copyInverseBindPose,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
         }
       }else{
@@ -1155,41 +1164,56 @@ function culUVVector(daeLoadPack){
 }
 
 function Quaternion(x,y, z, w){
-        return [x,y,z,w];
+  return [x,y,z,w];
 }
 /// 共役Quaternion
 function Conjugated(x,y,z,w){
-        return Quaternion(-x, -y, -z, w);
+  return Quaternion(-x, -y, -z, w);
 }
 function QuaternionMul(a,b)
 {
-      // Quaternion同士の積の計算
-      return Quaternion(
-          a[0] * b[3] + a[3] * b[0] - a[2] * b[1] + a[1] * b[2],
-          a[1] * b[3] + a[2] * b[0] + a[3] * b[1] - a[0] * b[2],
-          a[2] * b[3] - a[1] * b[0] + a[0] * b[1] + a[3] * b[2],
-          a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
-      );
+  // Quaternion同士の積の計算
+  return Quaternion(
+      a[0] * b[3] + a[3] * b[0] - a[2] * b[1] + a[1] * b[2],
+      a[1] * b[3] + a[2] * b[0] + a[3] * b[1] - a[0] * b[2],
+      a[2] * b[3] - a[1] * b[0] + a[0] * b[1] + a[3] * b[2],
+      a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
+  );
 }
-function Vector3QuaternionMul(a,b)
-{
-    // ベクトルをQuaternionに変換
-    var bQuaternion = Quaternion(b[0], b[1], b[2], 1);
-    // q * p * q^-1 でベクトルを回転
-    let aConjugated = Conjugated(a[0],a[1],a[2],a[3]);
-    let abQuaternion = QuaternionMul(a,bQuaternion);
-    var pos = QuaternionMul(abQuaternion,aConjugated);
-    return setVector3(pos[0], pos[1], pos[2]);
+function Vector3QuaternionMul(a,b){
+  // ベクトルをQuaternionに変換
+  var bQuaternion = Quaternion(b[0], b[1], b[2], 1);
+  // q * p * q^-1 でベクトルを回転
+  //同じクォータニオンでもp(b)が元の頂点、q(a)が回転させたい軸、出力が回転させた結果
+  let aConjugated = Conjugated(a[0],a[1],a[2],a[3]);
+  let abQuaternion = QuaternionMul(a,bQuaternion);
+  var pos = QuaternionMul(abQuaternion,aConjugated);
+  return setVector3(pos[0], pos[1], pos[2]);
 }
+
 /// 回転角度と回転軸からQuaternionを作成する
 function QuaternionAngleAxis(angle,axis){
-            var rad = angle * DEG_TO_RAD;
-            var halfRad = rad * 0.5;
-            var sin = Math.sin(halfRad);
-            var cos = Math.cos(halfRad);
-            culVecNormalize(axis);
-            return Quaternion(axis[0] * sin, axis[1] * sin, axis[2] * sin, cos);
+  var rad = angle * DEG_TO_RAD;
+  var halfRad = rad * 0.5;
+  var sin = Math.sin(halfRad);
+  var cos = Math.cos(halfRad);
+  //ロール・ピッチ・ヨー に回転させる場合正規化する必要がない
+  //culVecNormalize(axis);
+  return Quaternion(axis[0] * sin, axis[1] * sin, axis[2] * sin, cos);
 }
+
+function quaternionMatrixTranstation(quaternionMatrix,x,y,z){
+  quaternionMatrix[3] = x;
+  quaternionMatrix[7] = y;
+  quaternionMatrix[11] = z;
+}
+function quaternionMatrixScaling(quaternionMatrix,x,y,z){
+  quaternionMatrix[0] *= x;
+  quaternionMatrix[5] *= y;
+  quaternionMatrix[10] *= z;
+}
+
+//回転行列を元に作られたQuaternion行列
 function makeQuaternionMatrix(q){
   let pow2qx = q[0]*q[0];
   let qxqy = q[0]*q[1];
@@ -1206,6 +1230,7 @@ function makeQuaternionMatrix(q){
           2*qxqy+2*qzqw,2*pow2qw+2*pow2qy-1,2*qyqz-2*qxqw,0,
           2*qxqz-2*qyqw,2*qyqz+2*qxqw,2*pow2qw+2*pow2qz-1,0];
 }
+
 let rot = 0;
 let rotPlus = 5;
 
