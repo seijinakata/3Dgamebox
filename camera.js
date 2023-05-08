@@ -771,14 +771,20 @@ function daeMekeSkinMeshBone(daeLoadPack){
   }
 }
 //ボーンなしシャドウマップ付き
-function objectPolygonPush(object,worldMatrix,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,screen_size_h,screen_size_w){
+function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,screen_size_h,screen_size_w){
   let worldVerts = [];
   let projectedVerts = [];
   let shadowProjectedVerts = [];
 
+  // let verts = setVector3(object.meshVerts[i][0]+worldMatrix[0].position[0],object.meshVerts[i][1]+worldMatrix[0].position[1],object.meshVerts[i][2]+worldMatrix[0].position[2]);
+  // verts = Vector3QuaternionMul(worldMatrix[1],verts);
+  // verts = setVector3(object.meshVerts[i][0]*worldMatrix[2].scaleXYZ[0],object.meshVerts[i][1]*worldMatrix[2].scaleXYZ[1],object.meshVerts[i][2]*worldMatrix[2].scaleXYZ[2]);
   let meshVerts_Length = object.meshVerts.length;
   for (let i = 0; i < meshVerts_Length; i++) {
-    let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
+    let verts = setVector3(object.meshVerts[i][0]*worldTranslation.scaleXYZ[position_X],object.meshVerts[i][1]*worldTranslation.scaleXYZ[position_Y],object.meshVerts[i][2]*worldTranslation.scaleXYZ[position_Z]);
+    verts = Vector3QuaternionMul(worldTranslation.quaternion,verts);
+    verts = setVector3(verts[0]+worldTranslation.position[position_X],verts[1]+worldTranslation.position[position_Y],verts[2]+worldTranslation.position[position_Z]);
+    //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
     let nomalVerts = vertsCopy(verts);
     let shadowVerts = vertsCopy(verts);
     worldVerts[i] = verts;
@@ -1441,24 +1447,33 @@ for(let i in steves){
   sunViewMatrix = matCamera(sunPos,sunLookat,up);
   matRound4X4(sunViewMatrix);
 	//cuberegister
-  for(let object of cubes){
-    let worldMatrix = matIdentity();
-    mulMatTranslate(worldMatrix,object.centerObjX,object.centerObjY,object.centerObjZ);  
-    mulMatRotateX(worldMatrix,object.objRotX);
-    mulMatRotateY(worldMatrix,object.objRotY);
-    mulMatRotateZ(worldMatrix,object.objRotZ); 
-    mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
-    //objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
-	}
+  // for(let object of cubes){
+  //   let worldMatrix = matIdentity();
+  //   mulMatTranslate(worldMatrix,object.centerObjX,object.centerObjY,object.centerObjZ);  
+  //   mulMatRotateX(worldMatrix,object.objRotX);
+  //   mulMatRotateY(worldMatrix,object.objRotY);
+  //   mulMatRotateZ(worldMatrix,object.objRotZ); 
+  //   mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
+  //   objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+	// }
   //dicesregister
   for(let object of dices){
-    let worldMatrix = matIdentity();
-    mulMatTranslate(worldMatrix,object.bones.position[position_X],object.bones.position[position_Y],object.bones.position[position_Z]);  
-    mulMatRotateX(worldMatrix,object.bones.rotXYZ[rot_X]);
-    mulMatRotateY(worldMatrix,object.bones.rotXYZ[rot_Y]);
-    mulMatRotateZ(worldMatrix,object.bones.rotXYZ[rot_Z]); 
-    mulMatScaling(worldMatrix,object.bones.scaleXYZ[scale_X],object.bones.scaleXYZ[scale_Y],object.bones.scaleXYZ[scale_Z]);
-    objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    // let worldMatrix = matIdentity();
+    // mulMatTranslate(worldMatrix,object.bones.position[position_X],object.bones.position[position_Y],object.bones.position[position_Z]);  
+    // mulMatRotateX(worldMatrix,object.bones.rotXYZ[rot_X]);
+    // mulMatRotateY(worldMatrix,object.bones.rotXYZ[rot_Y]);
+    // mulMatRotateZ(worldMatrix,object.bones.rotXYZ[rot_Z]); 
+    // mulMatScaling(worldMatrix,object.bones.scaleXYZ[scale_X],object.bones.scaleXYZ[scale_Y],object.bones.scaleXYZ[scale_Z]);
+    let worldTranslation = {};
+    let rox = QuaternionAngleAxis(object.bones.rotXYZ[0],[1,0,0]);
+    let roy = QuaternionAngleAxis(object.bones.rotXYZ[1],[0,1,0]);
+    let roz = QuaternionAngleAxis(object.bones.rotXYZ[2],[0,0,1]);
+    let roxy = QuaternionMul(rox,roy);
+    let roxyz = QuaternionMul(roxy,roz);
+    worldTranslation.quaternion = roxyz;
+    worldTranslation.position = object.bones.position;
+    worldTranslation.scaleXYZ = object.bones.scaleXYZ;
+    objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   //steve
   for(let object of steves){
@@ -1466,13 +1481,22 @@ for(let i in steves){
 	}
 	//planesregister
   for(let object of planes){
-    let worldMatrix = matIdentity();
-    mulMatTranslate(worldMatrix,object.centerObjX,object.centerObjY,object.centerObjZ);  
-    mulMatRotateX(worldMatrix,object.objRotX);
-    mulMatRotateY(worldMatrix,object.objRotY);
-    mulMatRotateZ(worldMatrix,object.objRotZ); 
-    mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
-    objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    // let worldMatrix = matIdentity();
+    // mulMatTranslate(worldMatrix,object.centerObjX,object.centerObjY,object.centerObjZ);  
+    // mulMatRotateX(worldMatrix,object.objRotX);
+    // mulMatRotateY(worldMatrix,object.objRotY);
+    // mulMatRotateZ(worldMatrix,object.objRotZ); 
+    // mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
+    let worldTranslation = {};
+    let rox = QuaternionAngleAxis(object.objRotX,[1,0,0]);
+    let roy = QuaternionAngleAxis(object.objRotY,[0,1,0]);
+    let roz = QuaternionAngleAxis(object.objRotZ,[0,0,1]);
+    let roxy = QuaternionMul(rox,roy);
+    let roxyz = QuaternionMul(roxy,roz);
+    worldTranslation.quaternion = roxyz;
+    worldTranslation.position = setVector3(object.centerObjX,object.centerObjY,object.centerObjZ);
+    worldTranslation.scaleXYZ = setVector3(object.scaleX,object.scaleY,object.scaleZ);
+    objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   /*
   lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
