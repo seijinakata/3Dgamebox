@@ -151,10 +151,14 @@ export function delta_xz(edge){
 //ソート関数
 function swap(a,b){
 	let t = vertsCopy(a);
-	for(let i=0;i<3;i++){
-		a[i]=b[i];
-		b[i]=t[i];
-	}
+	a[0] = b[0];
+	b[0] = t[0];
+
+	a[1] = b[1];
+	b[1] = t[1];
+
+	a[2] = b[2];
+	b[2] = t[2];
 }
 export function sort_index(t,i){
     if(t[0][i]>t[1][i])swap(t[0],t[1]);

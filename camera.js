@@ -3,7 +3,7 @@
 import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round, roundVector2} from './vector.js';
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
-import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer, vertsCopy} from './paint.js';
+import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
 import { cross_Z, pixel_B, pixel_Cross_World_Vector3, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_backCulling_Flag, UV_Vector } from './enum.js';
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
@@ -692,38 +692,6 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
     }
     */
 }
-function makeSkinMeshBones(bonesJoinIndex,bones,bodys,masterXYZ,masterRotXYZ,masterScalingXYZ){
-  let masterMatrix = matIdentity();
-  mulMatTranslate(masterMatrix,masterXYZ[0],masterXYZ[1],masterXYZ[2]);  
-  mulMatRotateX(masterMatrix,masterRotXYZ[0]);
-  mulMatRotateY(masterMatrix,masterRotXYZ[1]);
-  mulMatRotateZ(masterMatrix,masterRotXYZ[2]);
-  mulMatScaling(masterMatrix,masterScalingXYZ[0],masterScalingXYZ[1],masterScalingXYZ[2]);
-
-  let firstBoneMatrix = matIdentity();
-  mulMatTranslate(firstBoneMatrix,bodys[0].centerObjX,bodys[0].centerObjY,bodys[0].centerObjZ);  
-  mulMatRotateX(firstBoneMatrix,bodys[0].objRotX);
-  mulMatRotateY(firstBoneMatrix,bodys[0].objRotY);
-  mulMatRotateZ(firstBoneMatrix,bodys[0].objRotZ);
-  mulMatScaling(firstBoneMatrix,bodys[0].scaleX,bodys[0].scaleY,bodys[0].scaleZ);
-  //これが原点移動のボーンオフセット行列
-  mulMatTranslate(firstBoneMatrix,-bodys[0].centerObjX,-bodys[0].centerObjY,-bodys[0].centerObjZ);  
-  
-  firstBoneMatrix = matMul(masterMatrix,firstBoneMatrix);
-  bones.push(firstBoneMatrix);
-
-  for(let boneNumber = 1;boneNumber<bodys.length;boneNumber++){
-    let bonesMatrix = matIdentity();
-    mulMatTranslate(bonesMatrix,bodys[boneNumber].centerObjX,bodys[boneNumber].centerObjY,bodys[boneNumber].centerObjZ);  
-    mulMatRotateX(bonesMatrix,bodys[boneNumber].objRotX);
-    mulMatRotateY(bonesMatrix,bodys[boneNumber].objRotY);
-    mulMatRotateZ(bonesMatrix,bodys[boneNumber].objRotZ);
-    mulMatScaling(bonesMatrix,bodys[boneNumber].scaleX,bodys[boneNumber].scaleY,bodys[boneNumber].scaleZ);
-    mulMatTranslate(bonesMatrix,-bodys[boneNumber].centerObjX,-bodys[boneNumber].centerObjY,-bodys[boneNumber].centerObjZ);
-    let mixBoneMatrix = matMul(bones[bonesJoinIndex[boneNumber-1]],bonesMatrix);
-    bones.push(mixBoneMatrix);
-  }
-}
 function daeMekeSkinMeshBone(daeLoadPack){
   let boneParentRelationRow = daeLoadPack.boneParentRelation.length;
   for(let j=0;j<boneParentRelationRow;j++){
@@ -1199,10 +1167,17 @@ function Vector3QuaternionMul(a,b){
 
 /// 回転角度と回転軸からQuaternionを作成する
 function QuaternionAngleAxis(angle,axis){
-  var rad = angle * DEG_TO_RAD;
-  var halfRad = rad * 0.5;
-  var sin = Math.sin(halfRad);
-  var cos = Math.cos(halfRad);
+  let  halfRad = top_int(angle * 0.5);
+  let sin;
+  let cos;
+  if(halfRad<0){
+    halfRad = 360 + halfRad;
+    cos = cosLut[halfRad];
+    sin = sinLut[halfRad];        
+  }else{
+    cos = cosLut[halfRad];
+    sin = sinLut[halfRad]; 
+  }
   //ロール・ピッチ・ヨー に回転させる場合正規化する必要がない
   //culVecNormalize(axis);
   return Quaternion(axis[0] * sin, axis[1] * sin, axis[2] * sin, cos);
@@ -1341,7 +1316,7 @@ dicebones.push(bones[steveLoadPack.boneParentRelation[0][1]].bone);
 
 //bonesResetスキンメッシュ
 
-if(rot>90){
+if(rot>80){
   rotPlus = -5;
 }else if(rot<0){
   rotPlus = 5;
