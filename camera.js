@@ -701,17 +701,14 @@ function daeMekeSkinMeshBone(daeLoadPack){
       if(i == 0){
         if(daeLoadPack.bones[boneParentRelation].skinmeshBone == null){
           let copyInverseBindPose = matCopy(daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
-          let rox = QuaternionAngleAxis(daeLoadPack.bones[boneParentRelation].rotXYZ[0],[1,0,0]);
-          let roy = QuaternionAngleAxis(daeLoadPack.bones[boneParentRelation].rotXYZ[1],[0,1,0]);
-          let roz = QuaternionAngleAxis(daeLoadPack.bones[boneParentRelation].rotXYZ[2],[0,0,1]);
-          let roxy = QuaternionMul(rox,roy);
-          let roxyz = QuaternionMul(roxy,roz);
-          let quaternionMatrix = makeQuaternionMatrix(roxyz);
+          let quaternionOut = [];
+          slerpQuaternion(quaternionOut,daeLoadPack.bones[boneParentRelation].preQuaternion,daeLoadPack.bones[boneParentRelation].afterQuaternion,daeLoadPack.bones[boneParentRelation].t);
+          let quaternionMatrix = makeQuaternionMatrix(quaternionOut);
           quaternionMatrixTranstation(quaternionMatrix,daeLoadPack.bones[boneParentRelation].position[0],daeLoadPack.bones[boneParentRelation].position[1],daeLoadPack.bones[boneParentRelation].position[2]);
           quaternionMatrixScaling(quaternionMatrix,daeLoadPack.bones[boneParentRelation].scaleXYZ[0],daeLoadPack.bones[boneParentRelation].scaleXYZ[1],daeLoadPack.bones[boneParentRelation].scaleXYZ[2]);
           copyInverseBindPose = matMul(copyInverseBindPose,quaternionMatrix);
           // mulMatTranslate(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].position[0],
-          //   daeLoadPack.bones[boneParentRelation].position[1],daeLoadPack.bones[boneParentRelation].position[2]);
+          // daeLoadPack.bones[boneParentRelation].position[1],daeLoadPack.bones[boneParentRelation].position[2]);
           // mulMatRotateX(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
           // mulMatRotateY(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
           // mulMatRotateZ(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
@@ -728,9 +725,9 @@ function daeMekeSkinMeshBone(daeLoadPack){
           // let roxy = QuaternionMul(rox,roy);
           // let roxyz = QuaternionMul(roxy,roz);
           // let QuaternionMatrix = makeQuaternionMatrix(roxyz);
-          let out = [];
-          slerpQuaternion(out,daeLoadPack.bones[boneParentRelation].preQuaternion,daeLoadPack.bones[boneParentRelation].afterQuaternion,daeLoadPack.bones[12].t);
-          let QuaternionMatrix = makeQuaternionMatrix(out);
+          let quaternionOut = [];
+          slerpQuaternion(quaternionOut,daeLoadPack.bones[boneParentRelation].preQuaternion,daeLoadPack.bones[boneParentRelation].afterQuaternion,daeLoadPack.bones[boneParentRelation].t);
+          let QuaternionMatrix = makeQuaternionMatrix(quaternionOut);
           let QuaternionParentCrossBone = matMul(parentCrossBone,QuaternionMatrix);
           // mulMatRotateX(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
           // mulMatRotateY(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
@@ -1234,14 +1231,14 @@ function makeQuaternionMatrix(q){
 // クォータニオン球面線形補間
 function slerpQuaternion(out,q1,q2,t) {
   // 角度算出
-  let  len1 = Math.sqrt( q1[0] * q1[0] + q1[1] * q1[1] + q1[2] * q1[2] + q1[3] * q1[3] );
-  let  len2 = Math.sqrt( q2[0] * q2[0] + q2[1] * q2[1] + q2[2] * q2[2] + q2[3] * q2[3] );
-  if ( len1 == 0.0 || len2 == 0.0 ){
-    for (let i = 0; i < 4; i++ )
-    out[i] = q1[i];
-    return;
-  }
-  let  cos_val = (q1[0] * q2[0] + q1[1] * q2[1] + q1[2] * q2[2] + q1[3] * q2[3]) / (len1 * len2);
+  // let  len1 = Math.sqrt( q1[0] * q1[0] + q1[1] * q1[1] + q1[2] * q1[2] + q1[3] * q1[3] );
+  // let  len2 = Math.sqrt( q2[0] * q2[0] + q2[1] * q2[1] + q2[2] * q2[2] + q2[3] * q2[3] );
+  // if ( len1 == 0.0 || len2 == 0.0 ){
+  //   for (let i = 0; i < 4; i++ )
+  //   out[i] = q1[i];
+  //   return;
+  // }
+  let  cos_val = (q1[0] * q2[0] + q1[1] * q2[1] + q1[2] * q2[2] + q1[3] * q2[3]);// / (len1 * len2);
   let  w = Math.acos( cos_val );
   //下の計算sinを０で割ってる。クォータニオン同士の角度が０ということは同じクォータニオン
   if(w == 0){
@@ -1402,7 +1399,67 @@ if(dataLoad == false){
     steve2LoadPack.backCullingFlag = true;
     culUVVector(steve2LoadPack)
 
-    //steves.push(steve2LoadPack); 
+    steves.push(steve2LoadPack); 
+    steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
+
+    for(let i=0;i<steves[0].bones.length;i++){
+      let rox = QuaternionAngleAxis(0,[1,0,0]);
+      let roy = QuaternionAngleAxis(0,[0,1,0]);
+      let roz = QuaternionAngleAxis(0,[0,0,1]);
+      let roxy = QuaternionMul(rox,roy);
+      let roxyz = QuaternionMul(roxy,roz);
+      steves[1].bones[i].preQuaternion = roxyz;
+    }
+    for(let i=0;i<steves[0].bones.length;i++){
+      let rox = QuaternionAngleAxis(0,[1,0,0]);
+      let roy = QuaternionAngleAxis(0,[0,1,0]);
+      let roz = QuaternionAngleAxis(0,[0,0,1]);
+      let roxy = QuaternionMul(rox,roy);
+      let roxyz = QuaternionMul(roxy,roz);
+      steves[1].bones[i].afterQuaternion = roxyz;
+      steves[1].bones[i].t = 0;
+    }
+    let rox = QuaternionAngleAxis(0,[1,0,0]);
+    let roy = QuaternionAngleAxis(0,[0,1,0]);
+    let roz = QuaternionAngleAxis(80,[0,0,1]);
+    let roxy = QuaternionMul(rox,roy);
+    let roxyz = QuaternionMul(roxy,roz);
+    steves[1].bones[4].afterQuaternion = roxyz;
+
+    rox = QuaternionAngleAxis(0,[1,0,0]);
+    roy = QuaternionAngleAxis(0,[0,1,0]);
+    roz = QuaternionAngleAxis(-80,[0,0,1]);
+    roxy = QuaternionMul(rox,roy);
+    roxyz = QuaternionMul(roxy,roz);
+    steves[1].bones[6].afterQuaternion = roxyz;
+
+    rox = QuaternionAngleAxis(0,[1,0,0]);
+    roy = QuaternionAngleAxis(0,[0,1,0]);
+    roz = QuaternionAngleAxis(-80,[0,0,1]);
+    roxy = QuaternionMul(rox,roy);
+    roxyz = QuaternionMul(roxy,roz);
+    steves[1].bones[8].afterQuaternion = roxyz;
+
+    rox = QuaternionAngleAxis(0,[1,0,0]);
+    roy = QuaternionAngleAxis(0,[0,1,0]);
+    roz = QuaternionAngleAxis(80,[0,0,1]);
+    roxy = QuaternionMul(rox,roy);
+    roxyz = QuaternionMul(roxy,roz);
+    steves[1].bones[10].afterQuaternion = roxyz;
+
+    rox = QuaternionAngleAxis(-80,[1,0,0]);
+    roy = QuaternionAngleAxis(0,[0,1,0]);
+    roz = QuaternionAngleAxis(0,[0,0,1]);
+    roxy = QuaternionMul(rox,roy);
+    roxyz = QuaternionMul(roxy,roz);
+    steves[1].bones[11].afterQuaternion = roxyz;
+
+    rox = QuaternionAngleAxis(80,[1,0,0]);
+    roy = QuaternionAngleAxis(0,[0,1,0]);
+    roz = QuaternionAngleAxis(0,[0,0,1]);
+    roxy = QuaternionMul(rox,roy);
+    roxyz = QuaternionMul(roxy,roz);
+    steves[1].bones[12].afterQuaternion = roxyz;
     steve2Load = true;
   }
   if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load && steve2Load && cube1Load){
@@ -1443,8 +1500,11 @@ if(t<0){
   tPuls = 0.1;
 }
 t += tPuls;
-for(let i=0;i<steves[0].bones.length;i++){
-  steves[0].bones[i].t = t;
+
+for(let j=0;j<steves.length;j++){
+  for(let i=0;i<steves[j].bones.length;i++){
+   steves[j].bones[i].t = t; 
+  }
 }
 
 let steves_length = steves.length;
@@ -1455,7 +1515,8 @@ for(let j=0;j<steves_length;j++){
     currentStave.bones[i].skinmeshBone = null;
   }
 }
-// steves[0].bones[0].position = setVector3(0.5,0,0);
+steves[0].bones[0].position = setVector3(0.5,0,0);
+steves[1].bones[0].position = setVector3(-0.5,0,0.5);
 // steves[0].bones[0].rotXYZ = setVector3(0,0,0);
 
 // steves[0].bones[4].rotXYZ = setVector3(0,0,rot);
@@ -1467,9 +1528,7 @@ for(let j=0;j<steves_length;j++){
 // steves[0].bones[11].rotXYZ = setVector3(-1* rot,0,0);
 // steves[0].bones[12].rotXYZ = setVector3(rot,0,0);
 
-// steves[1].bones[0].position = setVector3(-0.5,0,0.5);
 // steves[1].bones[0].rotXYZ = setVector3(0,0,0);
-// steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
 
 // steves[1].bones[4].rotXYZ = setVector3(0,0,rot);
 // steves[1].bones[6].rotXYZ = setVector3(0,0,-1*rot);
