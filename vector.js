@@ -109,7 +109,7 @@ function fx(x,param){
 function dfx(x){
     return x*2;
 }
-function NewtonMethod(x,param){
+export function NewtonMethod(x,param){
 const TOLERANCE =  0.00001
 let  beforeX = x;
 /* Newton's Method. */
