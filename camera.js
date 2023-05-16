@@ -1,6 +1,6 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
-import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round, roundVector2} from './vector.js';
+import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round, roundVector2, NewtonMethod} from './vector.js';
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
@@ -1195,11 +1195,58 @@ function QuaternionAngleAxis(angle,axis){
     cos = cosLut[halfRad];
     sin = sinLut[halfRad]; 
   }
-  //ロール・ピッチ・ヨー に回転させる場合正規化する必要がない
-  //culVecNormalize(axis);
+  culVecNormalize(axis);
   return Quaternion(axis[0] * sin, axis[1] * sin, axis[2] * sin, cos);
 }
-
+function quaternionXRoll(angle){
+  let  halfRad = top_int(angle * 0.5);
+  let sin;
+  let cos;
+  if(halfRad<0){
+    halfRad = 360 + halfRad;
+    cos = cosLut[halfRad];
+    sin = sinLut[halfRad];        
+  }else{
+    cos = cosLut[halfRad];
+    sin = sinLut[halfRad]; 
+  }
+  return Quaternion(sin,0,0,cos);
+}
+function quaternionYRoll(angle){
+  let  halfRad = top_int(angle * 0.5);
+  let sin;
+  let cos;
+  if(halfRad<0){
+    halfRad = 360 + halfRad;
+    cos = cosLut[halfRad];
+    sin = sinLut[halfRad];        
+  }else{
+    cos = cosLut[halfRad];
+    sin = sinLut[halfRad]; 
+  }
+  return Quaternion(0,sin,0,cos);
+}
+function quaternionZRoll(angle){
+  let  halfRad = top_int(angle * 0.5);
+  let sin;
+  let cos;
+  if(halfRad<0){
+    halfRad = 360 + halfRad;
+    cos = cosLut[halfRad];
+    sin = sinLut[halfRad];        
+  }else{
+    cos = cosLut[halfRad];
+    sin = sinLut[halfRad]; 
+  }
+  return Quaternion(0,0,sin,cos);
+}
+function quaternionXYZRoll(XAngle,YAngle,ZAngle){
+  let quaternionx = quaternionXRoll(XAngle);
+  let quaterniony = quaternionYRoll(YAngle);
+  let quaternionz = quaternionZRoll(ZAngle);
+  let quaternionxy = QuaternionMul(quaternionx,quaterniony);
+  return QuaternionMul(quaternionxy,quaternionz)
+}
 function quaternionMatrixTranstation(quaternionMatrix,x,y,z){
   quaternionMatrix[3] = x;
   quaternionMatrix[7] = y;
@@ -1213,48 +1260,44 @@ function quaternionMatrixScaling(quaternionMatrix,x,y,z){
 
 //回転行列を元に作られたQuaternion行列
 function makeQuaternionMatrix(q){
-  let pow2qx = q[0]*q[0];
-  let qxqy = q[0]*q[1];
-  let qxqz = q[0]*q[2];
-  let qxqw = q[0]*q[3];
-  let pow2qy = q[1]*q[1];
-  let qyqz = q[1]*q[2];
-  let qyqw = q[1]*q[3];
-  let pow2qz = q[2]*q[2];
-  let qzqw = q[2]*q[3];
-  let pow2qw = q[3]*q[3];
+  let pow2qx = 2*q[0]*q[0];
+  let qxqy = 2*q[0]*q[1];
+  let qxqz = 2*q[0]*q[2];
+  let qxqw = 2*q[0]*q[3];
+  let pow2qy = 2*q[1]*q[1];
+  let qyqz = 2*q[1]*q[2];
+  let qyqw = 2*q[1]*q[3];
+  let pow2qz = 2*q[2]*q[2];
+  let qzqw = 2*q[2]*q[3];
+  let pow2qw = 2*q[3]*q[3];
   
-   return [2*pow2qw+2*pow2qx-1,2*qxqy-2*qzqw,2*qxqz+2*qyqw,0,
-          2*qxqy+2*qzqw,2*pow2qw+2*pow2qy-1,2*qyqz-2*qxqw,0,
-          2*qxqz-2*qyqw,2*qyqz+2*qxqw,2*pow2qw+2*pow2qz-1,0];
+   return [pow2qw+pow2qx-1,qxqy-qzqw,qxqz+qyqw,0,
+          qxqy+qzqw,pow2qw+pow2qy-1,qyqz-qxqw,0,
+          qxqz-qyqw,qyqz+qxqw,pow2qw+pow2qz-1,0];
 }
+
 // クォータニオン球面線形補間
 function slerpQuaternion(out,q1,q2,t) {
   // 角度算出
-  // let  len1 = Math.sqrt( q1[0] * q1[0] + q1[1] * q1[1] + q1[2] * q1[2] + q1[3] * q1[3] );
-  // let  len2 = Math.sqrt( q2[0] * q2[0] + q2[1] * q2[1] + q2[2] * q2[2] + q2[3] * q2[3] );
-  // if ( len1 == 0.0 || len2 == 0.0 ){
-  //   for (let i = 0; i < 4; i++ )
-  //   out[i] = q1[i];
-  //   return;
-  // }
-  let  cos_val = (q1[0] * q2[0] + q1[1] * q2[1] + q1[2] * q2[2] + q1[3] * q2[3]);// / (len1 * len2);
-  let  w = Math.acos( cos_val );
-  //下の計算sinを０で割ってる。クォータニオン同士の角度が０ということは同じクォータニオン
-  if(w == 0){
-    for (let i = 0; i < 4; i++ )
-      out[i] = q1[i];
-    return;
+  let dot = q1[0] * q2[0] + q1[1] * q2[1] + q1[2] * q2[2] + q1[3] * q2[3];
+  //sin2+cos2 = 1^2
+  let pow2Sin = 1.0 - dot * dot, sin;
+  if (pow2Sin <= 0.0 || (sin = Math.sqrt(pow2Sin)) == 0.0) {
+    out[0] = q1[0];
+    out[1] = q1[1];
+    out[2] = q1[2];
+    out[3] = q1[3];
+  }else{
+    let  angle = Math.acos(dot);
+    let  anglet = angle * t;
+    let  t1 = Math.sin(anglet) / sin;
+    let  t0 = Math.sin(angle - anglet) / sin;
+    
+    out[0] = q1[0] * t0 + q2[0] * t1;
+    out[1] = q1[1] * t0 + q2[1] * t1;
+    out[2] = q1[2] * t0 + q2[2] * t1;
+    out[3] = q1[3] * t0 + q2[3] * t1;
   }
-  // 球面線形補間
-  let  sin_w = Math.sin( w );
-  let  sin_t_w = Math.sin( t * w );
-  let  sin_inv_t_w = Math.sin( (1.0 - t) * w );
-  let  mult_q1 = sin_inv_t_w / sin_w;
-  let  mult_q2 = sin_t_w / sin_w;
-
-  for (let i = 0; i < 4; i++ )
-      out[i] = mult_q1 * q1[i] + mult_q2 * q2[i];
 }
 
 let rot = 0;
@@ -1323,75 +1366,18 @@ if(dataLoad == false){
     culUVVector(steve1LoadPack)
     steves.push(steve1LoadPack);
     for(let i=0;i<steves[0].bones.length;i++){
-      let rox = QuaternionAngleAxis(0,[1,0,0]);
-      let roy = QuaternionAngleAxis(0,[0,1,0]);
-      let roz = QuaternionAngleAxis(0,[0,0,1]);
-      let roxy = QuaternionMul(rox,roy);
-      let roxyz = QuaternionMul(roxy,roz);
-      steves[0].bones[i].preQuaternion = roxyz;
+      steves[0].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
     }
     for(let i=0;i<steves[0].bones.length;i++){
-      let rox = QuaternionAngleAxis(0,[1,0,0]);
-      let roy = QuaternionAngleAxis(0,[0,1,0]);
-      let roz = QuaternionAngleAxis(0,[0,0,1]);
-      let roxy = QuaternionMul(rox,roy);
-      let roxyz = QuaternionMul(roxy,roz);
-      steves[0].bones[i].afterQuaternion = roxyz;
+      steves[0].bones[i].afterQuaternion =  quaternionXYZRoll(0,0,0);
       steves[0].bones[i].t = 0;
     }
-  // steves[1].bones[0].rotXYZ = setVector3(0,0,0);
-  // steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
-
-// steves[1].bones[4].rotXYZ = setVector3(0,0,rot);
-// steves[1].bones[6].rotXYZ = setVector3(0,0,-1*rot);
-
-// steves[1].bones[8].rotXYZ = setVector3(0,0,-1*rot);
-// steves[1].bones[10].rotXYZ = setVector3(0,0,rot);
-// steves[1].bones[8].rotXYZ = setVector3(0,0,-1*rot);
-// steves[1].bones[10].rotXYZ = setVector3(0,0,rot);
-
-// steves[1].bones[11].rotXYZ = setVector3(-1* rot,0,0);
-    let rox = QuaternionAngleAxis(0,[1,0,0]);
-    let roy = QuaternionAngleAxis(0,[0,1,0]);
-    let roz = QuaternionAngleAxis(80,[0,0,1]);
-    let roxy = QuaternionMul(rox,roy);
-    let roxyz = QuaternionMul(roxy,roz);
-    steves[0].bones[4].afterQuaternion = roxyz;
-
-    rox = QuaternionAngleAxis(0,[1,0,0]);
-    roy = QuaternionAngleAxis(0,[0,1,0]);
-    roz = QuaternionAngleAxis(-80,[0,0,1]);
-    roxy = QuaternionMul(rox,roy);
-    roxyz = QuaternionMul(roxy,roz);
-    steves[0].bones[6].afterQuaternion = roxyz;
-
-    rox = QuaternionAngleAxis(0,[1,0,0]);
-    roy = QuaternionAngleAxis(0,[0,1,0]);
-    roz = QuaternionAngleAxis(-80,[0,0,1]);
-    roxy = QuaternionMul(rox,roy);
-    roxyz = QuaternionMul(roxy,roz);
-    steves[0].bones[8].afterQuaternion = roxyz;
-
-    rox = QuaternionAngleAxis(0,[1,0,0]);
-    roy = QuaternionAngleAxis(0,[0,1,0]);
-    roz = QuaternionAngleAxis(80,[0,0,1]);
-    roxy = QuaternionMul(rox,roy);
-    roxyz = QuaternionMul(roxy,roz);
-    steves[0].bones[10].afterQuaternion = roxyz;
-
-    rox = QuaternionAngleAxis(-80,[1,0,0]);
-    roy = QuaternionAngleAxis(0,[0,1,0]);
-    roz = QuaternionAngleAxis(0,[0,0,1]);
-    roxy = QuaternionMul(rox,roy);
-    roxyz = QuaternionMul(roxy,roz);
-    steves[0].bones[11].afterQuaternion = roxyz;
-
-    rox = QuaternionAngleAxis(80,[1,0,0]);
-    roy = QuaternionAngleAxis(0,[0,1,0]);
-    roz = QuaternionAngleAxis(0,[0,0,1]);
-    roxy = QuaternionMul(rox,roy);
-    roxyz = QuaternionMul(roxy,roz);
-    steves[0].bones[12].afterQuaternion = roxyz;
+    steves[0].bones[4].afterQuaternion = quaternionXYZRoll(0,0,80);
+    steves[0].bones[6].afterQuaternion = quaternionXYZRoll(0,0,-80);
+    steves[0].bones[8].afterQuaternion = quaternionXYZRoll(0,0,-80);
+    steves[0].bones[10].afterQuaternion = quaternionXYZRoll(0,0,80);
+    steves[0].bones[11].afterQuaternion = quaternionXYZRoll(-80,0,0);
+    steves[0].bones[12].afterQuaternion = quaternionXYZRoll(80,0,0);
     steve1Load = true;
   }
   if(dicePixelImageLoad == true && steve2LoadPack.daeLoad == true && steve1Load == true && steve2Load == false){
@@ -1402,64 +1388,19 @@ if(dataLoad == false){
     steves.push(steve2LoadPack); 
     steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
 
-    for(let i=0;i<steves[0].bones.length;i++){
-      let rox = QuaternionAngleAxis(0,[1,0,0]);
-      let roy = QuaternionAngleAxis(0,[0,1,0]);
-      let roz = QuaternionAngleAxis(0,[0,0,1]);
-      let roxy = QuaternionMul(rox,roy);
-      let roxyz = QuaternionMul(roxy,roz);
-      steves[1].bones[i].preQuaternion = roxyz;
+    for(let i=0;i<steves[1].bones.length;i++){
+      steves[1].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
     }
     for(let i=0;i<steves[0].bones.length;i++){
-      let rox = QuaternionAngleAxis(0,[1,0,0]);
-      let roy = QuaternionAngleAxis(0,[0,1,0]);
-      let roz = QuaternionAngleAxis(0,[0,0,1]);
-      let roxy = QuaternionMul(rox,roy);
-      let roxyz = QuaternionMul(roxy,roz);
-      steves[1].bones[i].afterQuaternion = roxyz;
+      steves[1].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
       steves[1].bones[i].t = 0;
     }
-    let rox = QuaternionAngleAxis(0,[1,0,0]);
-    let roy = QuaternionAngleAxis(0,[0,1,0]);
-    let roz = QuaternionAngleAxis(80,[0,0,1]);
-    let roxy = QuaternionMul(rox,roy);
-    let roxyz = QuaternionMul(roxy,roz);
-    steves[1].bones[4].afterQuaternion = roxyz;
-
-    rox = QuaternionAngleAxis(0,[1,0,0]);
-    roy = QuaternionAngleAxis(0,[0,1,0]);
-    roz = QuaternionAngleAxis(-80,[0,0,1]);
-    roxy = QuaternionMul(rox,roy);
-    roxyz = QuaternionMul(roxy,roz);
-    steves[1].bones[6].afterQuaternion = roxyz;
-
-    rox = QuaternionAngleAxis(0,[1,0,0]);
-    roy = QuaternionAngleAxis(0,[0,1,0]);
-    roz = QuaternionAngleAxis(-80,[0,0,1]);
-    roxy = QuaternionMul(rox,roy);
-    roxyz = QuaternionMul(roxy,roz);
-    steves[1].bones[8].afterQuaternion = roxyz;
-
-    rox = QuaternionAngleAxis(0,[1,0,0]);
-    roy = QuaternionAngleAxis(0,[0,1,0]);
-    roz = QuaternionAngleAxis(80,[0,0,1]);
-    roxy = QuaternionMul(rox,roy);
-    roxyz = QuaternionMul(roxy,roz);
-    steves[1].bones[10].afterQuaternion = roxyz;
-
-    rox = QuaternionAngleAxis(-80,[1,0,0]);
-    roy = QuaternionAngleAxis(0,[0,1,0]);
-    roz = QuaternionAngleAxis(0,[0,0,1]);
-    roxy = QuaternionMul(rox,roy);
-    roxyz = QuaternionMul(roxy,roz);
-    steves[1].bones[11].afterQuaternion = roxyz;
-
-    rox = QuaternionAngleAxis(80,[1,0,0]);
-    roy = QuaternionAngleAxis(0,[0,1,0]);
-    roz = QuaternionAngleAxis(0,[0,0,1]);
-    roxy = QuaternionMul(rox,roy);
-    roxyz = QuaternionMul(roxy,roz);
-    steves[1].bones[12].afterQuaternion = roxyz;
+    steves[1].bones[4].afterQuaternion = quaternionXYZRoll(0,0,80);
+    steves[1].bones[6].afterQuaternion = quaternionXYZRoll(0,0,-80);
+    steves[1].bones[8].afterQuaternion = quaternionXYZRoll(0,0,-80);
+    steves[1].bones[10].afterQuaternion = quaternionXYZRoll(0,0,80);
+    steves[1].bones[11].afterQuaternion = quaternionXYZRoll(-80,0,0);
+    steves[1].bones[12].afterQuaternion = quaternionXYZRoll(80,0,0);
     steve2Load = true;
   }
   if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load && steve2Load && cube1Load){
@@ -1638,12 +1579,7 @@ for(let i in steves){
     // mulMatRotateZ(worldMatrix,object.bones.rotXYZ[rot_Z]); 
     // mulMatScaling(worldMatrix,object.bones.scaleXYZ[scale_X],object.bones.scaleXYZ[scale_Y],object.bones.scaleXYZ[scale_Z]);
     let worldTranslation = {};
-    let rox = QuaternionAngleAxis(object.bones.rotXYZ[0],[1,0,0]);
-    let roy = QuaternionAngleAxis(object.bones.rotXYZ[1],[0,1,0]);
-    let roz = QuaternionAngleAxis(object.bones.rotXYZ[2],[0,0,1]);
-    let roxy = QuaternionMul(rox,roy);
-    let roxyz = QuaternionMul(roxy,roz);
-    worldTranslation.quaternion = roxyz;
+    worldTranslation.quaternion = quaternionXYZRoll(object.bones.rotXYZ[0],object.bones.rotXYZ[1],object.bones.rotXYZ[2]);
     worldTranslation.position = object.bones.position;
     worldTranslation.scaleXYZ = object.bones.scaleXYZ;
     objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
@@ -1661,12 +1597,7 @@ for(let i in steves){
     // mulMatRotateZ(worldMatrix,object.objRotZ); 
     // mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
     let worldTranslation = {};
-    let rox = QuaternionAngleAxis(object.objRotX,[1,0,0]);
-    let roy = QuaternionAngleAxis(object.objRotY,[0,1,0]);
-    let roz = QuaternionAngleAxis(object.objRotZ,[0,0,1]);
-    let roxy = QuaternionMul(rox,roy);
-    let roxyz = QuaternionMul(roxy,roz);
-    worldTranslation.quaternion = roxyz;
+    worldTranslation.quaternion = quaternionXYZRoll(object.objRotX,object.objRotY,object.objRotZ);
     worldTranslation.position = setVector3(object.centerObjX,object.centerObjY,object.centerObjZ);
     worldTranslation.scaleXYZ = setVector3(object.scaleX,object.scaleY,object.scaleZ);
     objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
