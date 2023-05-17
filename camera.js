@@ -1275,6 +1275,27 @@ function makeQuaternionMatrix(q){
           qxqy+qzqw,pow2qw+pow2qy-1,qyqz-qxqw,0,
           qxqz-qyqw,qyqz+qxqw,pow2qw+pow2qz-1,0];
 }
+/*
+** 複数のクォータニオン間の球面線形補間（折れ線）
+**   p ← t[i] におけるクォータニオン q[i], 0 <= i < n に対する
+**        u における補間値
+**        
+*/
+function slerpQuaternionArray(out,t,q,tNum,currentTime){
+  let i = 0, j = tNum - 1;
+  
+  /* u を含む t の区間 [t[i], t[i+1]) を二分法で求める */
+  while (i < j) {
+    let k = top_int((i + j) * 0.5);
+    if (t[k] < currentTime)
+      i = k + 1;
+    else
+      j = k;
+  }
+  if (i > 0) --i;
+  
+  slerpQuaternion(out, q[i], q[i + 1], (currentTime - t[i]) / (t[i + 1] - t[i]));
+}
 
 // クォータニオン球面線形補間
 function slerpQuaternion(out,q1,q2,t) {
@@ -1385,22 +1406,22 @@ if(dataLoad == false){
     steve2LoadPack.backCullingFlag = true;
     culUVVector(steve2LoadPack)
 
-    steves.push(steve2LoadPack); 
-    steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
+    // steves.push(steve2LoadPack); 
+    // steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
 
-    for(let i=0;i<steves[1].bones.length;i++){
-      steves[1].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
-    }
-    for(let i=0;i<steves[0].bones.length;i++){
-      steves[1].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
-      steves[1].bones[i].t = 0;
-    }
-    steves[1].bones[4].afterQuaternion = quaternionXYZRoll(0,0,80);
-    steves[1].bones[6].afterQuaternion = quaternionXYZRoll(0,0,-80);
-    steves[1].bones[8].afterQuaternion = quaternionXYZRoll(0,0,-80);
-    steves[1].bones[10].afterQuaternion = quaternionXYZRoll(0,0,80);
-    steves[1].bones[11].afterQuaternion = quaternionXYZRoll(-80,0,0);
-    steves[1].bones[12].afterQuaternion = quaternionXYZRoll(80,0,0);
+    // for(let i=0;i<steves[1].bones.length;i++){
+    //   steves[1].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
+    // }
+    // for(let i=0;i<steves[0].bones.length;i++){
+    //   steves[1].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
+    //   steves[1].bones[i].t = 0;
+    // }
+    // steves[1].bones[4].afterQuaternion = quaternionXYZRoll(0,0,80);
+    // steves[1].bones[6].afterQuaternion = quaternionXYZRoll(0,0,-80);
+    // steves[1].bones[8].afterQuaternion = quaternionXYZRoll(0,0,-80);
+    // steves[1].bones[10].afterQuaternion = quaternionXYZRoll(0,0,80);
+    // steves[1].bones[11].afterQuaternion = quaternionXYZRoll(-80,0,0);
+    // steves[1].bones[12].afterQuaternion = quaternionXYZRoll(80,0,0);
     steve2Load = true;
   }
   if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load && steve2Load && cube1Load){
@@ -1457,7 +1478,7 @@ for(let j=0;j<steves_length;j++){
   }
 }
 steves[0].bones[0].position = setVector3(0.5,0,0);
-steves[1].bones[0].position = setVector3(-0.5,0,0.5);
+//steves[1].bones[0].position = setVector3(-0.5,0,0.5);
 // steves[0].bones[0].rotXYZ = setVector3(0,0,0);
 
 // steves[0].bones[4].rotXYZ = setVector3(0,0,rot);
@@ -1582,7 +1603,7 @@ for(let i in steves){
     worldTranslation.quaternion = quaternionXYZRoll(object.bones.rotXYZ[0],object.bones.rotXYZ[1],object.bones.rotXYZ[2]);
     worldTranslation.position = object.bones.position;
     worldTranslation.scaleXYZ = object.bones.scaleXYZ;
-    objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    //objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   //steve
   for(let object of steves){
@@ -1600,7 +1621,7 @@ for(let i in steves){
     worldTranslation.quaternion = quaternionXYZRoll(object.objRotX,object.objRotY,object.objRotZ);
     worldTranslation.position = setVector3(object.centerObjX,object.centerObjY,object.centerObjZ);
     worldTranslation.scaleXYZ = setVector3(object.scaleX,object.scaleY,object.scaleZ);
-    objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    //objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   /*
   lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
