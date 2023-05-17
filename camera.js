@@ -701,12 +701,15 @@ function daeMekeSkinMeshBone(daeLoadPack){
       if(i == 0){
         if(daeLoadPack.bones[boneParentRelation].skinmeshBone == null){
           let copyInverseBindPose = matCopy(daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
+          //クォータニオン
           let quaternionOut = [];
-          slerpQuaternion(quaternionOut,daeLoadPack.bones[boneParentRelation].preQuaternion,daeLoadPack.bones[boneParentRelation].afterQuaternion,daeLoadPack.bones[boneParentRelation].t);
+          slerpQuaternionArray(quaternionOut,daeLoadPack.bones[boneParentRelation].quaternionTime,daeLoadPack.bones[boneParentRelation].quaternion,daeLoadPack.bones[boneParentRelation].quaternionTime.length,daeLoadPack.bones[boneParentRelation].currentTime);
+          //slerpQuaternion(quaternionOut,daeLoadPack.bones[boneParentRelation].preQuaternion,daeLoadPack.bones[boneParentRelation].afterQuaternion,daeLoadPack.bones[boneParentRelation].currentTime);
           let quaternionMatrix = makeQuaternionMatrix(quaternionOut);
           quaternionMatrixTranstation(quaternionMatrix,daeLoadPack.bones[boneParentRelation].position[0],daeLoadPack.bones[boneParentRelation].position[1],daeLoadPack.bones[boneParentRelation].position[2]);
           quaternionMatrixScaling(quaternionMatrix,daeLoadPack.bones[boneParentRelation].scaleXYZ[0],daeLoadPack.bones[boneParentRelation].scaleXYZ[1],daeLoadPack.bones[boneParentRelation].scaleXYZ[2]);
           copyInverseBindPose = matMul(copyInverseBindPose,quaternionMatrix);
+          //オイラー角
           // mulMatTranslate(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].position[0],
           // daeLoadPack.bones[boneParentRelation].position[1],daeLoadPack.bones[boneParentRelation].position[2]);
           // mulMatRotateX(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
@@ -719,16 +722,13 @@ function daeMekeSkinMeshBone(daeLoadPack){
       }else{
       if(daeLoadPack.bones[boneParentRelation].skinmeshBone  == null){
           let parentCrossBone = matMul(daeLoadPack.bones[daeLoadPack.boneParentRelation[j][i-1]].skinmeshBone,daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
-          // let rox = QuaternionAngleAxis(daeLoadPack.bones[boneParentRelation].rotXYZ[0],[1,0,0]);
-          // let roy = QuaternionAngleAxis(daeLoadPack.bones[boneParentRelation].rotXYZ[1],[0,1,0]);
-          // let roz = QuaternionAngleAxis(daeLoadPack.bones[boneParentRelation].rotXYZ[2],[0,0,1]);
-          // let roxy = QuaternionMul(rox,roy);
-          // let roxyz = QuaternionMul(roxy,roz);
-          // let QuaternionMatrix = makeQuaternionMatrix(roxyz);
+          //クォータニオン
           let quaternionOut = [];
-          slerpQuaternion(quaternionOut,daeLoadPack.bones[boneParentRelation].preQuaternion,daeLoadPack.bones[boneParentRelation].afterQuaternion,daeLoadPack.bones[boneParentRelation].t);
+          slerpQuaternionArray(quaternionOut,daeLoadPack.bones[boneParentRelation].quaternionTime,daeLoadPack.bones[boneParentRelation].quaternion,daeLoadPack.bones[boneParentRelation].quaternionTime.length,daeLoadPack.bones[boneParentRelation].currentTime);
+          //slerpQuaternion(quaternionOut,daeLoadPack.bones[boneParentRelation].preQuaternion,daeLoadPack.bones[boneParentRelation].afterQuaternion,daeLoadPack.bones[boneParentRelation].currentTime);
           let QuaternionMatrix = makeQuaternionMatrix(quaternionOut);
           let QuaternionParentCrossBone = matMul(parentCrossBone,QuaternionMatrix);
+          //オイラー角
           // mulMatRotateX(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
           // mulMatRotateY(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
           // mulMatRotateZ(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
@@ -1277,23 +1277,22 @@ function makeQuaternionMatrix(q){
 }
 /*
 ** 複数のクォータニオン間の球面線形補間（折れ線）
-**   p ← t[i] におけるクォータニオン q[i], 0 <= i < n に対する
+**   out ← t[i] におけるクォータニオン q[i], 0 <= i < tNum に対する
 **        u における補間値
 **        
 */
 function slerpQuaternionArray(out,t,q,tNum,currentTime){
   let i = 0, j = tNum - 1;
-  
+
   /* u を含む t の区間 [t[i], t[i+1]) を二分法で求める */
   while (i < j) {
-    let k = top_int((i + j) * 0.5);
+    let k = ((i + j) * 0.5)|0;
     if (t[k] < currentTime)
       i = k + 1;
     else
       j = k;
   }
   if (i > 0) --i;
-  
   slerpQuaternion(out, q[i], q[i + 1], (currentTime - t[i]) / (t[i + 1] - t[i]));
 }
 
@@ -1388,10 +1387,15 @@ if(dataLoad == false){
     steves.push(steve1LoadPack);
     for(let i=0;i<steves[0].bones.length;i++){
       steves[0].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
-    }
-    for(let i=0;i<steves[0].bones.length;i++){
-      steves[0].bones[i].afterQuaternion =  quaternionXYZRoll(0,0,0);
-      steves[0].bones[i].t = 0;
+      steves[0].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
+      steves[0].bones[i].quaternion = [];
+      steves[0].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
+      steves[0].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
+      steves[0].bones[i].quaternionTime = [];
+      steves[0].bones[i].quaternionTime.push(0);
+      steves[0].bones[i].quaternionTime.push(1);
+      steves[0].bones[i].currentTime = 0;
+
     }
     steves[0].bones[4].afterQuaternion = quaternionXYZRoll(0,0,80);
     steves[0].bones[6].afterQuaternion = quaternionXYZRoll(0,0,-80);
@@ -1399,6 +1403,14 @@ if(dataLoad == false){
     steves[0].bones[10].afterQuaternion = quaternionXYZRoll(0,0,80);
     steves[0].bones[11].afterQuaternion = quaternionXYZRoll(-80,0,0);
     steves[0].bones[12].afterQuaternion = quaternionXYZRoll(80,0,0);
+
+    steves[0].bones[4].quaternion[1] = quaternionXYZRoll(0,0,80);
+    steves[0].bones[6].quaternion[1] = quaternionXYZRoll(0,0,-80);
+    steves[0].bones[8].quaternion[1] = quaternionXYZRoll(0,0,-80);
+    steves[0].bones[10].quaternion[1] = quaternionXYZRoll(0,0,80);
+    steves[0].bones[11].quaternion[1] = quaternionXYZRoll(-80,0,0);
+    steves[0].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0);
+
     steve1Load = true;
   }
   if(dicePixelImageLoad == true && steve2LoadPack.daeLoad == true && steve1Load == true && steve2Load == false){
@@ -1406,22 +1418,34 @@ if(dataLoad == false){
     steve2LoadPack.backCullingFlag = true;
     culUVVector(steve2LoadPack)
 
-    // steves.push(steve2LoadPack); 
-    // steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
+    steves.push(steve2LoadPack); 
+    steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
 
-    // for(let i=0;i<steves[1].bones.length;i++){
-    //   steves[1].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
-    // }
-    // for(let i=0;i<steves[0].bones.length;i++){
-    //   steves[1].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
-    //   steves[1].bones[i].t = 0;
-    // }
-    // steves[1].bones[4].afterQuaternion = quaternionXYZRoll(0,0,80);
-    // steves[1].bones[6].afterQuaternion = quaternionXYZRoll(0,0,-80);
-    // steves[1].bones[8].afterQuaternion = quaternionXYZRoll(0,0,-80);
-    // steves[1].bones[10].afterQuaternion = quaternionXYZRoll(0,0,80);
-    // steves[1].bones[11].afterQuaternion = quaternionXYZRoll(-80,0,0);
-    // steves[1].bones[12].afterQuaternion = quaternionXYZRoll(80,0,0);
+    for(let i=0;i<steves[1].bones.length;i++){
+      steves[1].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
+      steves[1].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
+      steves[1].bones[i].quaternion = [];
+      steves[1].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
+      steves[1].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
+      steves[1].bones[i].quaternionTime = [];
+      steves[1].bones[i].quaternionTime.push(0);
+      steves[1].bones[i].quaternionTime.push(1);
+      steves[1].bones[i].currentTime = 0;
+
+    }
+    steves[1].bones[4].afterQuaternion = quaternionXYZRoll(0,0,80);
+    steves[1].bones[6].afterQuaternion = quaternionXYZRoll(0,0,-80);
+    steves[1].bones[8].afterQuaternion = quaternionXYZRoll(0,0,-80);
+    steves[1].bones[10].afterQuaternion = quaternionXYZRoll(0,0,80);
+    steves[1].bones[11].afterQuaternion = quaternionXYZRoll(-80,0,0);
+    steves[1].bones[12].afterQuaternion = quaternionXYZRoll(80,0,0);
+
+    steves[1].bones[4].quaternion[1] = quaternionXYZRoll(0,0,80);
+    steves[1].bones[6].quaternion[1] = quaternionXYZRoll(0,0,-80);
+    steves[1].bones[8].quaternion[1] = quaternionXYZRoll(0,0,-80);
+    steves[1].bones[10].quaternion[1] = quaternionXYZRoll(0,0,80);
+    steves[1].bones[11].quaternion[1] = quaternionXYZRoll(-80,0,0);
+    steves[1].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0);
     steve2Load = true;
   }
   if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load && steve2Load && cube1Load){
@@ -1465,7 +1489,7 @@ t += tPuls;
 
 for(let j=0;j<steves.length;j++){
   for(let i=0;i<steves[j].bones.length;i++){
-   steves[j].bones[i].t = t; 
+   steves[j].bones[i].currentTime = t; 
   }
 }
 
@@ -1478,7 +1502,7 @@ for(let j=0;j<steves_length;j++){
   }
 }
 steves[0].bones[0].position = setVector3(0.5,0,0);
-//steves[1].bones[0].position = setVector3(-0.5,0,0.5);
+steves[1].bones[0].position = setVector3(-0.5,0,0.5);
 // steves[0].bones[0].rotXYZ = setVector3(0,0,0);
 
 // steves[0].bones[4].rotXYZ = setVector3(0,0,rot);
@@ -1603,7 +1627,7 @@ for(let i in steves){
     worldTranslation.quaternion = quaternionXYZRoll(object.bones.rotXYZ[0],object.bones.rotXYZ[1],object.bones.rotXYZ[2]);
     worldTranslation.position = object.bones.position;
     worldTranslation.scaleXYZ = object.bones.scaleXYZ;
-    //objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   //steve
   for(let object of steves){
@@ -1621,7 +1645,7 @@ for(let i in steves){
     worldTranslation.quaternion = quaternionXYZRoll(object.objRotX,object.objRotY,object.objRotZ);
     worldTranslation.position = setVector3(object.centerObjX,object.centerObjY,object.centerObjZ);
     worldTranslation.scaleXYZ = setVector3(object.scaleX,object.scaleY,object.scaleZ);
-    //objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   /*
   lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
