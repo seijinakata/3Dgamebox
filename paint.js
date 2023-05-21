@@ -122,13 +122,6 @@ class scan_entry{
 	}
 
 };
-//projectedVertsCopy
-function projectedVertsCopy(verts){
-    let copyVerts = [[verts[0][0],verts[0][1],verts[0][2]],
-					[verts[1][0],verts[1][1],verts[1][2]],
-					[verts[2][0],verts[2][1],verts[2][2]]];
-    return copyVerts;
-}
 //vertsCopy
 export function vertsCopy(verts){
     let copyVerts = [verts[0],verts[1],verts[2]];
@@ -514,12 +507,10 @@ export function triangleToShadowBuffer(zBuffering,vertex_list,screen_size_h,scre
   //各点のZ座標がこれより下なら作画しない。
   if (vertex_list[0][position_Z] > 0.0 && vertex_list[1][position_Z]> 0.0 && vertex_list[2][position_Z] > 0.0) {
 
-	let tempverts = projectedVertsCopy(vertex_list);
-
-	sort_index(tempverts,1);//ys
-	let pt = tempverts[0];
-	let pm = tempverts[1];
-	let pb = tempverts[2];
+	sort_index(vertex_list,1);//ys
+	let pt = vertex_list[0];
+	let pm = vertex_list[1];
+	let pb = vertex_list[2];
 
 	scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb);		
   }
@@ -552,11 +543,10 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         pr = tmp;           
     }
 
-    let m = mid;
     //if(m<0)m=0;
-    if(screen_size_h<m)m=screen_size_h;
+    if(screen_size_h<mid)mid=screen_size_h;
 
-    if(triangleTop<m){//upper 
+    if(triangleTop<mid){//upper 
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
@@ -564,23 +554,22 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         //start position
         let sl = setVector2(pt[position_X],pt[position_Z]);
         let sr = setVector2(pt[position_X],pt[position_Z]);
-        let y=triangleTop;
         do{
-			if(y>=0){
+			if(triangleTop>=0){
 				//Y座標ごとの切片
 				let startX = top_int(sl[delta_X]);
 				let endX = top_int(sr[delta_X]);
 				let startZ = sl[delta_Z];
 				let endZ = sr[delta_Z];
-				scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ);				
+				scan_ShadowHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ);				
 			}
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
 
-            y++;
-        }while(y<m);
+            triangleTop++;
+        }while(triangleTop<mid);
     }
-    if(m<triangleBtm){//lower
+    if(mid<triangleBtm){//lower
 		let el = vecMinus(pb,pl);//pl->pb
 		let er = vecMinus(pb,pr);//pr->pb
         let dl = delta_xz(el);
@@ -589,21 +578,20 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         let sl = setVector2(pl[position_X],pl[position_Z]);
         let sr = setVector2(pr[position_X],pr[position_Z]);
 
-        let y=m;
         do{
-			if(y>=0){
+			if(mid>=0){
 			//Y座標ごとの切片
 				let startX = top_int(sl[delta_X]);
 				let endX = top_int(sr[delta_X]);
 				let startZ = sl[delta_Z];
 				let endZ = sr[delta_Z];
-				scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ);				
+				scan_ShadowHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ);				
 			}
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
 
-            y++;
-        }while(y<triangleBtm);
+            mid++;
+        }while(mid<triangleBtm);
     }
 }
 
@@ -989,12 +977,10 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 	let h = vertex_list[0][1] - (b * mi[2] + d * mi[3]);
 	let w = vertex_list[0][0] - (a * mi[2] + c * mi[3]);
 		
-	let tempverts = projectedVertsCopy(vertex_list);
-
-	sort_index(tempverts,1);//ys
-	let pt = tempverts[0];
-	let pm = tempverts[1];
-	let pb = tempverts[2];
+	sort_index(vertex_list,1);//ys
+	let pt = vertex_list[0];
+	let pm = vertex_list[1];
+	let pb = vertex_list[2];
 
 	scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,imageData,
 		crossWorldVector3);
