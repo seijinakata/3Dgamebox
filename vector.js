@@ -130,8 +130,8 @@ while(true){
     let distance = vector3[0] * vector3[0] + vector3[1] * vector3[1] + vector3[2] * vector3[2];
     let absDistance = (distance)>0 ? (distance) : -(distance);
     let invLength = 1/NewtonMethod(1,absDistance);
-    let normalizeVector3x =  vector3[0] * invLength;
-    let normalizeVector3y =  vector3[1] * invLength;
-    let normalizeVector3z =  vector3[2] * invLength;
+    let normalizeVector3x = round(vector3[0] * invLength);
+    let normalizeVector3y = round(vector3[1] * invLength);
+    let normalizeVector3z = round(vector3[2] * invLength);
     return [normalizeVector3x,normalizeVector3y,normalizeVector3z];
 }

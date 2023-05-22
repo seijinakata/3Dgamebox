@@ -406,8 +406,8 @@ export const cosLut = [];
 const DEG_TO_RAD = Math.PI / 180;
 //const RAD_TO_DEG = 180 / Math.PI;
 for(let i = 0; i < 360; i++) {
-  sinLut.push(Math.sin(i * DEG_TO_RAD));
-  cosLut.push(Math.cos(i * DEG_TO_RAD));
+  sinLut.push(round(Math.sin(i * DEG_TO_RAD)));
+  cosLut.push(round(Math.cos(i * DEG_TO_RAD)));
 }
 let c = document.getElementById("myCanvas");
 let ctx = c.getContext("2d");
@@ -1716,17 +1716,14 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       let pixelG = pixel[pixel_G];
       let pixelB = pixel[pixel_B];
       //let pixela = pixel[4];
-      let pixelcrossWorldVector3 = pixel[pixel_Cross_World_Vector3];
       //シャドウマップに照らし合わせる。
       let shadowPixelX = pixelX;
       let shadowPixelY = pixelY;
       //camera
       //let pixelVector3 = setVector3(pixelX,pixelY,pixelZ);
-
       //inverseViewPort and inverseProjection
       shadowPixelX = (shadowPixelX*invScreen_size_w  - 0.5) * pixelZ;
       shadowPixelY = (shadowPixelY*invScreen_size_h  - 0.5) * pixelZ;
-
       /*
       //inverseViewPort
       shadowPixelX /= screen_size_w;
@@ -1775,7 +1772,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         }
       }
       //ライトシミュレーション
-      let sunCosin = culVecDot(sunVec,pixelcrossWorldVector3);
+      let sunCosin = culVecDot(sunVec, pixel[pixel_Cross_World_Vector3]);
       sunCosin *= 1.5;
       pixelR *= sunCosin;
       pixelG *= sunCosin;
