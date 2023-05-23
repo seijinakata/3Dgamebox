@@ -1344,6 +1344,25 @@ const screen_size_w = SCREEN_SIZE_W;
 const invScreen_size_h = 1/screen_size_h;
 const invScreen_size_w = 1/screen_size_w;
 
+//base,viewPortをあらかじめ計算しておく。
+let shadowViewPortY = [];
+let shadowViewPortX = [];
+let basearray = [];
+
+for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
+  basearray[pixelY] = [];
+  //inverseViewPort
+  let tmpShadowViewPortY = (pixelY*invScreen_size_h  - 0.5);
+  shadowViewPortY.push(tmpShadowViewPortY);
+  for (let pixelX=0;pixelX<screen_size_w;pixelX++) {
+    let tmpBase = (pixelY * screen_size_w + pixelX) * 4;
+    basearray[pixelY][pixelX] = tmpBase;
+    //inverseViewPort
+    let tmpShadowViewPortX = (pixelX*invScreen_size_w  - 0.5);
+    shadowViewPortX.push(tmpShadowViewPortX);   
+  }
+}
+
 //zBufferInit
 let shadowMap = [];
 shdowBufferInit(shadowMap,screen_size_h,screen_size_w);
@@ -1708,7 +1727,7 @@ let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
 let shadowMat = matMul(sunViewMatrix,inverseViewMatrix);
 for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   for (let pixelX=0;pixelX<screen_size_w;pixelX++) {
-    let base = (pixelY * screen_size_w + pixelX) * 4;
+    let base = basearray[pixelY][pixelX];
     let pixel = zBuffering[pixelY][pixelX];
     if(pixel[pixel_Z]<99999){
       let pixelZ = pixel[pixel_Z];
@@ -1717,13 +1736,11 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       let pixelB = pixel[pixel_B];
       //let pixela = pixel[4];
       //シャドウマップに照らし合わせる。
-      let shadowPixelX = pixelX;
-      let shadowPixelY = pixelY;
       //camera
       //let pixelVector3 = setVector3(pixelX,pixelY,pixelZ);
       //inverseViewPort and inverseProjection
-      shadowPixelX = (shadowPixelX*invScreen_size_w  - 0.5) * pixelZ;
-      shadowPixelY = (shadowPixelY*invScreen_size_h  - 0.5) * pixelZ;
+      let shadowPixelY = shadowViewPortY[pixelY] * pixelZ;
+      let shadowPixelX = shadowViewPortX[pixelX] * pixelZ;
       /*
       //inverseViewPort
       shadowPixelX /= screen_size_w;
@@ -1764,7 +1781,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       shadowMatrixPixelY = ((shadowMatrixPixelY  + 0.5)*screen_size_h)|0;
       if(shadowMatrixPixelX>0 && shadowMatrixPixelX<screen_size_w){
         if(shadowMatrixPixelY>0 && shadowMatrixPixelY<screen_size_h){
-          if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.25<pixelZ){
+          if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.2<pixelZ){
             pixelR *= 0.5;
             pixelG *= 0.5;
             pixelB *= 0.5;	
