@@ -4,7 +4,7 @@ import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVec
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
-import { cross_Z, pixel_B, pixel_Cross_World_Vector3, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_backCulling_Flag, UV_Vector } from './enum.js';
+import { cross_Z, pixel_B, pixel_Cross_World_Vector3, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_backCulling_Flag, UV_Vector, pixel_A } from './enum.js';
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
 
@@ -1344,7 +1344,7 @@ const screen_size_w = SCREEN_SIZE_W;
 const invScreen_size_h = 1/screen_size_h;
 const invScreen_size_w = 1/screen_size_w;
 
-//base,viewPortをあらかじめ計算しておく。
+//baseRGBA,viewPortをあらかじめ計算しておく。
 let shadowViewPortY = [];
 let shadowViewPortX = [];
 let basearray = [];
@@ -1355,14 +1355,18 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   let tmpShadowViewPortY = (pixelY*invScreen_size_h  - 0.5);
   shadowViewPortY.push(tmpShadowViewPortY);
   for (let pixelX=0;pixelX<screen_size_w;pixelX++) {
+    let baseRGBA = {};
     let tmpBase = (pixelY * screen_size_w + pixelX) * 4;
-    basearray[pixelY][pixelX] = tmpBase;
+    baseRGBA.r = tmpBase + 0;
+    baseRGBA.g = tmpBase + 1;
+    baseRGBA.b = tmpBase + 2;
+    baseRGBA.a = tmpBase + 3;
+    basearray[pixelY][pixelX] = baseRGBA;
     //inverseViewPort
     let tmpShadowViewPortX = (pixelX*invScreen_size_w  - 0.5);
     shadowViewPortX.push(tmpShadowViewPortX);   
   }
 }
-
 //zBufferInit
 let shadowMap = [];
 shdowBufferInit(shadowMap,screen_size_h,screen_size_w);
@@ -1729,8 +1733,8 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   for (let pixelX=0;pixelX<screen_size_w;pixelX++) {
     let base = basearray[pixelY][pixelX];
     let pixel = zBuffering[pixelY][pixelX];
-    if(pixel[pixel_Z]<99999){
-      let pixelZ = pixel[pixel_Z];
+    let pixelZ = pixel[pixel_Z];
+    if(pixelZ<99999){
       let pixelR = pixel[pixel_R];
       let pixelG = pixel[pixel_G];
       let pixelB = pixel[pixel_B];
@@ -1757,30 +1761,31 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       */
       //view
       //shadowMatrixmul
-      let shadowMatrixPixelX = shadowMat[0]*shadowPixelX + shadowMat[1]*shadowPixelY + shadowMat[2]*pixelZ + shadowMat[3];
       let shadowMatrixPixelY = shadowMat[4]*shadowPixelX + shadowMat[5]*shadowPixelY + shadowMat[6]*pixelZ + shadowMat[7];
+      let shadowMatrixPixelX = shadowMat[0]*shadowPixelX + shadowMat[1]*shadowPixelY + shadowMat[2]*pixelZ + shadowMat[3];
       pixelZ = shadowMat[8]*shadowPixelX + shadowMat[9]*shadowPixelY + shadowMat[10]*pixelZ + shadowMat[11];
-      let invPixelZ = 1/pixelZ;
+      //let invPixelZ = 1/pixelZ;
 
       //projectionMatrix = matPers(pixelVector3[2]);
       //pixelVector3 = matVecMul(projectionMatrix,pixelVector3);
    
       //projection
-      shadowMatrixPixelX *= invPixelZ;
-      shadowMatrixPixelY *= invPixelZ;
-      /*
+      shadowMatrixPixelY /= pixelZ;
+      shadowMatrixPixelX /= pixelZ;
+      
       //viewPort
-      shadowPixelX += 0.5;
-      shadowPixelY += 0.5;
-      shadowPixelX *= screen_size_w;
-      shadowPixelY *= screen_size_h;
-      shadowPixelX |= 0;
-      shadowPixelY |= 0;
-      */
-      shadowMatrixPixelX = ((shadowMatrixPixelX  + 0.5)*screen_size_w)|0;
+      shadowMatrixPixelY += 0.5;
+      shadowMatrixPixelX += 0.5;
+      shadowMatrixPixelY *= screen_size_h;
+      shadowMatrixPixelX *= screen_size_w;
+      shadowMatrixPixelY |= 0;
+      shadowMatrixPixelX |= 0;  
+      /*代入あり
       shadowMatrixPixelY = ((shadowMatrixPixelY  + 0.5)*screen_size_h)|0;
-      if(shadowMatrixPixelX>0 && shadowMatrixPixelX<screen_size_w){
-        if(shadowMatrixPixelY>0 && shadowMatrixPixelY<screen_size_h){
+      shadowMatrixPixelX = ((shadowMatrixPixelX  + 0.5)*screen_size_w)|0;
+      */
+      if(shadowMatrixPixelY>0 && shadowMatrixPixelY<screen_size_h){
+        if(shadowMatrixPixelX>0 && shadowMatrixPixelX<screen_size_w){ 
           if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.2<pixelZ){
             pixelR *= 0.5;
             pixelG *= 0.5;
@@ -1794,18 +1799,18 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       pixelR *= sunCosin;
       pixelG *= sunCosin;
       pixelB *= sunCosin;      
-      myImageData.data[base + 0] = pixelR;  // Red
-      myImageData.data[base + 1] = pixelG;  // Green
-      myImageData.data[base + 2] = pixelB;  // Blue
-      myImageData.data[base + 3] = 255; // Alpha
+      myImageData.data[base.r] = pixelR;  // Red
+      myImageData.data[base.g] = pixelG;  // Green
+      myImageData.data[base.b] = pixelB;  // Blue
+      myImageData.data[base.a] = 255; // Alpha
     //dotPaint(j,i,getPixel.r,getPixel.g,getPixel.b,getPixel.a,ctx);    
     }else{
       //何もないところは黒
       //dotPaint(j,i,0,0,0,255,ctx);
-      myImageData.data[base + 0] = 0;  // Red
-      myImageData.data[base + 1] = 0;  // Green
-      myImageData.data[base + 2] = 0;  // Blue
-      myImageData.data[base + 3] = 255; // Alpha
+      myImageData.data[base.r] = 0;  // Red
+      myImageData.data[base.g] = 0;  // Green
+      myImageData.data[base.b] = 0;  // Blue
+      myImageData.data[base.a] = 255; // Alpha
     }
   }
 }
