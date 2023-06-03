@@ -4,7 +4,7 @@ import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVec
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
-import { cross_Z, pixel_B, pixel_Cross_World_Vector3, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_backCulling_Flag, UV_Vector, pixel_A } from './enum.js';
+import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_backCulling_Flag, UV_Vector, pixel_A } from './enum.js';
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
 
@@ -1692,6 +1692,7 @@ for(let i in steves){
 //ピクセル処理がボトルネック、ラスタライズ
 setZmaxShdowBufferInit(shadowMap,screen_size_h,screen_size_w);
 setZmaxRenderBuffer(zBuffering,screen_size_h,screen_size_w);
+let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
 //camera
 let projectedObjectsLength  = projectedObjects.length;
 for(let j=0;j<projectedObjectsLength;j++){
@@ -1701,12 +1702,12 @@ for(let j=0;j<projectedObjectsLength;j++){
 	  if(projectedObjects[j][obj_backCulling_Flag] == true){
       if(projectedObjects[j][poly_List][projectedPolyNum][cross_Z]<0){
         triangleToBuffer(zBuffering,projectedObjects[j][obj_Image],projectedObjects[j][poly_List][projectedPolyNum][projected_Verts],projectedObjects[j][poly_List][projectedPolyNum][poly_Cross_World_Vector3],
-            projectedObjects[j][poly_List][projectedPolyNum][UV_Vector]
+            projectedObjects[j][poly_List][projectedPolyNum][UV_Vector],sunVec
            ,screen_size_h,screen_size_w);
 	    } 
 	  }else{
       triangleToBuffer(zBuffering,projectedObjects[j][obj_Image],projectedObjects[j][poly_List][projectedPolyNum][projected_Verts],projectedObjects[j][poly_List][projectedPolyNum][poly_Cross_World_Vector3],
-        projectedObjects[j][poly_List][projectedPolyNum][UV_Vector]
+        projectedObjects[j][poly_List][projectedPolyNum][UV_Vector],sunVec
        ,screen_size_h,screen_size_w);
 	  }
   }  
@@ -1727,7 +1728,6 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
   }  
 }
 //作画
-let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
 let shadowMat = matMul(sunViewMatrix,inverseViewMatrix);
 for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   for (let pixelX=0;pixelX<screen_size_w;pixelX++) {
@@ -1794,7 +1794,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         }
       }
       //ライトシミュレーション
-      let sunCosin = culVecDot(sunVec, pixel[pixel_Cross_World_Vector3]);
+      let sunCosin = pixel[pixel_SunCosin];
       sunCosin *= 1.5;
       pixelR *= sunCosin;
       pixelG *= sunCosin;

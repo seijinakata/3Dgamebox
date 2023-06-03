@@ -3,7 +3,7 @@ export const pixel_R = 1;
 export const pixel_G = 2;
 export const pixel_B = 3;
 export const pixel_A = 4;
-export const pixel_Cross_World_Vector3 = 5;
+export const pixel_SunCosin = 5;
 
 export const position_X = 0;
 export const position_Y = 1;
