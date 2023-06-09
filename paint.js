@@ -25,8 +25,12 @@ export class renderBuffer{
 		return this.pixelBuffer[0];
 	}
 }
-export function setPixel(z,r,g,b,a,crossWorldVector3){
-	let pixel = [z,r,g,b,a,crossWorldVector3];
+export function setPixel(z,r,g,b,a,shadowFlag,crossWorldVector3){
+	let pixel = [z,r,g,b,a,shadowFlag,crossWorldVector3];
+	return pixel;
+}
+export function setPixelNoCrossWorldVector3(z,r,g,b,a,shadowFlag){
+	let pixel = [z,r,g,b,a,shadowFlag];
 	return pixel;
 }
 //minZはminXのZ値、maxZはmaxXのZ値,Y列で管理
@@ -766,7 +770,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,f
 						selectOrgx = textureUMin
 					}*/
 					//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3));
-					zBuffering[y][startX] = setPixel(startZ,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].r,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].g,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].b,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].a,sunCosin);
+					zBuffering[y][startX] = setPixel(startZ,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].r,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].g,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].b,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].a,true,sunCosin);
 
 				}
 			}
@@ -912,7 +916,7 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 {
   //各点のZ座標がこれより下なら作画しない。
   if (vertex_list[0][2] > 0.0 && vertex_list[1][2]> 0.0 && vertex_list[2][2] > 0.0) {
-	let sunCosin = culVecDot(sunVec, crossWorldVector3);
+	let sunCosin = culVecDot(sunVec, crossWorldVector3)*1.5;//1.5掛けるのは明るさの調節
     let _Ax = vertex_list[1][0] - vertex_list[0][0];
     let _Ay = vertex_list[1][1] - vertex_list[0][1];
     let _Bx = vertex_list[2][0] - vertex_list[0][0];

@@ -4,7 +4,7 @@ import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVec
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
-import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_backCulling_Flag, UV_Vector, pixel_A } from './enum.js';
+import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_backCulling_Flag, UV_Vector, pixel_A, pixel_shadow_Flag } from './enum.js';
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
 
@@ -1740,66 +1740,67 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       let pixelG = pixel[pixel_G];
       let pixelB = pixel[pixel_B];
       //let pixela = pixel[4];
-      //シャドウマップに照らし合わせる。
-      //camera
-      //let pixelVector3 = setVector3(pixelX,pixelY,pixelZ);
-      //inverseViewPort and inverseProjection
-      let shadowPixelY = shadowViewPortY[pixelY] * pixelZ;
-      let shadowPixelX = shadowViewPortX[pixelX] * pixelZ;
-      /*
-      //inverseViewPort
-      shadowPixelX /= screen_size_w;
-      shadowPixelY /= screen_size_h;
-      shadowPixelX -= 0.5;
-      shadowPixelY -= 0.5;
-      
-      shadowPixelX = shadowPixelX/screen_size_w  - 0.5;
-      shadowPixelY = shadowPixelY/screen_size_h  - 0.5;
+      if(pixel[pixel_shadow_Flag] == true){
+        //シャドウマップに照らし合わせる。
+        //camera
+        //let pixelVector3 = setVector3(pixelX,pixelY,pixelZ);
+        //inverseViewPort and inverseProjection
+        let shadowPixelY = shadowViewPortY[pixelY] * pixelZ;
+        let shadowPixelX = shadowViewPortX[pixelX] * pixelZ;
+        /*
+        //inverseViewPort
+        shadowPixelX /= screen_size_w;
+        shadowPixelY /= screen_size_h;
+        shadowPixelX -= 0.5;
+        shadowPixelY -= 0.5;
+        
+        shadowPixelX = shadowPixelX/screen_size_w  - 0.5;
+        shadowPixelY = shadowPixelY/screen_size_h  - 0.5;
 
-      //inverseProjection
-      shadowPixelX *= pixelZ;
-      shadowPixelY *= pixelZ;
-      */
-      //view
-      //shadowMatrixmul
-      let shadowMatrixPixelY = shadowMat[4]*shadowPixelX + shadowMat[5]*shadowPixelY + shadowMat[6]*pixelZ + shadowMat[7];
-      let shadowMatrixPixelX = shadowMat[0]*shadowPixelX + shadowMat[1]*shadowPixelY + shadowMat[2]*pixelZ + shadowMat[3];
-      pixelZ = shadowMat[8]*shadowPixelX + shadowMat[9]*shadowPixelY + shadowMat[10]*pixelZ + shadowMat[11];
-      //let invPixelZ = 1/pixelZ;
+        //inverseProjection
+        shadowPixelX *= pixelZ;
+        shadowPixelY *= pixelZ;
+        */
+        //view
+        //shadowMatrixmul
+        let shadowMatrixPixelY = shadowMat[4]*shadowPixelX + shadowMat[5]*shadowPixelY + shadowMat[6]*pixelZ + shadowMat[7];
+        let shadowMatrixPixelX = shadowMat[0]*shadowPixelX + shadowMat[1]*shadowPixelY + shadowMat[2]*pixelZ + shadowMat[3];
+        pixelZ = shadowMat[8]*shadowPixelX + shadowMat[9]*shadowPixelY + shadowMat[10]*pixelZ + shadowMat[11];
+        //let invPixelZ = 1/pixelZ;
 
-      //projectionMatrix = matPers(pixelVector3[2]);
-      //pixelVector3 = matVecMul(projectionMatrix,pixelVector3);
-   
-      //projection
-      shadowMatrixPixelY /= pixelZ;
-      shadowMatrixPixelX /= pixelZ;
-      
-      //viewPort
-      shadowMatrixPixelY += 0.5;
-      shadowMatrixPixelX += 0.5;
-      shadowMatrixPixelY *= screen_size_h;
-      shadowMatrixPixelX *= screen_size_w;
-      shadowMatrixPixelY |= 0;
-      shadowMatrixPixelX |= 0;  
-      /*代入あり
-      shadowMatrixPixelY = ((shadowMatrixPixelY  + 0.5)*screen_size_h)|0;
-      shadowMatrixPixelX = ((shadowMatrixPixelX  + 0.5)*screen_size_w)|0;
-      */
-      if(shadowMatrixPixelY>0 && shadowMatrixPixelY<screen_size_h){
-        if(shadowMatrixPixelX>0 && shadowMatrixPixelX<screen_size_w){ 
-          if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.2<pixelZ){
-            pixelR *= 0.5;
-            pixelG *= 0.5;
-            pixelB *= 0.5;	
+        //projectionMatrix = matPers(pixelVector3[2]);
+        //pixelVector3 = matVecMul(projectionMatrix,pixelVector3);
+    
+        //projection
+        shadowMatrixPixelY /= pixelZ;
+        shadowMatrixPixelX /= pixelZ;
+        
+        //viewPort
+        shadowMatrixPixelY += 0.5;
+        shadowMatrixPixelX += 0.5;
+        shadowMatrixPixelY *= screen_size_h;
+        shadowMatrixPixelX *= screen_size_w;
+        shadowMatrixPixelY |= 0;
+        shadowMatrixPixelX |= 0;  
+        /*代入あり
+        shadowMatrixPixelY = ((shadowMatrixPixelY  + 0.5)*screen_size_h)|0;
+        shadowMatrixPixelX = ((shadowMatrixPixelX  + 0.5)*screen_size_w)|0;
+        */
+        if(shadowMatrixPixelY>0 && shadowMatrixPixelY<screen_size_h){
+          if(shadowMatrixPixelX>0 && shadowMatrixPixelX<screen_size_w){ 
+            if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.2<pixelZ){
+              pixelR *= 0.5;
+              pixelG *= 0.5;
+              pixelB *= 0.5;	
+            }
           }
         }
+        //ライトシミュレーション
+        let sunCosin = pixel[pixel_SunCosin];
+        pixelR *= sunCosin;
+        pixelG *= sunCosin;
+        pixelB *= sunCosin; 
       }
-      //ライトシミュレーション
-      let sunCosin = pixel[pixel_SunCosin];
-      sunCosin *= 1.5;
-      pixelR *= sunCosin;
-      pixelG *= sunCosin;
-      pixelB *= sunCosin;      
       myImageData.data[base.r] = pixelR;  // Red
       myImageData.data[base.g] = pixelG;  // Green
       myImageData.data[base.b] = pixelB;  // Blue
