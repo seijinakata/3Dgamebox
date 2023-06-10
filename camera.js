@@ -4,7 +4,7 @@ import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVec
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
-import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_backCulling_Flag, UV_Vector, pixel_A, pixel_shadow_Flag } from './enum.js';
+import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, UV_Vector, pixel_A, pixel_shadow_Flag, obj_Shadow_Flag } from './enum.js';
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
 
@@ -541,7 +541,7 @@ class Object{
     
     this.backGroundFlag = backGroundFlag;
     this.backCullingFlag = true;//backCullingFlag;
-    
+    this.shadowFlag = true;
     this.meshVerts = verts.vertsPosition.concat();
     this.meshVertsFaceIndex = verts.faceIndex;
     this.bonesIndex = verts.bonesIndex;
@@ -582,15 +582,17 @@ class Object{
 function makeProjectedObject(orgObject,polyList){
   let projectedObject = [];
   projectedObject[poly_List] = polyList;
-  projectedObject[obj_backCulling_Flag] = orgObject.backCullingFlag;
+  projectedObject[obj_BackCulling_Flag] = orgObject.backCullingFlag;
   projectedObject[obj_Image] = orgObject.textureImage;
+  projectedObject[obj_Shadow_Flag] = orgObject.shadowFlag;
+
   return projectedObject;
 }
 //projectedObject
 function makeShaddowProjectedObject(orgObject,polyList){
   let projectedObject = [];
   projectedObject[poly_List] = polyList;
-  projectedObject[obj_backCulling_Flag] = orgObject.backCullingFlag;
+  projectedObject[obj_BackCulling_Flag] = orgObject.backCullingFlag;
   return projectedObject;
 }
 //ポリゴン製造
@@ -1395,6 +1397,7 @@ if(dataLoad == false){
   if(cubePixelImageLoad == true && cube1LoadPack.daeLoad == true && cube1Load == false){
     cube1LoadPack.textureImage = cubePixelImage;
     cube1LoadPack.backCullingFlag = false;
+    cube1LoadPack.shadowFlag = false;
     // cube1LoadPack.bones.position[position_Y] = -1;
     // cube1LoadPack.bones.position[position_Z] = 1;
     cube1LoadPack.bones.scaleXYZ[scale_X] = 10;
@@ -1407,6 +1410,7 @@ if(dataLoad == false){
   if(dicePixelImageLoad == true && steve1LoadPack.daeLoad == true && steve1Load == false){
     steve1LoadPack.textureImage = dicePixelImage;
     steve1LoadPack.backCullingFlag = true;
+    steve1LoadPack.shadowFlag = true;
     culUVVector(steve1LoadPack)
     steves.push(steve1LoadPack);
     for(let i=0;i<steves[0].bones.length;i++){
@@ -1440,6 +1444,7 @@ if(dataLoad == false){
   if(dicePixelImageLoad == true && steve2LoadPack.daeLoad == true && steve1Load == true && steve2Load == false){
     steve2LoadPack.textureImage = dicePixelImage;
     steve2LoadPack.backCullingFlag = true;
+    steve2LoadPack.shadowFlag = true;
     culUVVector(steve2LoadPack)
 
     steves.push(steve2LoadPack); 
@@ -1700,15 +1705,15 @@ for(let j=0;j<projectedObjectsLength;j++){
   let projectedObjects_j_polygonNum = projectedObjects[j][poly_List].length;
 	for(let projectedPolyNum=0;projectedPolyNum<projectedObjects_j_polygonNum;projectedPolyNum++){
 	  //-の方がこちらに近くなる座標軸だから
-	  if(projectedObjects[j][obj_backCulling_Flag] == true){
+	  if(projectedObjects[j][obj_BackCulling_Flag] == true){
       if(projectedObjects[j][poly_List][projectedPolyNum][cross_Z]<0){
         triangleToBuffer(zBuffering,projectedObjects[j][obj_Image],projectedObjects[j][poly_List][projectedPolyNum][projected_Verts],projectedObjects[j][poly_List][projectedPolyNum][poly_Cross_World_Vector3],
-            projectedObjects[j][poly_List][projectedPolyNum][UV_Vector],sunVec
+            projectedObjects[j][poly_List][projectedPolyNum][UV_Vector],sunVec,projectedObjects[j][obj_Shadow_Flag]
            ,screen_size_h,screen_size_w);
 	    } 
 	  }else{
       triangleToBuffer(zBuffering,projectedObjects[j][obj_Image],projectedObjects[j][poly_List][projectedPolyNum][projected_Verts],projectedObjects[j][poly_List][projectedPolyNum][poly_Cross_World_Vector3],
-        projectedObjects[j][poly_List][projectedPolyNum][UV_Vector],sunVec
+        projectedObjects[j][poly_List][projectedPolyNum][UV_Vector],sunVec,projectedObjects[j][obj_Shadow_Flag]
        ,screen_size_h,screen_size_w);
 	  }
   }  
@@ -1719,7 +1724,7 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
   let shadowProjectedObjects_j_polygonNum = shadowProjectedObjects[j][poly_List].length;
 	for(let projectedPolyNum=0;projectedPolyNum<shadowProjectedObjects_j_polygonNum;projectedPolyNum++){
 	  //-の方がこちらに近くなる座標軸だから
-	  if(shadowProjectedObjects[j][obj_backCulling_Flag] == true){
+	  if(shadowProjectedObjects[j][obj_BackCulling_Flag] == true){
 	    if(shadowProjectedObjects[j][poly_List][projectedPolyNum][cross_Z]<0){
         triangleToShadowBuffer(shadowMap,shadowProjectedObjects[j][poly_List][projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
       }
@@ -1736,11 +1741,11 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
     let pixel = zBuffering[pixelY][pixelX];
     let pixelZ = pixel[pixel_Z];
     if(pixelZ<99999){
-      let pixelR = pixel[pixel_R];
-      let pixelG = pixel[pixel_G];
-      let pixelB = pixel[pixel_B];
-      //let pixela = pixel[4];
       if(pixel[pixel_shadow_Flag] == true){
+        let pixelR = pixel[pixel_R];
+        let pixelG = pixel[pixel_G];
+        let pixelB = pixel[pixel_B];
+        //let pixela = pixel[4];
         //シャドウマップに照らし合わせる。
         //camera
         //let pixelVector3 = setVector3(pixelX,pixelY,pixelZ);
@@ -1800,11 +1805,17 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         pixelR *= sunCosin;
         pixelG *= sunCosin;
         pixelB *= sunCosin; 
+        myImageData.data[base.r] = pixelR;  // Red
+        myImageData.data[base.g] = pixelG;  // Green
+        myImageData.data[base.b] = pixelB;  // Blue
+        myImageData.data[base.a] = 255; // Alpha
+      }else{
+        myImageData.data[base.r] = pixel[pixel_R];  // Red
+        myImageData.data[base.g] = pixel[pixel_G];  // Green
+        myImageData.data[base.b] = pixel[pixel_B]; // Blue
+        //let pixela = pixel[4];
+        myImageData.data[base.a] = 255; // Alpha        
       }
-      myImageData.data[base.r] = pixelR;  // Red
-      myImageData.data[base.g] = pixelG;  // Green
-      myImageData.data[base.b] = pixelB;  // Blue
-      myImageData.data[base.a] = 255; // Alpha
     //dotPaint(j,i,getPixel.r,getPixel.g,getPixel.b,getPixel.a,ctx);    
     }else{
       //何もないところは黒

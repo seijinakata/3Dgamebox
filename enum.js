@@ -26,8 +26,10 @@ export const poly_Cross_World_Vector3 = 3;
 
 //projectedObject
 export const poly_List = 0;
-export const obj_backCulling_Flag = 1;
+export const obj_BackCulling_Flag = 1;
 export const obj_Image = 2;
+export const obj_Shadow_Flag = 3;
+
 
 //paint
 export const delta_X = 0;
