@@ -1402,9 +1402,9 @@ if(dataLoad == false){
     cube1LoadPack.shadowFlag = false;
     // cube1LoadPack.bones.position[position_Y] = -1;
     // cube1LoadPack.bones.position[position_Z] = 1;
-    cube1LoadPack.bones.scaleXYZ[scale_X] = 10;
-    cube1LoadPack.bones.scaleXYZ[scale_Y] = 10;
-    cube1LoadPack.bones.scaleXYZ[scale_Z] = 10;
+    cube1LoadPack.bones.scaleXYZ[scale_X] = 7;
+    cube1LoadPack.bones.scaleXYZ[scale_Y] = 7;
+    cube1LoadPack.bones.scaleXYZ[scale_Z] = 7;
     culUVVector(cube1LoadPack)
     dices.push(cube1LoadPack) 
     cube1Load = true;
@@ -1414,7 +1414,7 @@ if(dataLoad == false){
     sphere1LoadPack.backCullingFlag = false;
     sphere1LoadPack.shadowFlag = true;
     sphere1LoadPack.bones.position[position_Y] = -1;
-    sphere1LoadPack.bones.position[position_Z] = 2;
+    sphere1LoadPack.bones.position[position_Z] = 1.5;
     sphere1LoadPack.bones.scaleXYZ[scale_X] = 2;
     // sphere1LoadPack.bones.scaleXYZ[scale_Y] = 10;
     // sphere1LoadPack.bones.scaleXYZ[scale_Z] = 10;
@@ -1461,7 +1461,6 @@ if(dataLoad == false){
     steve2LoadPack.backCullingFlag = true;
     steve2LoadPack.shadowFlag = true;
     culUVVector(steve2LoadPack)
-
     steves.push(steve2LoadPack); 
     steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
 

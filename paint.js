@@ -618,14 +618,13 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 					zBuffering[y][startX] = startZ;
 				}
 			}
-
 			startZ+=dz;
 			startX++;
         }while(startX<endX);
     }
 }
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
-function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,imageData,shadowFlag,sunCosin){
+function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,sunCosin){
 
 	//viewport前は0から1000で管理4桁で四捨五入0.5は画面の中央
 	let mid = pm[1];
@@ -669,7 +668,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,im
 				let endX = top_int(sr[0]);
 				let startZ = sl[1];
 				let endZ = sr[1];
-				scan_horizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,iA,h,w,imageData,shadowFlag,sunCosin);				
+				scan_horizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,sunCosin);				
 			}
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
@@ -692,7 +691,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,im
 				let endX = top_int(sr[0]);
 				let startZ = sl[1];
 				let endZ = sr[1];
-				scan_horizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,iA,h,w,imageData,shadowFlag,sunCosin);				
+				scan_horizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,sunCosin);				
 			}
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
@@ -700,7 +699,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,im
         }while(mid<triangleBtm);
     }
 }
-function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,f,e,imageData,shadowFlag,sunCosin){
+function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,sunCosin){
 
 	//アフィン変換の平行移動ベクトル
 	//縦移動、transform関数のf
@@ -715,16 +714,14 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,f
 		let xStep = endX - startX;
 
         let dz = zStep/xStep;
-		let tmpOrgy = null;
-		let tmpOrgx = null;
+		let tmpOrgy = y * iA[3] + tmpOrgyef;
+		let tmpOrgx = y * iA[1] + tmpOrgxef;
+		// tmpOrgy = y * iA[3] - e * iA[2] - f * iA[3];
+		// tmpOrgx = y * iA[1] - e * iA[0] - f * iA[1];
         do{
 			if(startX>=0){
 				let z = zBuffering[y][startX][0];
 				if(z>startZ){
-					if(tmpOrgy == null){
-						tmpOrgy = y * iA[3] - e * iA[2] - f * iA[3];
-						tmpOrgx = y * iA[1] - e * iA[0] - f * iA[1];
-					}
 					/* 元画像における縦方向座標を計算 */
 					/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
 					let selectOrgy = tmpOrgy + startX * iA[2];
@@ -982,9 +979,10 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 	iA[3] = a * inv_det;
 	// let h = vertex_list[0][1] - (b * uv_list[0] * imageData.width + d * uv_list[1] * imageData.height);
 	// let w = vertex_list[0][0] - (a * uv_list[0] * imageData.width + c * uv_list[1] * imageData.height);
-	let h = vertex_list[0][1] - (b * mi[2] + d * mi[3]);
-	let w = vertex_list[0][0] - (a * mi[2] + c * mi[3]);
-		
+	let f = vertex_list[0][1] - (b * mi[2] + d * mi[3]);
+	let e = vertex_list[0][0] - (a * mi[2] + c * mi[3]);
+	let tmpOrgyef =  - (e * iA[2]) - f * iA[3];
+	let tmpOrgxef =  - (e * iA[0]) - f * iA[1];
 	sort_index(vertex_list,1);//ys
 	let pt = vertex_list[0];
 	let pm = vertex_list[1];
@@ -992,9 +990,9 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 
 	if(shadowFlag == true){
 		let sunCosin = culVecDot(sunVec, crossWorldVector3)*1.5;//1.5掛けるのは明るさの調節
-		scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,imageData,true,sunCosin);
+		scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrgyef,tmpOrgxef,imageData,true,sunCosin);
 	}else{
-		scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,h,w,imageData,false,null);
+		scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrgyef,tmpOrgxef,imageData,false,null);
 	}
 
 
