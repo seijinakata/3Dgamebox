@@ -34,10 +34,11 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,bonesNam
 let steve1LoadPack = {};
 let steve2LoadPack = {};
 let cube1LoadPack = {};
-
+let sphere1LoadPack = {};
 daeLoader("dice3.dae",steve1LoadPack);
 daeLoader("dice3.dae",steve2LoadPack);
 daeLoader("sky.dae",cube1LoadPack);
+daeLoader("sky.dae",sphere1LoadPack);
 
 function daeLoader(fileName,daeLoadPack){
   let xmlhttp = new XMLHttpRequest();
@@ -1339,6 +1340,7 @@ let dicePixelImageLoad = false;
 let steve1Load = false;
 let steve2Load = false;
 let cube1Load = false;
+let sphere1Load = false;
 
 const screen_size_h = SCREEN_SIZE_H;
 const screen_size_w = SCREEN_SIZE_W;
@@ -1406,6 +1408,19 @@ if(dataLoad == false){
     culUVVector(cube1LoadPack)
     dices.push(cube1LoadPack) 
     cube1Load = true;
+  }
+  if(cubePixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
+    sphere1LoadPack.textureImage = cubePixelImage;
+    sphere1LoadPack.backCullingFlag = false;
+    sphere1LoadPack.shadowFlag = true;
+    sphere1LoadPack.bones.position[position_Y] = -1;
+    sphere1LoadPack.bones.position[position_Z] = 2;
+    sphere1LoadPack.bones.scaleXYZ[scale_X] = 2;
+    // sphere1LoadPack.bones.scaleXYZ[scale_Y] = 10;
+    // sphere1LoadPack.bones.scaleXYZ[scale_Z] = 10;
+    culUVVector(sphere1LoadPack)
+    dices.push(sphere1LoadPack) 
+    sphere1Load = true;
   }
   if(dicePixelImageLoad == true && steve1LoadPack.daeLoad == true && steve1Load == false){
     steve1LoadPack.textureImage = dicePixelImage;
