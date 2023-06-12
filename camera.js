@@ -1717,18 +1717,19 @@ let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
 //camera
 let projectedObjectsLength  = projectedObjects.length;
 for(let j=0;j<projectedObjectsLength;j++){
-  let projectedObjects_j_polygonNum = projectedObjects[j][poly_List].length;
+  let currentProjectedObject = projectedObjects[j];
+  let projectedObjects_j_polygonNum = currentProjectedObject[poly_List].length;
 	for(let projectedPolyNum=0;projectedPolyNum<projectedObjects_j_polygonNum;projectedPolyNum++){
 	  //-の方がこちらに近くなる座標軸だから
-	  if(projectedObjects[j][obj_BackCulling_Flag] == true){
-      if(projectedObjects[j][poly_List][projectedPolyNum][cross_Z]<0){
-        triangleToBuffer(zBuffering,projectedObjects[j][obj_Image],projectedObjects[j][poly_List][projectedPolyNum][projected_Verts],projectedObjects[j][poly_List][projectedPolyNum][poly_Cross_World_Vector3],
-            projectedObjects[j][poly_List][projectedPolyNum][UV_Vector],sunVec,projectedObjects[j][obj_Shadow_Flag]
+	  if(currentProjectedObject[obj_BackCulling_Flag] == true){
+      if(currentProjectedObject[poly_List][projectedPolyNum][cross_Z]<0){
+        triangleToBuffer(zBuffering,currentProjectedObject[obj_Image],currentProjectedObject[poly_List][projectedPolyNum][projected_Verts],currentProjectedObject[poly_List][projectedPolyNum][poly_Cross_World_Vector3],
+            currentProjectedObject[poly_List][projectedPolyNum][UV_Vector],sunVec,currentProjectedObject[obj_Shadow_Flag]
            ,screen_size_h,screen_size_w);
 	    } 
 	  }else{
-      triangleToBuffer(zBuffering,projectedObjects[j][obj_Image],projectedObjects[j][poly_List][projectedPolyNum][projected_Verts],projectedObjects[j][poly_List][projectedPolyNum][poly_Cross_World_Vector3],
-        projectedObjects[j][poly_List][projectedPolyNum][UV_Vector],sunVec,projectedObjects[j][obj_Shadow_Flag]
+      triangleToBuffer(zBuffering,currentProjectedObject[obj_Image],currentProjectedObject[poly_List][projectedPolyNum][projected_Verts],currentProjectedObject[poly_List][projectedPolyNum][poly_Cross_World_Vector3],
+        currentProjectedObject[poly_List][projectedPolyNum][UV_Vector],sunVec,currentProjectedObject[obj_Shadow_Flag]
        ,screen_size_h,screen_size_w);
 	  }
   }  
@@ -1736,24 +1737,30 @@ for(let j=0;j<projectedObjectsLength;j++){
 //shadowMap
 let shadowProjectedObjectsLength  = shadowProjectedObjects.length;
 for(let j=0;j<shadowProjectedObjectsLength;j++){
-  let shadowProjectedObjects_j_polygonNum = shadowProjectedObjects[j][poly_List].length;
+  let currentshadowProjectedObject = shadowProjectedObjects[j];
+  if(currentshadowProjectedObject[obj_Shadow_Flag] == false){
+    continue;
+  }
+  let shadowProjectedObjects_j_polygonNum = currentshadowProjectedObject[poly_List].length;
 	for(let projectedPolyNum=0;projectedPolyNum<shadowProjectedObjects_j_polygonNum;projectedPolyNum++){
 	  //-の方がこちらに近くなる座標軸だから
-	  if(shadowProjectedObjects[j][obj_BackCulling_Flag] == true){
-	    if(shadowProjectedObjects[j][poly_List][projectedPolyNum][cross_Z]<0){
-        triangleToShadowBuffer(shadowMap,shadowProjectedObjects[j][poly_List][projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
+	  if(currentshadowProjectedObject[obj_BackCulling_Flag] == true){
+	    if(currentshadowProjectedObject[poly_List][projectedPolyNum][cross_Z]<0){
+        triangleToShadowBuffer(shadowMap,currentshadowProjectedObject[poly_List][projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
       }
 	  }else{
-      triangleToShadowBuffer(shadowMap,shadowProjectedObjects[j][poly_List][projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
+      triangleToShadowBuffer(shadowMap,currentshadowProjectedObject[poly_List][projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
 	  }
   }  
 }
 //作画
 let shadowMat = matMul(sunViewMatrix,inverseViewMatrix);
 for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
+  let basearrayY = basearray[pixelY];
+  let zBufferingY = zBuffering[pixelY];
   for (let pixelX=0;pixelX<screen_size_w;pixelX++) {
-    let base = basearray[pixelY][pixelX];
-    let pixel = zBuffering[pixelY][pixelX];
+    let base = basearrayY[pixelX];
+    let pixel = zBufferingY[pixelX];
     let pixelZ = pixel[pixel_Z];
     if(pixelZ<99999){
       if(pixel[pixel_shadow_Flag] == true){

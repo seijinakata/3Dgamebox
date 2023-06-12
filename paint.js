@@ -610,12 +610,12 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 		let xStep = endX- startX;
 
         let dz = zStep/xStep;
-
+		let zBufferingY = zBuffering[y];
         do{
 			if(startX>=0){
-				let z = zBuffering[y][startX];
+				let z = zBufferingY[startX];
 				if(z>startZ){
-					zBuffering[y][startX] = startZ;
+					zBufferingY[startX] = startZ;
 				}
 			}
 			startZ+=dz;
@@ -718,9 +718,10 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,t
 		let tmpOrgx = y * iA[1] + tmpOrgxef;
 		// tmpOrgy = y * iA[3] - e * iA[2] - f * iA[3];
 		// tmpOrgx = y * iA[1] - e * iA[0] - f * iA[1];
+		let zBufferingY = zBuffering[y];
         do{
 			if(startX>=0){
-				let z = zBuffering[y][startX][0];
+				let z = zBufferingY[startX][0];
 				if(z>startZ){
 					/* 元画像における縦方向座標を計算 */
 					/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
@@ -763,13 +764,14 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,t
 					}if(selectOrgx <= textureUMin){
 						selectOrgx = textureUMin
 					}*/
-					//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3));
+					//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
+					let imageDataRGBA = imageData.twoDimensionsimageData[selectOrgy][selectOrgx];
 					if(shadowFlag == true){
-						zBuffering[y][startX] = setPixel(startZ,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].r,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].g,
-							imageData.twoDimensionsimageData[selectOrgy][selectOrgx].b,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].a,true,sunCosin);
+						zBufferingY[startX] = setPixel(startZ,imageDataRGBA.r,imageDataRGBA.g,
+							imageDataRGBA.b,imageDataRGBA.a,true,sunCosin);
 					}else{
-						zBuffering[y][startX] = setPixelNoCrossWorldVector3(startZ,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].r,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].g,
-							imageData.twoDimensionsimageData[selectOrgy][selectOrgx].b,imageData.twoDimensionsimageData[selectOrgy][selectOrgx].a,false);
+						zBufferingY[startX] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA.r,imageDataRGBA.g,
+							imageDataRGBA.b,imageDataRGBA.a,false);
 					}
 
 				}
