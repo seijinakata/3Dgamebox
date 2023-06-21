@@ -35,10 +35,12 @@ let steve1LoadPack = {};
 let steve2LoadPack = {};
 let cube1LoadPack = {};
 let sphere1LoadPack = {};
+let sandLoadPack = {};
 daeLoader("dice3.dae",steve1LoadPack);
 daeLoader("dice3.dae",steve2LoadPack);
 daeLoader("sphere.dae",cube1LoadPack);
 daeLoader("sphere.dae",sphere1LoadPack);
+daeLoader("sand.dae",sandLoadPack);
 
 function daeLoader(fileName,daeLoadPack){
   let xmlhttp = new XMLHttpRequest();
@@ -1341,7 +1343,8 @@ let steve1Load = false;
 let steve2Load = false;
 let cube1Load = false;
 let sphere1Load = false;
-
+let sandLoad = false;
+let sand = [];
 const screen_size_h = SCREEN_SIZE_H;
 const screen_size_w = SCREEN_SIZE_W;
 
@@ -1396,6 +1399,17 @@ if(dataLoad == false){
   if(dicePixelImage.length != 0 && dicePixelImageLoad == false){
     dicePixelImageLoad = true;
   }
+  if(sandPixelImageLoad == true && sandLoadPack.daeLoad == true && sandLoad == false){
+    sandLoadPack.textureImage = sandPixelImage;
+    sandLoadPack.backCullingFlag = false;
+    sandLoadPack.shadowFlag = true;
+    sandLoadPack.bones.position[position_Y] = 0.5;
+    //一個0.75の大きさ
+    sandLoadPack.bones.position[position_X] = -0.5;
+    culUVVector(sandLoadPack);
+    sand.push(sandLoadPack);
+    sandLoad = true;
+  }
   if(cubePixelImageLoad == true && cube1LoadPack.daeLoad == true && cube1Load == false){
     cube1LoadPack.textureImage = cubePixelImage;
     cube1LoadPack.backCullingFlag = false;
@@ -1406,8 +1420,8 @@ if(dataLoad == false){
     cube1LoadPack.bones.scaleXYZ[scale_X] = 48;//*2
     cube1LoadPack.bones.scaleXYZ[scale_Y] = 24;
     cube1LoadPack.bones.scaleXYZ[scale_Z] = 24;
-    culUVVector(cube1LoadPack)
-    dices.push(cube1LoadPack) 
+    culUVVector(cube1LoadPack);
+    dices.push(cube1LoadPack);
     cube1Load = true;
   }
   if(cubePixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
@@ -1492,7 +1506,7 @@ if(dataLoad == false){
     steves[1].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0);
     steve2Load = true;
   }
-  if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load && steve2Load && cube1Load){
+  if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load && steve2Load && cube1Load && sandLoad){
     dataLoad = true;
   }
   ctx.font = '50pt Arial';
@@ -1677,18 +1691,31 @@ for(let i in steves){
   for(let object of steves){
     objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
 	}
-	//planesregister
-  for(let object of planes){
+	// //planesregister
+  // for(let object of planes){
+  //   // let worldMatrix = matIdentity();
+  //   // mulMatTranslate(worldMatrix,object.centerObjX,object.centerObjY,object.centerObjZ);  
+  //   // mulMatRotateX(worldMatrix,object.objRotX);
+  //   // mulMatRotateY(worldMatrix,object.objRotY);
+  //   // mulMatRotateZ(worldMatrix,object.objRotZ); 
+  //   // mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
+  //   let worldTranslation = {};
+  //   worldTranslation.quaternion = quaternionXYZRoll(object.objRotX,object.objRotY,object.objRotZ);
+  //   worldTranslation.position = setVector3(object.centerObjX,object.centerObjY,object.centerObjZ);
+  //   worldTranslation.scaleXYZ = setVector3(object.scaleX,object.scaleY,object.scaleZ);
+  //   objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+  // }
+  for(let object of sand){
     // let worldMatrix = matIdentity();
-    // mulMatTranslate(worldMatrix,object.centerObjX,object.centerObjY,object.centerObjZ);  
-    // mulMatRotateX(worldMatrix,object.objRotX);
-    // mulMatRotateY(worldMatrix,object.objRotY);
-    // mulMatRotateZ(worldMatrix,object.objRotZ); 
-    // mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
+    // mulMatTranslate(worldMatrix,object.bones.position[position_X],object.bones.position[position_Y],object.bones.position[position_Z]);  
+    // mulMatRotateX(worldMatrix,object.bones.rotXYZ[rot_X]);
+    // mulMatRotateY(worldMatrix,object.bones.rotXYZ[rot_Y]);
+    // mulMatRotateZ(worldMatrix,object.bones.rotXYZ[rot_Z]); 
+    // mulMatScaling(worldMatrix,object.bones.scaleXYZ[scale_X],object.bones.scaleXYZ[scale_Y],object.bones.scaleXYZ[scale_Z]);
     let worldTranslation = {};
-    worldTranslation.quaternion = quaternionXYZRoll(object.objRotX,object.objRotY,object.objRotZ);
-    worldTranslation.position = setVector3(object.centerObjX,object.centerObjY,object.centerObjZ);
-    worldTranslation.scaleXYZ = setVector3(object.scaleX,object.scaleY,object.scaleZ);
+    worldTranslation.quaternion = quaternionXYZRoll(object.bones.rotXYZ[0],object.bones.rotXYZ[1],object.bones.rotXYZ[2]);
+    worldTranslation.position = object.bones.position;
+    worldTranslation.scaleXYZ = object.bones.scaleXYZ;
     objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   /*
