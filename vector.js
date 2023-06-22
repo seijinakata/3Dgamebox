@@ -125,7 +125,12 @@ while(true){
         } 
     }
 }
-
+export function cul3dVecLength(vector3){
+    let distance = vector3[0] * vector3[0] + vector3[1] * vector3[1] + vector3[2] * vector3[2];
+    let absDistance = (distance)>0 ? (distance) : -(distance);
+    //let length = NewtonMethod(1,absDistance);
+    return absDistance;
+}
  export function culVecNormalize(vector3){
     let distance = vector3[0] * vector3[0] + vector3[1] * vector3[1] + vector3[2] * vector3[2];
     let absDistance = (distance)>0 ? (distance) : -(distance);

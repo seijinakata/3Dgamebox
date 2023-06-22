@@ -1,6 +1,6 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
-import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round, roundVector2, NewtonMethod} from './vector.js';
+import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round, roundVector2, NewtonMethod, cul3dVecLength} from './vector.js';
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
@@ -50,10 +50,12 @@ function daeLoadCopy(daeLoadPack){
    copyDae.textureImage = daeLoadPack.textureImage;
    copyDae.backCullingFlag = daeLoadPack.backCullingFlag;
    copyDae.shadowFlag = daeLoadPack.shadowFlag;
-   let bones = {};
-   bones.position = daeLoadPack.bones.position.concat();
-   bones.rotXYZ = daeLoadPack.bones.rotXYZ.concat();
-   bones.scaleXYZ = daeLoadPack.bones.scaleXYZ.concat();
+   let bones = [];
+   let boneContents = {};
+   boneContents.position = daeLoadPack.bones[0].position.concat();
+   boneContents.rotXYZ = daeLoadPack.bones[0].rotXYZ.concat();
+   boneContents.scaleXYZ = daeLoadPack.bones[0].scaleXYZ.concat();
+   bones.push(boneContents);
    copyDae.bones = bones;
    copyDae.UVVector = daeLoadPack.UVVector.concat();//concat?
    return copyDae;
@@ -405,11 +407,13 @@ function daeLoader(fileName,daeLoadPack){
           }
           daeLoadPack.bones = bones;
         }else{
+          let bones = [];
           let boneContents = {};
           boneContents.position = setVector3(0,0,0);
           boneContents.rotXYZ = setVector3(0,0,0);
           boneContents.scaleXYZ = setVector3(1,1,1);
-          daeLoadPack.bones = boneContents;
+          bones.push(boneContents);
+          daeLoadPack.bones = bones;
         }
         daeLoadPack.daeLoad = true;
       } else {
@@ -451,7 +455,7 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(0,-1,-4);
+let cameraPos = setVector3(-0.1,-1,-4);
 let lookat = setVector3(0.0,-1,1);
 let sunPos = setVector3(0,-3,-2);
 let sunLookat = setVector3(0.0,-0.0,0);
@@ -1005,7 +1009,7 @@ skyImage.addEventListener("load", function() {
 //box
 let cubes = [];
 let cubeImage = new Image();
-cubeImage.src = 'sky.png';
+cubeImage.src = 'sky.jpg';
 
 let cubePixelImage = [];
 
@@ -1418,38 +1422,43 @@ if(dataLoad == false){
   }
   if(sandPixelImageLoad == true && sandLoadPack.daeLoad == true && sandLoad == false){
     sandLoadPack.textureImage = sandPixelImage;
-    sandLoadPack.backCullingFlag = false;
+    sandLoadPack.backCullingFlag = true;
     sandLoadPack.shadowFlag = true;
-    sandLoadPack.bones.position[position_Y] = 0.5;
+    let bones = [];
+    sandLoadPack.bones[0].position[position_Y] = 0.5;
+
+
     //一個0.75の大きさ
     culUVVector(sandLoadPack);
-    sands.push(sandLoadPack);
-    let sand2 = daeLoadCopy(sandLoadPack);
-    sand2.bones.position[position_Z] = 0.75;
-    let sand3 = daeLoadCopy(sandLoadPack);
-    sand3.bones.position[position_Z] = 1.5;
+
+    // let sand2 = daeLoadCopy(sandLoadPack);
+    // sand2.bones[0].position[position_Z] = 0.75;
+    // let sand3 = daeLoadCopy(sandLoadPack);
+    // sand3.bones[0].position[position_Z] = 1.5;
     let sand4 = daeLoadCopy(sandLoadPack);
-    sand4.bones.position[position_X] = -0.74;
-    let sand5 = daeLoadCopy(sand4);
-    sand5.bones.position[position_Z] = 0.74;
-    let sand6 = daeLoadCopy(sand4);
-    sand6.bones.position[position_Z] = 1.5;
+    sand4.bones[0].position[position_X] = -0.750001;
+    // let sand5 = daeLoadCopy(sand4);
+    // sand5.bones[0].position[position_Z] = 0.750001;
+    // let sand6 = daeLoadCopy(sand4);
+    // sand6.bones[0].position[position_Z] = 1.50001;
     let sand7 = daeLoadCopy(sandLoadPack);
-    sand7.bones.position[position_X] = 0.75;
-    let sand8 = daeLoadCopy(sand7);
-    sand8.bones.position[position_Z] = 0.75;
-    let sand9 = daeLoadCopy(sand7);
-    sand9.bones.position[position_Z] = 1.5;
+    sand7.bones[0].position[position_X] = 0.750001;
+    // let sand8 = daeLoadCopy(sand7);
+    // sand8.bones[0].position[position_Z] = 0.750001;
+    // let sand9 = daeLoadCopy(sand7);
+    // sand9.bones[0].position[position_Z] = 1.50001;
+    sandLoadPack.bones[0].position[position_Z] = -0.001;
+    sand7.bones[0].position[position_Z] = -0.001;
 
-
-    sands.push(sand2);
-    sands.push(sand3);
+    sands.push(sandLoadPack);
+    // sands.push(sand2);
+    // sands.push(sand3);
     sands.push(sand4);
-    sands.push(sand5);
-    sands.push(sand6);
+    // sands.push(sand5);
+    // sands.push(sand6);
     sands.push(sand7);
-    sands.push(sand8);
-    sands.push(sand9);
+    // sands.push(sand8);
+    // sands.push(sand9);
 
     sandLoad = true;
   }
@@ -1457,12 +1466,12 @@ if(dataLoad == false){
     cube1LoadPack.textureImage = cubePixelImage;
     cube1LoadPack.backCullingFlag = false;
     cube1LoadPack.shadowFlag = false;
-    cube1LoadPack.bones.position[position_Y] = -3.5;
-    // cube1LoadPack.bones.position[position_Z] = 1;
-    cube1LoadPack.bones.rotXYZ[scale_X] = 90;
-    cube1LoadPack.bones.scaleXYZ[scale_X] = 48;//*2
-    cube1LoadPack.bones.scaleXYZ[scale_Y] = 24;
-    cube1LoadPack.bones.scaleXYZ[scale_Z] = 24;
+    cube1LoadPack.bones[0].position[position_Y] = -3.5;
+    // cube1LoadPack.bones[0].position[position_Z] = 1;
+    cube1LoadPack.bones[0].rotXYZ[scale_X] = 90;
+    cube1LoadPack.bones[0].scaleXYZ[scale_X] = 48;//*2
+    cube1LoadPack.bones[0].scaleXYZ[scale_Y] = 24;
+    cube1LoadPack.bones[0].scaleXYZ[scale_Z] = 24;
     culUVVector(cube1LoadPack);
     dices.push(cube1LoadPack);
     cube1Load = true;
@@ -1471,11 +1480,11 @@ if(dataLoad == false){
     sphere1LoadPack.textureImage = cubePixelImage;
     sphere1LoadPack.backCullingFlag = false;
     sphere1LoadPack.shadowFlag = true;
-    sphere1LoadPack.bones.position[position_Y] = -1;
-    sphere1LoadPack.bones.position[position_Z] = 1.5;
-    sphere1LoadPack.bones.scaleXYZ[scale_X] = 2;
-    // sphere1LoadPack.bones.scaleXYZ[scale_Y] = 10;
-    // sphere1LoadPack.bones.scaleXYZ[scale_Z] = 10;
+    sphere1LoadPack.bones[0].position[position_Y] = -1;
+    sphere1LoadPack.bones[0].position[position_Z] = 1.5;
+    sphere1LoadPack.bones[0].scaleXYZ[scale_X] = 2;
+    // sphere1LoadPack.bones[0].scaleXYZ[scale_Y] = 10;
+    // sphere1LoadPack.bones[0].scaleXYZ[scale_Z] = 10;
     culUVVector(sphere1LoadPack)
     dices.push(sphere1LoadPack) 
     sphere1Load = true;
@@ -1602,7 +1611,7 @@ for(let j=0;j<steves_length;j++){
     currentStave.bones[i].skinmeshBone = null;
   }
 }
-steves[0].bones[0].position = setVector3(0.5,0,0);
+steves[0].bones[0].position = setVector3(0.0,0,0);
 steves[1].bones[0].position = setVector3(-0.5,0,0.5);
 // steves[0].bones[0].rotXYZ = setVector3(0,0,0);
 
@@ -1700,6 +1709,15 @@ for(let i in steves){
 
   viewMatrix = matCamera(cameraPos,lookat,up);
   matRound4X4(viewMatrix);
+  let cameraVec = vecMinus(cameraPos,sands[0].bones[0].position);
+  let length = cul3dVecLength(cameraVec);
+  console.log(length);
+  cameraVec = vecMinus(cameraPos,sands[1].bones[0].position);
+  length = cul3dVecLength(cameraVec);
+  let cameraSort = [];
+  cameraSort.push(sands[0]);
+  cameraSort.push(sands[1]);
+  console.log(length);
 
   inverseViewMatrix = CalInvMat4x4(viewMatrix);
   matRound4X4(inverseViewMatrix);
@@ -1719,20 +1737,20 @@ for(let i in steves){
   //dicesregister
   for(let object of dices){
     // let worldMatrix = matIdentity();
-    // mulMatTranslate(worldMatrix,object.bones.position[position_X],object.bones.position[position_Y],object.bones.position[position_Z]);  
-    // mulMatRotateX(worldMatrix,object.bones.rotXYZ[rot_X]);
-    // mulMatRotateY(worldMatrix,object.bones.rotXYZ[rot_Y]);
-    // mulMatRotateZ(worldMatrix,object.bones.rotXYZ[rot_Z]); 
-    // mulMatScaling(worldMatrix,object.bones.scaleXYZ[scale_X],object.bones.scaleXYZ[scale_Y],object.bones.scaleXYZ[scale_Z]);
+    // mulMatTranslate(worldMatrix,object.bones[0].position[position_X],object.bones[0].position[position_Y],object.bones[0].position[position_Z]);  
+    // mulMatRotateX(worldMatrix,object.bones[0].rotXYZ[rot_X]);
+    // mulMatRotateY(worldMatrix,object.bones[0].rotXYZ[rot_Y]);
+    // mulMatRotateZ(worldMatrix,object.bones[0].rotXYZ[rot_Z]); 
+    // mulMatScaling(worldMatrix,object.bones[0].scaleXYZ[scale_X],object.bones[0].scaleXYZ[scale_Y],object.bones[0].scaleXYZ[scale_Z]);
     let worldTranslation = {};
-    worldTranslation.quaternion = quaternionXYZRoll(object.bones.rotXYZ[0],object.bones.rotXYZ[1],object.bones.rotXYZ[2]);
-    worldTranslation.position = object.bones.position;
-    worldTranslation.scaleXYZ = object.bones.scaleXYZ;
-    objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    worldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
+    worldTranslation.position = object.bones[0].position;
+    worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
+    //objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   //steve
   for(let object of steves){
-    objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    //objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
 	}
 	// //planesregister
   // for(let object of planes){
@@ -1750,15 +1768,15 @@ for(let i in steves){
   // }
   for(let object of sands){
     // let worldMatrix = matIdentity();
-    // mulMatTranslate(worldMatrix,object.bones.position[position_X],object.bones.position[position_Y],object.bones.position[position_Z]);  
-    // mulMatRotateX(worldMatrix,object.bones.rotXYZ[rot_X]);
-    // mulMatRotateY(worldMatrix,object.bones.rotXYZ[rot_Y]);
-    // mulMatRotateZ(worldMatrix,object.bones.rotXYZ[rot_Z]); 
-    // mulMatScaling(worldMatrix,object.bones.scaleXYZ[scale_X],object.bones.scaleXYZ[scale_Y],object.bones.scaleXYZ[scale_Z]);
+    // mulMatTranslate(worldMatrix,object.bones[0].position[position_X],object.bones[0].position[position_Y],object.bones[0].position[position_Z]);  
+    // mulMatRotateX(worldMatrix,object.bones[0].rotXYZ[rot_X]);
+    // mulMatRotateY(worldMatrix,object.bones[0].rotXYZ[rot_Y]);
+    // mulMatRotateZ(worldMatrix,object.bones[0].rotXYZ[rot_Z]); 
+    // mulMatScaling(worldMatrix,object.bones[0].scaleXYZ[scale_X],object.bones[0].scaleXYZ[scale_Y],object.bones[0].scaleXYZ[scale_Z]);
     let worldTranslation = {};
-    worldTranslation.quaternion = quaternionXYZRoll(object.bones.rotXYZ[0],object.bones.rotXYZ[1],object.bones.rotXYZ[2]);
-    worldTranslation.position = object.bones.position;
-    worldTranslation.scaleXYZ = object.bones.scaleXYZ;
+    worldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
+    worldTranslation.position = object.bones[0].position;
+    worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
     objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   /*
