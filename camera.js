@@ -455,9 +455,9 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(-0.1,-1,-4);
+let cameraPos = setVector3(0.6,-1.6,-4);
 let lookat = setVector3(0.0,-1,1);
-let sunPos = setVector3(0,-3,-2);
+let sunPos = setVector3(-2,0,-2);
 let sunLookat = setVector3(0.0,-0.0,0);
 let up = setVector3(0,1,0);
 let lookatIndex = 0;
@@ -812,7 +812,7 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   }
 
   //ｚソート
-  objectZsort(projectedObjects,object,poly);
+  projectedObjects.push(makeProjectedObject(object,poly));
   objectShadowZsort(shadowPprojectedObjects,object,shadowPoly);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
@@ -1009,7 +1009,7 @@ skyImage.addEventListener("load", function() {
 //box
 let cubes = [];
 let cubeImage = new Image();
-cubeImage.src = 'sky.jpg';
+cubeImage.src = 'sky.png';
 
 let cubePixelImage = [];
 
@@ -1427,7 +1427,6 @@ if(dataLoad == false){
     let bones = [];
     sandLoadPack.bones[0].position[position_Y] = 0.5;
 
-
     //一個0.75の大きさ
     culUVVector(sandLoadPack);
 
@@ -1436,19 +1435,22 @@ if(dataLoad == false){
     // let sand3 = daeLoadCopy(sandLoadPack);
     // sand3.bones[0].position[position_Z] = 1.5;
     let sand4 = daeLoadCopy(sandLoadPack);
-    sand4.bones[0].position[position_X] = -0.750001;
+    sand4.bones[0].position[position_X] = -0.750;
+
     // let sand5 = daeLoadCopy(sand4);
     // sand5.bones[0].position[position_Z] = 0.750001;
     // let sand6 = daeLoadCopy(sand4);
     // sand6.bones[0].position[position_Z] = 1.50001;
     let sand7 = daeLoadCopy(sandLoadPack);
-    sand7.bones[0].position[position_X] = 0.750001;
+    sand7.bones[0].position[position_X] = 0.750;
+    sand7.bones[0].position[position_Z] = -0.000;
+
     // let sand8 = daeLoadCopy(sand7);
     // sand8.bones[0].position[position_Z] = 0.750001;
     // let sand9 = daeLoadCopy(sand7);
     // sand9.bones[0].position[position_Z] = 1.50001;
     sandLoadPack.bones[0].position[position_Z] = -0.001;
-    sand7.bones[0].position[position_Z] = -0.001;
+    // sand7.bones[0].position[position_Z] = -0.002;
 
     sands.push(sandLoadPack);
     // sands.push(sand2);
@@ -1459,7 +1461,7 @@ if(dataLoad == false){
     sands.push(sand7);
     // sands.push(sand8);
     // sands.push(sand9);
-
+    
     sandLoad = true;
   }
   if(cubePixelImageLoad == true && cube1LoadPack.daeLoad == true && cube1Load == false){
@@ -1709,15 +1711,35 @@ for(let i in steves){
 
   viewMatrix = matCamera(cameraPos,lookat,up);
   matRound4X4(viewMatrix);
-  let cameraVec = vecMinus(cameraPos,sands[0].bones[0].position);
-  let length = cul3dVecLength(cameraVec);
-  console.log(length);
-  cameraVec = vecMinus(cameraPos,sands[1].bones[0].position);
-  length = cul3dVecLength(cameraVec);
   let cameraSort = [];
-  cameraSort.push(sands[0]);
-  cameraSort.push(sands[1]);
-  console.log(length);
+  let current = 0;
+  if(cameraSort.length == 0){
+    let cameraVec = vecMinus(cameraPos,sands[current].bones[0].position);
+    let length = cul3dVecLength(cameraVec);
+    cameraSort[0] = sands[current];
+    cameraSort[0].cameraLength = length;
+    current++;
+  }
+  for(;current<sands.length;current++){
+    let cameraVec = vecMinus(cameraPos,sands[current].bones[0].position);
+    let length = cul3dVecLength(cameraVec);
+    let j=0;
+    for(;j<cameraSort.length;j++){
+      if(cameraSort[j].cameraLength>length){
+        let i=cameraSort.length;
+        for(;i>j;i--){
+          cameraSort[i] = cameraSort[i-1];
+        }
+        cameraSort[i] = sands[current];
+        cameraSort[i].cameraLength = length;
+        break;
+      }
+    }
+    if(j >= cameraSort.length){
+      cameraSort[j] = sands[current];
+      cameraSort[j].cameraLength = length;
+    }
+  }
 
   inverseViewMatrix = CalInvMat4x4(viewMatrix);
   matRound4X4(inverseViewMatrix);
@@ -1766,7 +1788,7 @@ for(let i in steves){
   //   worldTranslation.scaleXYZ = setVector3(object.scaleX,object.scaleY,object.scaleZ);
   //   objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   // }
-  for(let object of sands){
+  for(let object of cameraSort){
     // let worldMatrix = matIdentity();
     // mulMatTranslate(worldMatrix,object.bones[0].position[position_X],object.bones[0].position[position_Y],object.bones[0].position[position_Z]);  
     // mulMatRotateX(worldMatrix,object.bones[0].rotXYZ[rot_X]);
@@ -1777,7 +1799,7 @@ for(let i in steves){
     worldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
     worldTranslation.position = object.bones[0].position;
     worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
-    objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    //objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   /*
   lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
