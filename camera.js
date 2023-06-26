@@ -4,7 +4,7 @@ import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVec
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
-import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, UV_Vector, pixel_A, pixel_shadow_Flag, obj_Shadow_Flag } from './enum.js';
+import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, UV_Vector, pixel_A, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, pixel_LightShadow_Flag } from './enum.js';
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
 
@@ -50,6 +50,7 @@ function daeLoadCopy(daeLoadPack){
    copyDae.textureImage = daeLoadPack.textureImage;
    copyDae.backCullingFlag = daeLoadPack.backCullingFlag;
    copyDae.shadowFlag = daeLoadPack.shadowFlag;
+   copyDae.lightShadowFlag = daeLoadPack.lightShadowFlag;
    let bones = [];
    let boneContents = {};
    boneContents.position = daeLoadPack.bones[0].position.concat();
@@ -455,9 +456,9 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(0.6,-1.6,-4);
+let cameraPos = setVector3(0.0,-1.6,-4);
 let lookat = setVector3(0.0,-1,1);
-let sunPos = setVector3(-2,0,-2);
+let sunPos = setVector3(0,-3,-2);
 let sunLookat = setVector3(0.0,-0.0,0);
 let up = setVector3(0,1,0);
 let lookatIndex = 0;
@@ -609,6 +610,7 @@ function makeProjectedObject(orgObject,polyList){
   projectedObject[obj_BackCulling_Flag] = orgObject.backCullingFlag;
   projectedObject[obj_Image] = orgObject.textureImage;
   projectedObject[obj_Shadow_Flag] = orgObject.shadowFlag;
+  projectedObject[obj_LightShadow_Flag] = orgObject.lightShadowFlag;
 
   return projectedObject;
 }
@@ -1424,43 +1426,44 @@ if(dataLoad == false){
     sandLoadPack.textureImage = sandPixelImage;
     sandLoadPack.backCullingFlag = true;
     sandLoadPack.shadowFlag = true;
+    sandLoadPack.lightShadowFlag = false;
     let bones = [];
     sandLoadPack.bones[0].position[position_Y] = 0.5;
 
     //一個0.75の大きさ
     culUVVector(sandLoadPack);
 
-    // let sand2 = daeLoadCopy(sandLoadPack);
-    // sand2.bones[0].position[position_Z] = 0.75;
-    // let sand3 = daeLoadCopy(sandLoadPack);
-    // sand3.bones[0].position[position_Z] = 1.5;
+    let sand2 = daeLoadCopy(sandLoadPack);
+    sand2.bones[0].position[position_Z] = 0.75;
+    let sand3 = daeLoadCopy(sandLoadPack);
+    sand3.bones[0].position[position_Z] = 1.5;
     let sand4 = daeLoadCopy(sandLoadPack);
     sand4.bones[0].position[position_X] = -0.750;
 
-    // let sand5 = daeLoadCopy(sand4);
-    // sand5.bones[0].position[position_Z] = 0.750001;
-    // let sand6 = daeLoadCopy(sand4);
-    // sand6.bones[0].position[position_Z] = 1.50001;
+    let sand5 = daeLoadCopy(sand4);
+    sand5.bones[0].position[position_Z] = 0.750001;
+    let sand6 = daeLoadCopy(sand4);
+    sand6.bones[0].position[position_Z] = 1.50001;
     let sand7 = daeLoadCopy(sandLoadPack);
     sand7.bones[0].position[position_X] = 0.750;
     sand7.bones[0].position[position_Z] = -0.000;
 
-    // let sand8 = daeLoadCopy(sand7);
-    // sand8.bones[0].position[position_Z] = 0.750001;
-    // let sand9 = daeLoadCopy(sand7);
-    // sand9.bones[0].position[position_Z] = 1.50001;
+    let sand8 = daeLoadCopy(sand7);
+    sand8.bones[0].position[position_Z] = 0.750001;
+    let sand9 = daeLoadCopy(sand7);
+    sand9.bones[0].position[position_Z] = 1.50001;
     sandLoadPack.bones[0].position[position_Z] = -0.001;
-    // sand7.bones[0].position[position_Z] = -0.002;
+    sand7.bones[0].position[position_Z] = -0.002;
 
     sands.push(sandLoadPack);
-    // sands.push(sand2);
-    // sands.push(sand3);
+    sands.push(sand2);
+    sands.push(sand3);
     sands.push(sand4);
-    // sands.push(sand5);
-    // sands.push(sand6);
+    sands.push(sand5);
+    sands.push(sand6);
     sands.push(sand7);
-    // sands.push(sand8);
-    // sands.push(sand9);
+    sands.push(sand8);
+    sands.push(sand9);
     
     sandLoad = true;
   }
@@ -1468,6 +1471,7 @@ if(dataLoad == false){
     cube1LoadPack.textureImage = cubePixelImage;
     cube1LoadPack.backCullingFlag = false;
     cube1LoadPack.shadowFlag = false;
+    cube1LoadPack.lightShadowFlag = false;
     cube1LoadPack.bones[0].position[position_Y] = -3.5;
     // cube1LoadPack.bones[0].position[position_Z] = 1;
     cube1LoadPack.bones[0].rotXYZ[scale_X] = 90;
@@ -1482,6 +1486,7 @@ if(dataLoad == false){
     sphere1LoadPack.textureImage = cubePixelImage;
     sphere1LoadPack.backCullingFlag = false;
     sphere1LoadPack.shadowFlag = true;
+    sphere1LoadPack.lightShadowFlag = true;
     sphere1LoadPack.bones[0].position[position_Y] = -1;
     sphere1LoadPack.bones[0].position[position_Z] = 1.5;
     sphere1LoadPack.bones[0].scaleXYZ[scale_X] = 2;
@@ -1495,6 +1500,7 @@ if(dataLoad == false){
     steve1LoadPack.textureImage = dicePixelImage;
     steve1LoadPack.backCullingFlag = true;
     steve1LoadPack.shadowFlag = true;
+    steve1LoadPack.lightShadowFlag = true;
     culUVVector(steve1LoadPack)
     steves.push(steve1LoadPack);
     for(let i=0;i<steves[0].bones.length;i++){
@@ -1529,6 +1535,7 @@ if(dataLoad == false){
     steve2LoadPack.textureImage = dicePixelImage;
     steve2LoadPack.backCullingFlag = true;
     steve2LoadPack.shadowFlag = true;
+    steve2LoadPack.lightShadowFlag = true;
     culUVVector(steve2LoadPack)
     steves.push(steve2LoadPack); 
     steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
@@ -1768,11 +1775,11 @@ for(let i in steves){
     worldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
     worldTranslation.position = object.bones[0].position;
     worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
-    //objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   //steve
   for(let object of steves){
-    //objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
 	}
 	// //planesregister
   // for(let object of planes){
@@ -1834,12 +1841,12 @@ for(let j=0;j<projectedObjectsLength;j++){
 	  if(currentProjectedObject[obj_BackCulling_Flag] == true){
       if(currentProjectedObject[poly_List][projectedPolyNum][cross_Z]<0){
         triangleToBuffer(zBuffering,currentProjectedObject[obj_Image],currentProjectedObject[poly_List][projectedPolyNum][projected_Verts],currentProjectedObject[poly_List][projectedPolyNum][poly_Cross_World_Vector3],
-            currentProjectedObject[poly_List][projectedPolyNum][UV_Vector],sunVec,currentProjectedObject[obj_Shadow_Flag]
+            currentProjectedObject[poly_List][projectedPolyNum][UV_Vector],sunVec,currentProjectedObject[obj_Shadow_Flag],currentProjectedObject[obj_LightShadow_Flag]
            ,screen_size_h,screen_size_w);
 	    } 
 	  }else{
       triangleToBuffer(zBuffering,currentProjectedObject[obj_Image],currentProjectedObject[poly_List][projectedPolyNum][projected_Verts],currentProjectedObject[poly_List][projectedPolyNum][poly_Cross_World_Vector3],
-        currentProjectedObject[poly_List][projectedPolyNum][UV_Vector],sunVec,currentProjectedObject[obj_Shadow_Flag]
+        currentProjectedObject[poly_List][projectedPolyNum][UV_Vector],sunVec,currentProjectedObject[obj_Shadow_Flag],currentProjectedObject[obj_LightShadow_Flag]
        ,screen_size_h,screen_size_w);
 	  }
   }  
@@ -1925,22 +1932,24 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         */
         if(shadowMatrixPixelY>0 && shadowMatrixPixelY<screen_size_h){
           if(shadowMatrixPixelX>0 && shadowMatrixPixelX<screen_size_w){ 
-            if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.2<pixelZ){
+            if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.5<pixelZ){
               pixelR *= 0.5;
               pixelG *= 0.5;
               pixelB *= 0.5;	
             }
           }
         }
-        //ライトシミュレーション
-        let sunCosin = pixel[pixel_SunCosin];
-        pixelR *= sunCosin;
-        pixelG *= sunCosin;
-        pixelB *= sunCosin; 
+        if(pixel[pixel_LightShadow_Flag] == true){
+          //ライトシミュレーション
+          let sunCosin = pixel[pixel_SunCosin];
+          pixelR *= sunCosin;
+          pixelG *= sunCosin;
+          pixelB *= sunCosin; 
+        }
         myImageData.data[base.r] = pixelR;  // Red
         myImageData.data[base.g] = pixelG;  // Green
         myImageData.data[base.b] = pixelB;  // Blue
-        myImageData.data[base.a] = 255; // Alpha
+        myImageData.data[base.a] = 255; // Alpha  
       }else{
         myImageData.data[base.r] = pixel[pixel_R];  // Red
         myImageData.data[base.g] = pixel[pixel_G];  // Green

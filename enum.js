@@ -4,7 +4,8 @@ export const pixel_G = 2;
 export const pixel_B = 3;
 export const pixel_A = 4;
 export const pixel_shadow_Flag = 5;
-export const pixel_SunCosin = 6;
+export const pixel_LightShadow_Flag = 6;
+export const pixel_SunCosin = 7;
 
 export const position_X = 0;
 export const position_Y = 1;
@@ -29,6 +30,7 @@ export const poly_List = 0;
 export const obj_BackCulling_Flag = 1;
 export const obj_Image = 2;
 export const obj_Shadow_Flag = 3;
+export const obj_LightShadow_Flag = 4;
 
 
 //paint
