@@ -51,14 +51,33 @@ function daeLoadCopy(daeLoadPack){
    copyDae.backCullingFlag = daeLoadPack.backCullingFlag;
    copyDae.shadowFlag = daeLoadPack.shadowFlag;
    copyDae.lightShadowFlag = daeLoadPack.lightShadowFlag;
-   let bones = [];
-   let boneContents = {};
-   boneContents.position = daeLoadPack.bones[0].position.concat();
-   boneContents.rotXYZ = daeLoadPack.bones[0].rotXYZ.concat();
-   boneContents.scaleXYZ = daeLoadPack.bones[0].scaleXYZ.concat();
-   bones.push(boneContents);
-   copyDae.bones = bones;
    copyDae.UVVector = daeLoadPack.UVVector.concat();//concat?
+   copyDae.armatures = daeLoadPack.armatures;
+   if(daeLoadPack.armatures == true){
+    copyDae.bonesNameList = daeLoadPack.bonesNameList;//いるかな？
+    copyDae.bindPosePack = daeLoadPack.bindPosePack;
+    copyDae.blendBoneIndex = daeLoadPack.blendBoneIndex;
+    copyDae.bonesWeight  = daeLoadPack.bonesWeight;
+    copyDae.boneParentRelation  = daeLoadPack.boneParentRelation;
+    let bones = [];
+    for(let i in daeLoadPack.bones){
+      let boneContents = {};
+      boneContents.skinmeshBone = null;
+      boneContents.position = daeLoadPack.bones[i].position.concat();
+      boneContents.rotXYZ = daeLoadPack.bones[i].rotXYZ.concat();
+      boneContents.scaleXYZ = daeLoadPack.bones[i].scaleXYZ.concat();
+      bones.push(boneContents);
+    }
+    copyDae.bones = bones;
+   }else{
+    let bones = [];
+    let boneContents = {};
+    boneContents.position = daeLoadPack.bones[0].position.concat();
+    boneContents.rotXYZ = daeLoadPack.bones[0].rotXYZ.concat();
+    boneContents.scaleXYZ = daeLoadPack.bones[0].scaleXYZ.concat();
+    bones.push(boneContents);
+    copyDae.bones = bones;
+   }
    return copyDae;
 }
 
@@ -224,6 +243,7 @@ function daeLoader(fileName,daeLoadPack){
           faceIndexMeshUV.push(tempMeshUV);
         }
         daeLoadPack.faceIndexMeshUV = faceIndexMeshUV;
+        daeLoadPack.armatures = false;
         //armature
         let armatures = docelem.getElementsByTagName("library_controllers");
         if(armatures.length != 0){
@@ -1502,6 +1522,7 @@ if(dataLoad == false){
     steve1LoadPack.shadowFlag = true;
     steve1LoadPack.lightShadowFlag = true;
     culUVVector(steve1LoadPack)
+    let steve2 = daeLoadCopy(steve1LoadPack);
     steves.push(steve1LoadPack);
     for(let i=0;i<steves[0].bones.length;i++){
       steves[0].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
@@ -1529,17 +1550,8 @@ if(dataLoad == false){
     steves[0].bones[11].quaternion[1] = quaternionXYZRoll(-80,0,0);
     steves[0].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0);
 
-    steve1Load = true;
-  }
-  if(dicePixelImageLoad == true && steve2LoadPack.daeLoad == true && steve1Load == true && steve2Load == false){
-    steve2LoadPack.textureImage = dicePixelImage;
-    steve2LoadPack.backCullingFlag = true;
-    steve2LoadPack.shadowFlag = true;
-    steve2LoadPack.lightShadowFlag = true;
-    culUVVector(steve2LoadPack)
-    steves.push(steve2LoadPack); 
+    steves.push(steve2);
     steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
-
     for(let i=0;i<steves[1].bones.length;i++){
       steves[1].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
       steves[1].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
@@ -1565,6 +1577,43 @@ if(dataLoad == false){
     steves[1].bones[10].quaternion[1] = quaternionXYZRoll(0,0,80);
     steves[1].bones[11].quaternion[1] = quaternionXYZRoll(-80,0,0);
     steves[1].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0);
+
+    steve1Load = true;
+  }
+  if(dicePixelImageLoad == true && steve2LoadPack.daeLoad == true && steve1Load == true && steve2Load == false){
+    // steve2LoadPack.textureImage = dicePixelImage;
+    // steve2LoadPack.backCullingFlag = true;
+    // steve2LoadPack.shadowFlag = true;
+    // steve2LoadPack.lightShadowFlag = true;
+    // culUVVector(steve2LoadPack)
+    // steves.push(steve2LoadPack); 
+    // steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
+
+    // for(let i=0;i<steves[1].bones.length;i++){
+    //   steves[1].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
+    //   steves[1].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
+    //   steves[1].bones[i].quaternion = [];
+    //   steves[1].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
+    //   steves[1].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
+    //   steves[1].bones[i].quaternionTime = [];
+    //   steves[1].bones[i].quaternionTime.push(0);
+    //   steves[1].bones[i].quaternionTime.push(1);
+    //   steves[1].bones[i].currentTime = 0;
+
+    // }
+    // steves[1].bones[4].afterQuaternion = quaternionXYZRoll(0,0,80);
+    // steves[1].bones[6].afterQuaternion = quaternionXYZRoll(0,0,-80);
+    // steves[1].bones[8].afterQuaternion = quaternionXYZRoll(0,0,-80);
+    // steves[1].bones[10].afterQuaternion = quaternionXYZRoll(0,0,80);
+    // steves[1].bones[11].afterQuaternion = quaternionXYZRoll(-80,0,0);
+    // steves[1].bones[12].afterQuaternion = quaternionXYZRoll(80,0,0);
+
+    // steves[1].bones[4].quaternion[1] = quaternionXYZRoll(0,0,80);
+    // steves[1].bones[6].quaternion[1] = quaternionXYZRoll(0,0,-80);
+    // steves[1].bones[8].quaternion[1] = quaternionXYZRoll(0,0,-80);
+    // steves[1].bones[10].quaternion[1] = quaternionXYZRoll(0,0,80);
+    // steves[1].bones[11].quaternion[1] = quaternionXYZRoll(-80,0,0);
+    // steves[1].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0);
     steve2Load = true;
   }
   if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load && steve2Load && cube1Load && sandLoad){
