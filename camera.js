@@ -32,13 +32,10 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,bonesNam
 }
 
 let steve1LoadPack = {};
-let steve2LoadPack = {};
 let cube1LoadPack = {};
 let sphere1LoadPack = {};
 let sandLoadPack = {};
 daeLoader("dice3.dae",steve1LoadPack);
-daeLoader("dice3.dae",steve2LoadPack);
-daeLoader("sphere.dae",cube1LoadPack);
 daeLoader("sphere.dae",sphere1LoadPack);
 daeLoader("sand.dae",sandLoadPack);
 
@@ -1000,21 +997,28 @@ function vertsCulAABBMaxMinCenter(orgObject,worldMatrix,offsetX,offsetY,offsetZ)
   return maxminCenterObject;
 }
 //blenderLoad
-let monkeys = [];
-let a = [];
-let monkeysImage = new Image();
-monkeysImage.src = 'box.jpg';
-let monkeyPixelImage = [];
-let monkeyLoad = [];
-let monkeyLoad1 = [];
-monkeysImage.addEventListener("load", function() {
-	monkeyPixelImage = pictureToPixelMap(backCtx,monkeysImage);
-	let monkeyVerts = {};
-  monkeyVerts.vertsPosition = [];
-	monkeys.push(new Object(monkeyVerts,0.0,-0.6,0,180,0,0,0.5,0.5,0.5,0,false,true,monkeyPixelImage));
-	monkeyLoad.push(new ModelLoadData(monkeys[0]));
-	monkeyLoad[0].JSONLoader("cube.json", (() => monkeyLoad[0].onJSONLoaded()));	
+let blueImage = new Image();
+blueImage.src = 'box.jpg';
+let bluePixelImage = [];
+blueImage.addEventListener("load", function() {
+	bluePixelImage = pictureToPixelMap(backCtx,blueImage);
 }, true);	
+
+//blenderLoad
+// let monkeys = [];
+// let monkeysImage = new Image();
+// monkeysImage.src = 'box.jpg';
+// let monkeyPixelImage = [];
+// let monkeyLoad = [];
+// let monkeyLoad1 = [];
+// monkeysImage.addEventListener("load", function() {
+// 	monkeyPixelImage = pictureToPixelMap(backCtx,monkeysImage);
+// 	let monkeyVerts = {};
+//   monkeyVerts.vertsPosition = [];
+// 	monkeys.push(new Object(monkeyVerts,0.0,-0.6,0,180,0,0,0.5,0.5,0.5,0,false,true,monkeyPixelImage));
+// 	monkeyLoad.push(new ModelLoadData(monkeys[0]));
+// 	monkeyLoad[0].JSONLoader("cube.json", (() => monkeyLoad[0].onJSONLoaded()));	
+// }, true);	
 //sky
 let sphereVerts8 = makeSphereVerts(16,10);
 let spheres = [];
@@ -1027,6 +1031,7 @@ skyImage.addEventListener("load", function() {
 	skyPixelImage = pictureToPixelMap(backCtx,skyImage);
 	//spheres.push(new Object(sphereVerts8,0.0,0.0,5,0,0,0,16,true,false,skyPixelImage));
 }, true);
+
 
 //box
 let cubes = [];
@@ -1383,8 +1388,6 @@ let roadPixelImageLoad = false;
 let sandPixelImageLoad = false;
 let dicePixelImageLoad = false;
 let steve1Load = false;
-let steve2Load = false;
-let cube1Load = false;
 let sphere1Load = false;
 let sandLoad = false;
 let sands = [];
@@ -1487,33 +1490,32 @@ if(dataLoad == false){
     
     sandLoad = true;
   }
-  if(cubePixelImageLoad == true && cube1LoadPack.daeLoad == true && cube1Load == false){
-    cube1LoadPack.textureImage = cubePixelImage;
-    cube1LoadPack.backCullingFlag = false;
-    cube1LoadPack.shadowFlag = false;
-    cube1LoadPack.lightShadowFlag = false;
-    cube1LoadPack.bones[0].position[position_Y] = -3.5;
-    // cube1LoadPack.bones[0].position[position_Z] = 1;
-    cube1LoadPack.bones[0].rotXYZ[scale_X] = 90;
-    cube1LoadPack.bones[0].scaleXYZ[scale_X] = 48;//*2
-    cube1LoadPack.bones[0].scaleXYZ[scale_Y] = 24;
-    cube1LoadPack.bones[0].scaleXYZ[scale_Z] = 24;
-    culUVVector(cube1LoadPack);
-    dices.push(cube1LoadPack);
-    cube1Load = true;
-  }
-  if(cubePixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
-    sphere1LoadPack.textureImage = cubePixelImage;
-    sphere1LoadPack.backCullingFlag = false;
+  if(skyPixelImageLoad = true && cubePixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
+    sphere1LoadPack.textureImage = skyPixelImage;
+    sphere1LoadPack.backCullingFlag = true;
     sphere1LoadPack.shadowFlag = true;
     sphere1LoadPack.lightShadowFlag = true;
     sphere1LoadPack.bones[0].position[position_Y] = -1;
     sphere1LoadPack.bones[0].position[position_Z] = 1.5;
     sphere1LoadPack.bones[0].scaleXYZ[scale_X] = 2;
+    sphere1LoadPack.bones[0].scaleXYZ[scale_X] = 1.5;
     // sphere1LoadPack.bones[0].scaleXYZ[scale_Y] = 10;
     // sphere1LoadPack.bones[0].scaleXYZ[scale_Z] = 10;
     culUVVector(sphere1LoadPack)
-    dices.push(sphere1LoadPack) 
+    dices.push(sphere1LoadPack);
+    let sphere2 = daeLoadCopy(sphere1LoadPack);
+    sphere2.textureImage = cubePixelImage;
+    sphere2.backCullingFlag = false;
+    sphere2.shadowFlag = false;
+    sphere2.lightShadowFlag = false;
+    sphere2.bones[0].position[position_Y] = -3.5;
+    // sphere2.bones[0].position[position_Z] = 1;
+    sphere2.bones[0].rotXYZ[scale_X] = 90;
+    sphere2.bones[0].scaleXYZ[scale_X] = 48;//*2
+    sphere2.bones[0].scaleXYZ[scale_Y] = 24;
+    sphere2.bones[0].scaleXYZ[scale_Z] = 24;
+    culUVVector(sphere2);
+    dices.push(sphere2);
     sphere1Load = true;
   }
   if(dicePixelImageLoad == true && steve1LoadPack.daeLoad == true && steve1Load == false){
@@ -1580,43 +1582,7 @@ if(dataLoad == false){
 
     steve1Load = true;
   }
-  if(dicePixelImageLoad == true && steve2LoadPack.daeLoad == true && steve1Load == true && steve2Load == false){
-    // steve2LoadPack.textureImage = dicePixelImage;
-    // steve2LoadPack.backCullingFlag = true;
-    // steve2LoadPack.shadowFlag = true;
-    // steve2LoadPack.lightShadowFlag = true;
-    // culUVVector(steve2LoadPack)
-    // steves.push(steve2LoadPack); 
-    // steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
-
-    // for(let i=0;i<steves[1].bones.length;i++){
-    //   steves[1].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
-    //   steves[1].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
-    //   steves[1].bones[i].quaternion = [];
-    //   steves[1].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
-    //   steves[1].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
-    //   steves[1].bones[i].quaternionTime = [];
-    //   steves[1].bones[i].quaternionTime.push(0);
-    //   steves[1].bones[i].quaternionTime.push(1);
-    //   steves[1].bones[i].currentTime = 0;
-
-    // }
-    // steves[1].bones[4].afterQuaternion = quaternionXYZRoll(0,0,80);
-    // steves[1].bones[6].afterQuaternion = quaternionXYZRoll(0,0,-80);
-    // steves[1].bones[8].afterQuaternion = quaternionXYZRoll(0,0,-80);
-    // steves[1].bones[10].afterQuaternion = quaternionXYZRoll(0,0,80);
-    // steves[1].bones[11].afterQuaternion = quaternionXYZRoll(-80,0,0);
-    // steves[1].bones[12].afterQuaternion = quaternionXYZRoll(80,0,0);
-
-    // steves[1].bones[4].quaternion[1] = quaternionXYZRoll(0,0,80);
-    // steves[1].bones[6].quaternion[1] = quaternionXYZRoll(0,0,-80);
-    // steves[1].bones[8].quaternion[1] = quaternionXYZRoll(0,0,-80);
-    // steves[1].bones[10].quaternion[1] = quaternionXYZRoll(0,0,80);
-    // steves[1].bones[11].quaternion[1] = quaternionXYZRoll(-80,0,0);
-    // steves[1].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0);
-    steve2Load = true;
-  }
-  if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load && steve2Load && cube1Load && sandLoad){
+  if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load  && sphere1Load && sandLoad){
     dataLoad = true;
   }
   ctx.font = '50pt Arial';
