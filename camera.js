@@ -1498,7 +1498,7 @@ if(dataLoad == false){
     sphere1LoadPack.bones[0].position[position_Y] = -1;
     sphere1LoadPack.bones[0].position[position_Z] = 1.5;
     sphere1LoadPack.bones[0].scaleXYZ[scale_X] = 2;
-    sphere1LoadPack.bones[0].scaleXYZ[scale_X] = 1.5;
+    sphere1LoadPack.bones[0].scaleXYZ[scale_Y] = 1.5;
     // sphere1LoadPack.bones[0].scaleXYZ[scale_Y] = 10;
     // sphere1LoadPack.bones[0].scaleXYZ[scale_Z] = 10;
     culUVVector(sphere1LoadPack)
