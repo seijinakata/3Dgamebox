@@ -32,7 +32,6 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,bonesNam
 }
 
 let steve1LoadPack = {};
-let cube1LoadPack = {};
 let sphere1LoadPack = {};
 let sandLoadPack = {};
 daeLoader("dice3.dae",steve1LoadPack);
@@ -999,7 +998,7 @@ function vertsCulAABBMaxMinCenter(orgObject,worldMatrix,offsetX,offsetY,offsetZ)
 //blenderLoad
 let blueImage = new Image();
 blueImage.src = 'box.jpg';
-let bluePixelImage = [];
+let bluePixelImage = null;
 blueImage.addEventListener("load", function() {
 	bluePixelImage = pictureToPixelMap(backCtx,blueImage);
 }, true);	
@@ -1025,7 +1024,7 @@ let spheres = [];
 let skyImage = new Image();
 skyImage.src = 'sky.jpg';
 
-let skyPixelImage = [];
+let skyPixelImage = null;
 
 skyImage.addEventListener("load", function() {
 	skyPixelImage = pictureToPixelMap(backCtx,skyImage);
@@ -1038,7 +1037,7 @@ let cubes = [];
 let cubeImage = new Image();
 cubeImage.src = 'sky.png';
 
-let cubePixelImage = [];
+let cubePixelImage = null;
 
 let planeFaceIndex = [];
 //上面
@@ -1109,7 +1108,7 @@ let dices = [];
 let steves = [];
 let diceImage = new Image();
 diceImage.src = "steve.png";
-let dicePixelImage = [];
+let dicePixelImage = null;
 diceImage.addEventListener("load", function() {
   dicePixelImage = pictureToPixelMap(backCtx,diceImage);
 },true);
@@ -1146,7 +1145,7 @@ let planes = [];
 let roadImage = new Image();
 roadImage.src = 'road.png';
 
-let roadPixelImage = [];
+let roadPixelImage = null;
 
 roadImage.addEventListener("load", function() {
 	roadPixelImage = pictureToPixelMap(backCtx,roadImage);
@@ -1159,7 +1158,7 @@ roadImage.addEventListener("load", function() {
 let groundImage = new Image();
 groundImage.src = 'sand.jpg';
 
-let sandPixelImage = [];
+let sandPixelImage = null;
 
 groundImage.addEventListener("load", function() {
 	sandPixelImage = pictureToPixelMap(backCtx,groundImage);
@@ -1430,19 +1429,19 @@ let myImageData = ctx.createImageData(screen_size_w, screen_size_h);
 let mainLoopId = setInterval(function(){
 //dataLoad
 if(dataLoad == false){
-  if(skyPixelImage.length != 0 && skyPixelImageLoad == false){
+  if(skyPixelImage != null && skyPixelImageLoad == false){
     skyPixelImageLoad = true;
   }
-  if(cubePixelImage.length != 0 && cubePixelImageLoad == false){
+  if(cubePixelImage != null && cubePixelImageLoad == false){
     cubePixelImageLoad = true;
   }
-  if(roadPixelImage.length != 0 && roadPixelImageLoad == false){
+  if(roadPixelImage != null && roadPixelImageLoad == false){
     roadPixelImageLoad = true;
   }
-  if(sandPixelImage.length != 0 && sandPixelImageLoad == false){
+  if(sandPixelImage != null  && sandPixelImageLoad == false){
     sandPixelImageLoad = true;
   }
-  if(dicePixelImage.length != 0 && dicePixelImageLoad == false){
+  if(dicePixelImage != null && dicePixelImageLoad == false){
     dicePixelImageLoad = true;
   }
   if(sandPixelImageLoad == true && sandLoadPack.daeLoad == true && sandLoad == false){
@@ -1450,7 +1449,6 @@ if(dataLoad == false){
     sandLoadPack.backCullingFlag = true;
     sandLoadPack.shadowFlag = true;
     sandLoadPack.lightShadowFlag = false;
-    let bones = [];
     sandLoadPack.bones[0].position[position_Y] = 0.5;
 
     //一個0.75の大きさ
