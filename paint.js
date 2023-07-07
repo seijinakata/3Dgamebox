@@ -706,9 +706,9 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 	//横移動、transform関数のe
 
     //if(l<0)l=0;
-    if(screen_size_w<endX)endX=screen_size_w;
+    if(screen_size_w<=endX)endX=screen_size_w-1;
 	//ここでstartXがスクリーンを超えてるか判定できる。
-    if(startX<endX && endX>=0){
+    if(startX<=endX && endX>=0){
 		
         let zStep = endZ - startZ;
 		let xStep = endX - startX;
@@ -719,7 +719,7 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 		// tmpOrgy = y * iA[3] - e * iA[2] - f * iA[3];
 		// tmpOrgx = y * iA[1] - e * iA[0] - f * iA[1];
 		let zBufferingY = zBuffering[y];
-		for(let i= startX;i<endX;i++){
+		for(let i= startX;i<=endX;i++){
 			if(i>=0){
 			let z = zBufferingY[i][0];
 				if(z>startZ){
@@ -912,9 +912,9 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,t
 	//横移動、transform関数のe
 
     //if(l<0)l=0;
-    if(screen_size_w<endX)endX=screen_size_w;
+    if(screen_size_w<=endX)endX=screen_size_w-1;
 	//ここでstartXがスクリーンを超えてるか判定できる。
-    if(startX<endX && endX>=0){
+    if(startX<=endX && endX>=0){
 		
         let zStep = endZ - startZ;
 		let xStep = endX - startX;
@@ -925,7 +925,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,t
 		// tmpOrgy = y * iA[3] - e * iA[2] - f * iA[3];
 		// tmpOrgx = y * iA[1] - e * iA[0] - f * iA[1];
 		let zBufferingY = zBuffering[y];
-		for(let i= startX;i<endX;i++){
+		for(let i= startX;i<=endX;i++){
 			if(i>=0){
 			let z = zBufferingY[i][0];
 				if(z>startZ){

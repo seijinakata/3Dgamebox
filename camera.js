@@ -1488,7 +1488,7 @@ if(dataLoad == false){
     
     sandLoad = true;
   }
-  if(skyPixelImageLoad = true && cubePixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
+  if(skyPixelImageLoad == true && cubePixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
     sphere1LoadPack.textureImage = skyPixelImage;
     sphere1LoadPack.backCullingFlag = true;
     sphere1LoadPack.shadowFlag = true;
