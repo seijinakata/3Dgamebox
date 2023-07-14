@@ -433,8 +433,10 @@ function CalDetMat4x4(m)
 export function CalInvMat4x4(m)
 {
     let det = CalDetMat4x4(m);
+    //nullはしない
     if(det == 0){
-        return null;
+        m[0] += 1;
+        det = CalDetMat4x4(m);
     }
         let  inv_det = 1.0/det;
  
@@ -491,8 +493,11 @@ export function CalInvMat4x4(m,invm)
 export function getInvert2(_11,_12,_21,_22){
     //逆行列の公式 ad - bc の部分
     let  det = _11 * _22 - _12 * _21;
-    if (det == 0)
-      return null;
+    //nullにはしない
+    if (det == 0){
+    _11 += 1;
+    det = _11 * _22 - _12 * _21;
+    }
     let  inv_det = 1.0/det;
 
     //逆行列の公式 det=(ad - bc) で各値(a,b,c,d)を割る
