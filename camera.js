@@ -34,6 +34,8 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,bonesNam
 let steve1LoadPack = {};
 let sphere1LoadPack = {};
 let sandLoadPack = {};
+let carLoadPack = {};
+daeLoader("car.dae",carLoadPack);
 daeLoader("dice3.dae",steve1LoadPack);
 daeLoader("sphere.dae",sphere1LoadPack);
 daeLoader("sand.dae",sandLoadPack);
@@ -1206,34 +1208,15 @@ function QuaternionMul(a,b)
       a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
   );
 }
-function subQuaternionMulVector3(a,b)
-{
-  // QuaternionとVector3の積の計算出力Quaternionは必ずW=0になるらしいので消す。
-  return setVector3(
-      a[3] * b[0] - a[2] * b[1] + a[1] * b[2],
-      a[2] * b[0] + a[3] * b[1] - a[0] * b[2],
-      -(a[1] * b[0]) + a[0] * b[1] + a[3] * b[2],
-  );
-}
-function subVector3MulQuaternion(a,b)
-{
-  // QuaternionとVector3の積の計算出力Quaternionは必ずW=0になるらしいので消す。
-  return setVector3(
-      a[0] * b[3] - a[2] * b[1] + a[1] * b[2],
-      a[1] * b[3] + a[2] * b[0] - a[0] * b[2],
-      a[2] * b[3] - a[1] * b[0] + a[0] * b[1],
-  );
-}
+
 function Vector3QuaternionMul(a,b){
-  // ベクトルをQuaternionに変換w=0でもいいらしいので無視する。 q * p * q^-1 でベクトルを回転。w=0の場合、その後の計算はすべでw=0になるらしい。
-  let bQuaternion = setVector3(b[0], b[1], b[2]);
+  let bQuaternion = Quaternion(b[0], b[1], b[2],0);
   //同じクォータニオンでもp(b)が元の頂点、q(a)が回転させたい軸、出力が回転させた結果
   let aConjugated = Conjugated(a[0],a[1],a[2],a[3]);
-  let abVector3 = subQuaternionMulVector3(a,bQuaternion);
-  var pos = subVector3MulQuaternion(abVector3,aConjugated);
+  let abVector3 = QuaternionMul(a,bQuaternion);
+  var pos = QuaternionMul(abVector3,aConjugated);
   return setVector3(pos[0], pos[1], pos[2]);
 }
-
 /// 回転角度と回転軸からQuaternionを作成する
 function QuaternionAngleAxis(angle,axis){
   let  halfRad = top_int(angle * 0.5);
@@ -1386,10 +1369,12 @@ let cubePixelImageLoad = false;
 let roadPixelImageLoad = false;
 let sandPixelImageLoad = false;
 let dicePixelImageLoad = false;
+let carLoad = false;
 let steve1Load = false;
 let sphere1Load = false;
 let sandLoad = false;
 let sands = [];
+let cars = [];
 const screen_size_h = SCREEN_SIZE_H;
 const screen_size_w = SCREEN_SIZE_W;
 
@@ -1475,7 +1460,12 @@ if(dataLoad == false){
     sand9.bones[0].position[position_Z] = 1.50001;
     sandLoadPack.bones[0].position[position_Z] = -0.001;
     sand7.bones[0].position[position_Z] = -0.002;
-
+    let sand10 = daeLoadCopy(sandLoadPack);
+    sand10.bones[0].position[position_Y] = -1;
+    sand10.bones[0].position[position_Z] = 0.65;
+    sand10.bones[0].scaleXYZ[scale_X] = 2;
+    sand10.bones[0].scaleXYZ[scale_Y] = 3;
+    sand10.lightShadowFlag = true;
     sands.push(sandLoadPack);
     sands.push(sand2);
     sands.push(sand3);
@@ -1485,8 +1475,27 @@ if(dataLoad == false){
     sands.push(sand7);
     sands.push(sand8);
     sands.push(sand9);
+    //sands.push(sand10);
     
     sandLoad = true;
+  }
+  if(skyPixelImageLoad == true && carLoadPack.daeLoad == true){
+    carLoadPack.textureImage = skyPixelImage;
+    carLoadPack.backCullingFlag = true;
+    carLoadPack.shadowFlag = true;
+    carLoadPack.lightShadowFlag = true;
+    carLoadPack.bones[0].position[position_Y] = 0;
+    carLoadPack.bones[0].position[position_Z] = 1.5;
+    carLoadPack.bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
+
+    carLoadPack.bones[0].rotXYZ[scale_Z] = 90;
+    carLoadPack.bones[0].rotXYZ[scale_X] = 90;    
+    
+    // sphere1LoadPack.bones[0].scaleXYZ[scale_Y] = 10;
+    // sphere1LoadPack.bones[0].scaleXYZ[scale_Z] = 10;
+    culUVVector(carLoadPack)
+    cars.push(carLoadPack);
+    carLoad = true;
   }
   if(skyPixelImageLoad == true && cubePixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
     sphere1LoadPack.textureImage = skyPixelImage;
@@ -1500,7 +1509,7 @@ if(dataLoad == false){
     // sphere1LoadPack.bones[0].scaleXYZ[scale_Y] = 10;
     // sphere1LoadPack.bones[0].scaleXYZ[scale_Z] = 10;
     culUVVector(sphere1LoadPack)
-    dices.push(sphere1LoadPack);
+    //dices.push(sphere1LoadPack);
     let sphere2 = daeLoadCopy(sphere1LoadPack);
     sphere2.textureImage = cubePixelImage;
     sphere2.backCullingFlag = false;
@@ -1571,7 +1580,7 @@ if(dataLoad == false){
     steves[1].bones[11].afterQuaternion = quaternionXYZRoll(-80,0,0);
     steves[1].bones[12].afterQuaternion = quaternionXYZRoll(80,0,0);
 
-    steves[1].bones[4].quaternion[1] = quaternionXYZRoll(0,0,80);
+    steves[1].bones[4].quaternion[1] = quaternionXYZRoll(80,0,80);
     steves[1].bones[6].quaternion[1] = quaternionXYZRoll(0,0,-80);
     steves[1].bones[8].quaternion[1] = quaternionXYZRoll(0,0,-80);
     steves[1].bones[10].quaternion[1] = quaternionXYZRoll(0,0,80);
@@ -1580,7 +1589,7 @@ if(dataLoad == false){
 
     steve1Load = true;
   }
-  if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load  && sphere1Load && sandLoad){
+  if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load  && sphere1Load && sandLoad && carLoad){
     dataLoad = true;
   }
   ctx.font = '50pt Arial';
@@ -1766,7 +1775,7 @@ for(let i in steves){
 
   sunViewMatrix = matCamera(sunPos,sunLookat,up);
   matRound4X4(sunViewMatrix);
-	//cuberegister
+	// cuberegister
   // for(let object of cubes){
   //   let worldMatrix = matIdentity();
   //   mulMatTranslate(worldMatrix,object.centerObjX,object.centerObjY,object.centerObjZ);  
@@ -1778,6 +1787,19 @@ for(let i in steves){
 	// }
   //dicesregister
   for(let object of dices){
+    // let worldMatrix = matIdentity();
+    // mulMatTranslate(worldMatrix,object.bones[0].position[position_X],object.bones[0].position[position_Y],object.bones[0].position[position_Z]);  
+    // mulMatRotateX(worldMatrix,object.bones[0].rotXYZ[rot_X]);
+    // mulMatRotateY(worldMatrix,object.bones[0].rotXYZ[rot_Y]);
+    // mulMatRotateZ(worldMatrix,object.bones[0].rotXYZ[rot_Z]); 
+    // mulMatScaling(worldMatrix,object.bones[0].scaleXYZ[scale_X],object.bones[0].scaleXYZ[scale_Y],object.bones[0].scaleXYZ[scale_Z]);
+    let worldTranslation = {};
+    worldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
+    worldTranslation.position = object.bones[0].position;
+    worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
+    objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+  }
+  for(let object of cars){
     // let worldMatrix = matIdentity();
     // mulMatTranslate(worldMatrix,object.bones[0].position[position_X],object.bones[0].position[position_Y],object.bones[0].position[position_Z]);  
     // mulMatRotateX(worldMatrix,object.bones[0].rotXYZ[rot_X]);
