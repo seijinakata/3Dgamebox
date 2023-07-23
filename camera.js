@@ -94,32 +94,58 @@ function daeLoader(fileName,daeLoadPack){
         let meshData = docelem.getElementsByTagName("mesh");
         let loadMeshVerts = [];
         let loadMeshIndex = [];
-        let loadMeshUV = [];
-        for(let i=0;i<meshData[0].children.length;i++){
-          if(meshData[0].children[i].id.indexOf('positions') != -1){
-            if(meshData[0].children[i].children[0].textContent[meshData[0].children[i].children[0].textContent.length-1] != ' '){
-              //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-              meshData[0].children[i].children[0].textContent += ' ';
+        let loadMeshUV = [];        
+        let libraryGeometries = docelem.getElementsByTagName("library_geometries");
+        for(let j=0;j<libraryGeometries[0].children.length;j++){
+          for(let i=0;i<libraryGeometries[0].children[j].children[0].children.length;i++){
+            if(libraryGeometries[0].children[j].children[0].children[i].id.indexOf('positions') != -1){
+              if(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent[libraryGeometries[0].children[j].children[0].children[i].children[0].textContent.length-1] != ' '){
+                //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                libraryGeometries[0].children[j].children[0].children[i].children[0].textContent += ' ';
+              }
+              loadMeshVerts.push(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent);
             }
-            loadMeshVerts.push(meshData[0].children[i].children[0].textContent);
-          }
-
-          if(meshData[0].children[i].id.indexOf('map') != -1){
-            if(meshData[0].children[i].children[0].textContent[meshData[0].children[i].children[0].textContent.length-1] != ' '){
-              //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-              meshData[0].children[i].children[0].textContent += ' ';
+            if(libraryGeometries[0].children[j].children[0].children[i].id.indexOf('map') != -1){
+              if(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent[libraryGeometries[0].children[j].children[0].children[i].children[0].textContent.length-1] != ' '){
+                //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                libraryGeometries[0].children[j].children[0].children[i].children[0].textContent += ' ';   
+              }
+              loadMeshUV.push(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent);
             }
-            loadMeshUV.push(meshData[0].children[i].children[0].textContent);
-          }
-
-          if(meshData[0].children[i].getAttribute('material')  != null && meshData[0].children[i].getAttribute('material').indexOf('material') != -1){
-            if(meshData[0].children[i].children[3].textContent[meshData[0].children[i].children[3].textContent.length-1] != ' '){
-              //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-              meshData[0].children[i].children[3].textContent += ' ';
+            if(libraryGeometries[0].children[j].children[0].children[i].getAttribute('material')  != null && libraryGeometries[0].children[j].children[0].children[i].getAttribute('material').indexOf('material') != -1){
+              if(libraryGeometries[0].children[j].children[0].children[i].children[3].textContent[libraryGeometries[0].children[j].children[0].children[i].children[3].textContent.length-1] != ' '){
+                //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                libraryGeometries[0].children[j].children[0].children[i].children[3].textContent += ' ';
+              }
+              loadMeshIndex.push(libraryGeometries[0].children[j].children[0].children[i].children[3].textContent)
             }
-            loadMeshIndex.push(meshData[0].children[i].children[3].textContent);
           }
         }
+        // for(let i=0;i<meshData[0].children.length;i++){
+        //   if(meshData[0].children[i].id.indexOf('positions') != -1){
+        //     if(meshData[0].children[i].children[0].textContent[meshData[0].children[i].children[0].textContent.length-1] != ' '){
+        //       //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+        //       //meshData[0].children[i].children[0].textContent += ' ';
+        //     }
+        //     //loadMeshVerts.push(meshData[0].children[i].children[0].textContent);
+        //   }
+
+        //   if(meshData[0].children[i].id.indexOf('map') != -1){
+        //     if(meshData[0].children[i].children[0].textContent[meshData[0].children[i].children[0].textContent.length-1] != ' '){
+        //       //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+        //       //meshData[0].children[i].children[0].textContent += ' ';
+        //     }
+        //     //loadMeshUV.push(meshData[0].children[i].children[0].textContent);
+        //   }
+
+        //   if(meshData[0].children[i].getAttribute('material')  != null && meshData[0].children[i].getAttribute('material').indexOf('material') != -1){
+        //     if(meshData[0].children[i].children[3].textContent[meshData[0].children[i].children[3].textContent.length-1] != ' '){
+        //       //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+        //       meshData[0].children[i].children[3].textContent += ' ';
+        //     }
+        //     loadMeshIndex.push(meshData[0].children[i].children[3].textContent);
+        //   }
+        // }
         //meshData
         let verts = [];
         let char = [];
@@ -148,6 +174,7 @@ function daeLoader(fileName,daeLoadPack){
           }
         }
         daeLoadPack.meshVerts = meshVerts;
+        console.log(meshVerts)
         //meshIndex
         char = [];
         verts = [];
