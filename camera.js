@@ -35,7 +35,7 @@ let steve1LoadPack = {};
 let sphere1LoadPack = {};
 let sandLoadPack = {};
 let carLoadPack = {};
-daeLoader("car1.dae",carLoadPack);
+daeLoader("car.dae",carLoadPack);
 daeLoader("dice3.dae",steve1LoadPack);
 daeLoader("sphere.dae",sphere1LoadPack);
 daeLoader("sand.dae",sandLoadPack);
