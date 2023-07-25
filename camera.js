@@ -35,7 +35,7 @@ let steve1LoadPack = {};
 let sphere1LoadPack = {};
 let sandLoadPack = {};
 let carLoadPack = {};
-daeLoader("car.dae",carLoadPack);
+daeLoader("car1.dae",carLoadPack);
 daeLoader("dice3.dae",steve1LoadPack);
 daeLoader("sphere.dae",sphere1LoadPack);
 daeLoader("sand.dae",sandLoadPack);
@@ -151,6 +151,7 @@ function daeLoader(fileName,daeLoadPack){
         let char = [];
         let meshVerts = [];
         for(let j=0;j<loadMeshVerts.length;j++){
+          let tempMeshVerts = [];
           for(let i=0;i<loadMeshVerts[j].length;i++){
             let tempChar = loadMeshVerts[j][i];
             if(char.length == 0 && loadMeshVerts[j][i] != " "){
@@ -166,12 +167,13 @@ function daeLoader(fileName,daeLoadPack){
                 verts.push(tempInt);
                 char = [];
                 if(verts.length %3 == 0){
-                  meshVerts.push(verts);
+                  tempMeshVerts.push(verts);
                   verts = [];
                 }
               }
             }
           }
+          meshVerts.push(tempMeshVerts);
         }
         daeLoadPack.meshVerts = meshVerts;
         console.log(meshVerts)
@@ -185,6 +187,7 @@ function daeLoader(fileName,daeLoadPack){
         //1index,2normal,3uv
         let readNow = 1;
         for(let j=0;j<loadMeshIndex.length;j++){
+          let tempMeshVertsFaceIndex = [];
           for(let i=0;i<loadMeshIndex[j].length;i++){
             let tempChar = loadMeshIndex[j][i];
             if(char.length == 0 && loadMeshIndex[j][i] != " "){
@@ -199,7 +202,7 @@ function daeLoader(fileName,daeLoadPack){
                   tempVertsIndex.unshift(tempInt);
                   char = [];
                   if(tempVertsIndex.length %3 == 0){
-                    meshVertsFaceIndex.push(tempVertsIndex);
+                    tempMeshVertsFaceIndex.push(tempVertsIndex);
                     tempVertsIndex = [];
                   }
                   readNow = 2;
@@ -215,8 +218,11 @@ function daeLoader(fileName,daeLoadPack){
               }
             }
           }
+          meshVertsFaceIndex.push(tempMeshVertsFaceIndex);
         }
+        
         daeLoadPack.meshVertsFaceIndex = meshVertsFaceIndex;
+        console.log(meshVertsFaceIndex)
         //uv
         let tempUV = [];
         let meshUV = [];
@@ -268,6 +274,8 @@ function daeLoader(fileName,daeLoadPack){
           faceIndexMeshUV.push(tempMeshUV);
         }
         daeLoadPack.faceIndexMeshUV = faceIndexMeshUV;
+        console.log(faceIndexMeshUV)
+
         daeLoadPack.armatures = false;
         //armature
         let armatures = docelem.getElementsByTagName("library_controllers");
@@ -812,14 +820,111 @@ function daeMekeSkinMeshBone(daeLoadPack){
   }
 }
 //ボーンなしシャドウマップ付き
-function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,screen_size_h,screen_size_w){
+function objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,shadowViewMatrix,screen_size_h,screen_size_w){
+      let worldVerts = [];
+    let projectedVerts = [];
+    let objectProjectedVerts = []; 
+    let shadowProjectedVerts = [];
+    let objectShadowProjectedVerts = [];
+    let worldVertsArrayObject = [];
+
+    // let verts = setVector3(object.meshVerts[i][0]+worldMatrix[0].position[0],object.meshVerts[i][1]+worldMatrix[0].position[1],object.meshVerts[i][2]+worldMatrix[0].position[2]);
+    // verts = Vector3QuaternionMul(worldMatrix[1],verts);
+    // verts = setVector3(object.meshVerts[i][0]*worldMatrix[2].scaleXYZ[0],object.meshVerts[i][1]*worldMatrix[2].scaleXYZ[1],object.meshVerts[i][2]*worldMatrix[2].scaleXYZ[2]);
+    for(let j=0;j<object.meshVerts.length;j++){
+      let objectMeshVerts = object.meshVerts[j];
+      let meshVerts_Length = objectMeshVerts.length;
+      for (let i = 0; i < meshVerts_Length; i++) {
+        let verts = setVector3(objectMeshVerts[i][0]*worldTranslation[j].scaleXYZ[position_X],objectMeshVerts[i][1]*worldTranslation[j].scaleXYZ[position_Y],objectMeshVerts[i][2]*worldTranslation[j].scaleXYZ[position_Z]);
+        verts = Vector3QuaternionMul(worldTranslation[j].quaternion,verts);
+        verts = setVector3(verts[0]+worldTranslation[j].position[position_X],verts[1]+worldTranslation[j].position[position_Y],verts[2]+worldTranslation[j].position[position_Z]);
+        //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
+        let nomalVerts = vertsCopy(verts);
+        let shadowVerts = vertsCopy(verts);
+        worldVerts.push(verts);
+        protMatVecMul(viewMatrix,nomalVerts);
+        protMatVecMul(shadowViewMatrix,shadowVerts);
+       
+        let projectionMatrix =  matPers(nomalVerts[2]);
+        let shadowProjectionMatrix =  matPers(shadowVerts[2]);
+    
+        protMatVecMul(projectionMatrix,nomalVerts);
+        protMatVecMul(shadowProjectionMatrix,shadowVerts);
+    
+        //nomalVerts = matVecMul(viewPortMatrix,nomalVerts);
+        nomalVerts[0] = ((nomalVerts[0] + 0.5)*screen_size_w)|0;
+        nomalVerts[1] = ((nomalVerts[1] + 0.5)*screen_size_h)|0;
+        shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
+        shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;
+  
+        projectedVerts.push(nomalVerts);
+        shadowProjectedVerts.push(shadowVerts);  
+      }
+      objectProjectedVerts.push(projectedVerts);
+      objectShadowProjectedVerts.push(shadowProjectedVerts);
+      worldVertsArrayObject.push(worldVerts);
+      projectedVerts = [];
+      shadowProjectedVerts = [];
+      worldVerts = [];
+    }
+
+    let poly = [];
+    let shadowPoly = [];
+
+    for(let j=0;j<object.meshVertsFaceIndex.length;j++){
+      for(let i=0;i<object.meshVertsFaceIndex[j].length;i++){
+        poly.push(setPolygon(objectProjectedVerts[j][object.meshVertsFaceIndex[j][i][0]],objectProjectedVerts[j][object.meshVertsFaceIndex[j][i][1]],objectProjectedVerts[j][object.meshVertsFaceIndex[j][i][2]],
+          worldVertsArrayObject[j][object.meshVertsFaceIndex[j][i][0]],worldVertsArrayObject[j][object.meshVertsFaceIndex[j][i][1]],worldVertsArrayObject[j][object.meshVertsFaceIndex[j][i][2]],object.UVVector[j]));
+        shadowPoly.push(setShadowPolygon(objectShadowProjectedVerts[j][object.meshVertsFaceIndex[j][i][0]],objectShadowProjectedVerts[j][object.meshVertsFaceIndex[j][i][1]],objectShadowProjectedVerts[j][object.meshVertsFaceIndex[j][i][2]]));
+
+      }
+    }
+    projectedObjects.push(makeProjectedObject(object,poly));
+    objectShadowZsort(shadowProjectedObjects,object,shadowPoly);
+/*
   let worldVerts = [];
   let projectedVerts = [];
+  let objectProjectedVerts = []; 
   let shadowProjectedVerts = [];
+  let objectShadowProjectedVerts = [];
 
   // let verts = setVector3(object.meshVerts[i][0]+worldMatrix[0].position[0],object.meshVerts[i][1]+worldMatrix[0].position[1],object.meshVerts[i][2]+worldMatrix[0].position[2]);
   // verts = Vector3QuaternionMul(worldMatrix[1],verts);
   // verts = setVector3(object.meshVerts[i][0]*worldMatrix[2].scaleXYZ[0],object.meshVerts[i][1]*worldMatrix[2].scaleXYZ[1],object.meshVerts[i][2]*worldMatrix[2].scaleXYZ[2]);
+  for(let j=0;j<object.meshVerts.length;j++){
+    let objectMeshVerts = object.meshVerts[j];
+    let meshVerts_Length = objectMeshVerts.length;
+    for (let i = 0; i < meshVerts_Length; i++) {
+      let verts = setVector3(objectMeshVerts[i][0]*worldTranslation.scaleXYZ[position_X],objectMeshVerts[i][1]*worldTranslation.scaleXYZ[position_Y],objectMeshVerts[i][2]*worldTranslation.scaleXYZ[position_Z]);
+      verts = Vector3QuaternionMul(worldTranslation.quaternion,verts);
+      verts = setVector3(verts[0]+worldTranslation.position[position_X],verts[1]+worldTranslation.position[position_Y],verts[2]+worldTranslation.position[position_Z]);
+      //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
+      let nomalVerts = vertsCopy(verts);
+      let shadowVerts = vertsCopy(verts);
+      worldVerts[i] = verts;
+      protMatVecMul(viewMatrix,nomalVerts);
+      protMatVecMul(shadowViewMatrix,shadowVerts);
+     
+      let projectionMatrix =  matPers(nomalVerts[2]);
+      let shadowProjectionMatrix =  matPers(shadowVerts[2]);
+  
+      protMatVecMul(projectionMatrix,nomalVerts);
+      protMatVecMul(shadowProjectionMatrix,shadowVerts);
+  
+      //nomalVerts = matVecMul(viewPortMatrix,nomalVerts);
+      nomalVerts[0] = ((nomalVerts[0] + 0.5)*screen_size_w)|0;
+      nomalVerts[1] = ((nomalVerts[1] + 0.5)*screen_size_h)|0;
+      shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
+      shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;
+  
+      projectedVerts.push(nomalVerts);
+      shadowProjectedVerts[i].push(shadowVerts);  
+    }
+    objectProjectedVerts.push(projectedVerts);
+    shadowProjectedVerts.push(objectShadowProjectedVerts);
+    projectedVerts = [];
+    shadowProjectedVerts = [];
+  }
   let meshVerts_Length = object.meshVerts.length;
   for (let i = 0; i < meshVerts_Length; i++) {
     let verts = setVector3(object.meshVerts[i][0]*worldTranslation.scaleXYZ[position_X],object.meshVerts[i][1]*worldTranslation.scaleXYZ[position_Y],object.meshVerts[i][2]*worldTranslation.scaleXYZ[position_Z]);
@@ -1522,6 +1627,7 @@ if(dataLoad == false){
     // sphere1LoadPack.bones[0].scaleXYZ[scale_Z] = 10;
     culUVVector(carLoadPack)
     cars.push(carLoadPack);
+    console.log(cars[0].UVVector) 
     carLoad = true;
   }
   if(skyPixelImageLoad == true && cubePixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
@@ -1824,7 +1930,7 @@ for(let i in steves){
     worldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
     worldTranslation.position = object.bones[0].position;
     worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
-    objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    //objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   for(let object of cars){
     // let worldMatrix = matIdentity();
@@ -1833,15 +1939,23 @@ for(let i in steves){
     // mulMatRotateY(worldMatrix,object.bones[0].rotXYZ[rot_Y]);
     // mulMatRotateZ(worldMatrix,object.bones[0].rotXYZ[rot_Z]); 
     // mulMatScaling(worldMatrix,object.bones[0].scaleXYZ[scale_X],object.bones[0].scaleXYZ[scale_Y],object.bones[0].scaleXYZ[scale_Z]);
-    let worldTranslation = {};
-    worldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
-    worldTranslation.position = object.bones[0].position;
-    worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
+    let worldTranslation = [];
+    let tempWorldTranslation = {};
+    tempWorldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
+    tempWorldTranslation.position = object.bones[0].position;
+    tempWorldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
+    worldTranslation.push(tempWorldTranslation);
+    tempWorldTranslation = {};
+    tempWorldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
+    tempWorldTranslation.position = object.bones[0].position;
+    tempWorldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
+    worldTranslation.push(tempWorldTranslation);
+    
     objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   //steve
   for(let object of steves){
-    objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    //objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
 	}
 	// //planesregister
   // for(let object of planes){
@@ -1868,7 +1982,7 @@ for(let i in steves){
     worldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
     worldTranslation.position = object.bones[0].position;
     worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
-    objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    //objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   /*
   lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
