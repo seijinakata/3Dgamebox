@@ -32,12 +32,15 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,bonesNam
 }
 
 let steve1LoadPack = {};
+let steve2LoadPack = {};
+let cube1LoadPack = {};
 let sphere1LoadPack = {};
 let sandLoadPack = {};
-let carLoadPack = {};
-daeLoader("car.dae",carLoadPack);
+daeLoader("car.dae",sphere1LoadPack);
 daeLoader("dice3.dae",steve1LoadPack);
-daeLoader("sphere.dae",sphere1LoadPack);
+daeLoader("dice3.dae",steve2LoadPack);
+daeLoader("car.dae",cube1LoadPack);
+
 daeLoader("sand.dae",sandLoadPack);
 
 function daeLoadCopy(daeLoadPack){
@@ -49,234 +52,222 @@ function daeLoadCopy(daeLoadPack){
    copyDae.backCullingFlag = daeLoadPack.backCullingFlag;
    copyDae.shadowFlag = daeLoadPack.shadowFlag;
    copyDae.lightShadowFlag = daeLoadPack.lightShadowFlag;
+   let bones = [];
+   let boneContents = {};
+   boneContents.position = daeLoadPack.bones[0].position.concat();
+   boneContents.rotXYZ = daeLoadPack.bones[0].rotXYZ.concat();
+   boneContents.scaleXYZ = daeLoadPack.bones[0].scaleXYZ.concat();
+   bones.push(boneContents);
+   copyDae.bones = bones;
    copyDae.UVVector = daeLoadPack.UVVector.concat();//concat?
-   copyDae.armatures = daeLoadPack.armatures;
-   if(daeLoadPack.armatures == true){
-    copyDae.bonesNameList = daeLoadPack.bonesNameList;//いるかな？
-    copyDae.bindPosePack = daeLoadPack.bindPosePack;
-    copyDae.blendBoneIndex = daeLoadPack.blendBoneIndex;
-    copyDae.bonesWeight  = daeLoadPack.bonesWeight;
-    copyDae.boneParentRelation  = daeLoadPack.boneParentRelation;
-    let bones = [];
-    for(let i in daeLoadPack.bones){
-      let boneContents = {};
-      boneContents.skinmeshBone = null;
-      boneContents.position = daeLoadPack.bones[i].position.concat();
-      boneContents.rotXYZ = daeLoadPack.bones[i].rotXYZ.concat();
-      boneContents.scaleXYZ = daeLoadPack.bones[i].scaleXYZ.concat();
-      bones.push(boneContents);
-    }
-    copyDae.bones = bones;
-   }else{
-    let bones = [];
-    let boneContents = {};
-    boneContents.position = daeLoadPack.bones[0].position.concat();
-    boneContents.rotXYZ = daeLoadPack.bones[0].rotXYZ.concat();
-    boneContents.scaleXYZ = daeLoadPack.bones[0].scaleXYZ.concat();
-    bones.push(boneContents);
-    copyDae.bones = bones;
-   }
    return copyDae;
 }
 
 function daeLoader(fileName,daeLoadPack){
-  let xmlhttp = new XMLHttpRequest();
-  xmlhttp.open("GET", fileName);
-  xmlhttp.send();
-  xmlhttp.onreadystatechange = function () {
-    if (xmlhttp.readyState == 4) {
-      if (xmlhttp.status == 200) {
-        //let elem = document.getElementById("asset");
-
-        //elem.innerHTML += "----- getElementsByTagName -----<br/>";
-        let docelem = xmlhttp.responseXML.documentElement;
-        //mesh
-        let meshData = docelem.getElementsByTagName("mesh");
-        let loadMeshVerts = [];
-        let loadMeshIndex = [];
-        let loadMeshUV = [];        
-        let libraryGeometries = docelem.getElementsByTagName("library_geometries");
-        for(let j=0;j<libraryGeometries[0].children.length;j++){
-          for(let i=0;i<libraryGeometries[0].children[j].children[0].children.length;i++){
-            if(libraryGeometries[0].children[j].children[0].children[i].id.indexOf('positions') != -1){
-              if(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent[libraryGeometries[0].children[j].children[0].children[i].children[0].textContent.length-1] != ' '){
-                //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-                libraryGeometries[0].children[j].children[0].children[i].children[0].textContent += ' ';
-              }
-              loadMeshVerts.push(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent);
-            }
-            if(libraryGeometries[0].children[j].children[0].children[i].id.indexOf('map') != -1){
-              if(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent[libraryGeometries[0].children[j].children[0].children[i].children[0].textContent.length-1] != ' '){
-                //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-                libraryGeometries[0].children[j].children[0].children[i].children[0].textContent += ' ';   
-              }
-              loadMeshUV.push(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent);
-            }
-            if(libraryGeometries[0].children[j].children[0].children[i].getAttribute('material')  != null && libraryGeometries[0].children[j].children[0].children[i].getAttribute('material').indexOf('material') != -1){
-              if(libraryGeometries[0].children[j].children[0].children[i].children[3].textContent[libraryGeometries[0].children[j].children[0].children[i].children[3].textContent.length-1] != ' '){
-                //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-                libraryGeometries[0].children[j].children[0].children[i].children[3].textContent += ' ';
-              }
-              loadMeshIndex.push(libraryGeometries[0].children[j].children[0].children[i].children[3].textContent)
-            }
-          }
-        }
-        // for(let i=0;i<meshData[0].children.length;i++){
-        //   if(meshData[0].children[i].id.indexOf('positions') != -1){
-        //     if(meshData[0].children[i].children[0].textContent[meshData[0].children[i].children[0].textContent.length-1] != ' '){
-        //       //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-        //       //meshData[0].children[i].children[0].textContent += ' ';
-        //     }
-        //     //loadMeshVerts.push(meshData[0].children[i].children[0].textContent);
-        //   }
-
-        //   if(meshData[0].children[i].id.indexOf('map') != -1){
-        //     if(meshData[0].children[i].children[0].textContent[meshData[0].children[i].children[0].textContent.length-1] != ' '){
-        //       //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-        //       //meshData[0].children[i].children[0].textContent += ' ';
-        //     }
-        //     //loadMeshUV.push(meshData[0].children[i].children[0].textContent);
-        //   }
-
-        //   if(meshData[0].children[i].getAttribute('material')  != null && meshData[0].children[i].getAttribute('material').indexOf('material') != -1){
-        //     if(meshData[0].children[i].children[3].textContent[meshData[0].children[i].children[3].textContent.length-1] != ' '){
-        //       //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-        //       meshData[0].children[i].children[3].textContent += ' ';
-        //     }
-        //     loadMeshIndex.push(meshData[0].children[i].children[3].textContent);
-        //   }
-        // }
-        //meshData
-        let verts = [];
-        let char = [];
-        let meshVerts = [];
-        for(let j=0;j<loadMeshVerts.length;j++){
-          let tempMeshVerts = [];
-          for(let i=0;i<loadMeshVerts[j].length;i++){
-            let tempChar = loadMeshVerts[j][i];
-            if(char.length == 0 && loadMeshVerts[j][i] != " "){
-              char = tempChar;
-              continue;
-            }else{
-              if(loadMeshVerts[j][i] != " "){
-                  char += tempChar;
-              }else{
-                let tempInt = parseFloat(char);
-                //vertsを丸める。影響のない小数点は切り捨てる。
-                tempInt = round(tempInt);
-                verts.push(tempInt);
-                char = [];
-                if(verts.length %3 == 0){
-                  tempMeshVerts.push(verts);
-                  verts = [];
+    let xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("GET", fileName);
+    xmlhttp.send();
+    xmlhttp.onreadystatechange = function () {
+      if (xmlhttp.readyState == 4) {
+        if (xmlhttp.status == 200) {
+          //let elem = document.getElementById("asset");
+  
+          //elem.innerHTML += "----- getElementsByTagName -----<br/>";
+          let docelem = xmlhttp.responseXML.documentElement;
+          //mesh
+          let meshData = docelem.getElementsByTagName("mesh");
+          let loadMeshVerts = [];
+          let loadMeshIndex = [];
+          let loadMeshUV = [];        
+          let libraryGeometries = docelem.getElementsByTagName("library_geometries");
+          for(let j=0;j<libraryGeometries[0].children.length;j++){
+            for(let i=0;i<libraryGeometries[0].children[j].children[0].children.length;i++){
+              if(libraryGeometries[0].children[j].children[0].children[i].id.indexOf('positions') != -1){
+                if(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent[libraryGeometries[0].children[j].children[0].children[i].children[0].textContent.length-1] != ' '){
+                  //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                  libraryGeometries[0].children[j].children[0].children[i].children[0].textContent += ' ';
                 }
+                loadMeshVerts.push(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent);
+              }
+              if(libraryGeometries[0].children[j].children[0].children[i].id.indexOf('map') != -1){
+                if(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent[libraryGeometries[0].children[j].children[0].children[i].children[0].textContent.length-1] != ' '){
+                  //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                  libraryGeometries[0].children[j].children[0].children[i].children[0].textContent += ' ';   
+                }
+                loadMeshUV.push(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent);
+              }
+              if(libraryGeometries[0].children[j].children[0].children[i].getAttribute('material')  != null && libraryGeometries[0].children[j].children[0].children[i].getAttribute('material').indexOf('material') != -1){
+                if(libraryGeometries[0].children[j].children[0].children[i].children[3].textContent[libraryGeometries[0].children[j].children[0].children[i].children[3].textContent.length-1] != ' '){
+                  //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                  libraryGeometries[0].children[j].children[0].children[i].children[3].textContent += ' ';
+                }
+                loadMeshIndex.push(libraryGeometries[0].children[j].children[0].children[i].children[3].textContent)
               }
             }
           }
-          meshVerts.push(tempMeshVerts);
-        }
-        daeLoadPack.meshVerts = meshVerts;
-        console.log(meshVerts)
-        //meshIndex
-        char = [];
-        verts = [];
-        let tempVertsIndex = [];
-        let meshVertsFaceIndex = [];
-        let normalIndex= [];
-        let UVIndex = [];
-        //1index,2normal,3uv
-        let readNow = 1;
-        for(let j=0;j<loadMeshIndex.length;j++){
-          let tempMeshVertsFaceIndex = [];
-          for(let i=0;i<loadMeshIndex[j].length;i++){
-            let tempChar = loadMeshIndex[j][i];
-            if(char.length == 0 && loadMeshIndex[j][i] != " "){
-              char = tempChar;
-              continue;
-            }else{
-              if(loadMeshIndex[j][i] != " "){
-                  char += tempChar;
+          // for(let i=0;i<meshData[0].children.length;i++){
+          //   if(meshData[0].children[i].id.indexOf('positions') != -1){
+          //     if(meshData[0].children[i].children[0].textContent[meshData[0].children[i].children[0].textContent.length-1] != ' '){
+          //       //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+          //       //meshData[0].children[i].children[0].textContent += ' ';
+          //     }
+          //     //loadMeshVerts.push(meshData[0].children[i].children[0].textContent);
+          //   }
+  
+          //   if(meshData[0].children[i].id.indexOf('map') != -1){
+          //     if(meshData[0].children[i].children[0].textContent[meshData[0].children[i].children[0].textContent.length-1] != ' '){
+          //       //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+          //       //meshData[0].children[i].children[0].textContent += ' ';
+          //     }
+          //     //loadMeshUV.push(meshData[0].children[i].children[0].textContent);
+          //   }
+  
+          //   if(meshData[0].children[i].getAttribute('material')  != null && meshData[0].children[i].getAttribute('material').indexOf('material') != -1){
+          //     if(meshData[0].children[i].children[3].textContent[meshData[0].children[i].children[3].textContent.length-1] != ' '){
+          //       //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+          //       meshData[0].children[i].children[3].textContent += ' ';
+          //     }
+          //     loadMeshIndex.push(meshData[0].children[i].children[3].textContent);
+          //   }
+          // }
+          //meshData
+          let verts = [];
+          let char = [];
+          let meshVerts = [];
+          for(let j=0;j<loadMeshVerts.length;j++){
+            let tempMeshVerts = [];
+            for(let i=0;i<loadMeshVerts[j].length;i++){
+              let tempChar = loadMeshVerts[j][i];
+              if(char.length == 0 && loadMeshVerts[j][i] != " "){
+                char = tempChar;
+                continue;
               }else{
-                let tempInt = parseInt(char)
-                if(readNow == 1){
-                  tempVertsIndex.unshift(tempInt);
+                if(loadMeshVerts[j][i] != " "){
+                    char += tempChar;
+                }else{
+                  let tempInt = parseFloat(char);
+                  //vertsを丸める。影響のない小数点は切り捨てる。
+                  tempInt = round(tempInt);
+                  verts.push(tempInt);
                   char = [];
-                  if(tempVertsIndex.length %3 == 0){
-                    tempMeshVertsFaceIndex.push(tempVertsIndex);
-                    tempVertsIndex = [];
+                  if(verts.length %3 == 0){
+                    tempMeshVerts.push(verts);
+                    verts = [];
                   }
-                  readNow = 2;
-                }else if(readNow == 2){
-                  //tempVertsIndex.push(tempInt);
-                  char = [];
-                  readNow = 3;
-                }else if(readNow == 3){
-                  //tempVertsIndex.push(tempInt);
-                  char = [];
-                  readNow = 1;
                 }
               }
             }
+            meshVerts.push(tempMeshVerts);
           }
-          meshVertsFaceIndex.push(tempMeshVertsFaceIndex);
-        }
-        
-        daeLoadPack.meshVertsFaceIndex = meshVertsFaceIndex;
-        console.log(meshVertsFaceIndex)
-        //uv
-        let tempUV = [];
-        let meshUV = [];
-        let u = 0;
-        let v = 0;
-        let readFlag = 0;//0:u,1:v,2:tempUV
-        char = [];
-        for(let j=0;j<loadMeshUV.length;j++){
-          for(let i=0;i<loadMeshUV[j].length;i++){
-            let tempChar = loadMeshUV[j][i];
-            if(char.length == 0 && loadMeshUV[j][i] != " "){
-              char = tempChar;
-              continue;
-            }else{
-              if(loadMeshUV[j][i] != " "){
-                  char += tempChar;
+          daeLoadPack.meshVerts = meshVerts[0];
+          console.log(meshVerts[0])
+          //meshIndex
+          char = [];
+          verts = [];
+          let tempVertsIndex = [];
+          let meshVertsFaceIndex = [];
+          let normalIndex= [];
+          let UVIndex = [];
+          //1index,2normal,3uv
+          let readNow = 1;
+          for(let j=0;j<loadMeshIndex.length;j++){
+            let tempMeshVertsFaceIndex = [];
+            for(let i=0;i<loadMeshIndex[j].length;i++){
+              let tempChar = loadMeshIndex[j][i];
+              if(char.length == 0 && loadMeshIndex[j][i] != " "){
+                char = tempChar;
+                continue;
               }else{
-                let tempFloat = parseFloat(char)
-                if(readFlag == 0){
-                  u = tempFloat;
-                  char = [];
-                  readFlag = 1;
-                }else if(readFlag == 1){
-                  v = tempFloat;
-                  v = (v < 0) ? v * -1 : 1 - v;
-                  char = [];
-                  let uv = {"u":u,"v":v};
-                  tempUV.unshift(uv);
-                  if(tempUV.length %3 == 0){
-                    meshUV.push(tempUV);
-                    tempUV = [];
+                if(loadMeshIndex[j][i] != " "){
+                    char += tempChar;
+                }else{
+                  let tempInt = parseInt(char)
+                  if(readNow == 1){
+                    tempVertsIndex.unshift(tempInt);
+                    char = [];
+                    if(tempVertsIndex.length %3 == 0){
+                      tempMeshVertsFaceIndex.push(tempVertsIndex);
+                      tempVertsIndex = [];
+                    }
+                    readNow = 2;
+                  }else if(readNow == 2){
+                    //tempVertsIndex.push(tempInt);
+                    char = [];
+                    readNow = 3;
+                  }else if(readNow == 3){
+                    //tempVertsIndex.push(tempInt);
+                    char = [];
+                    readNow = 1;
                   }
-                  u = 0;
-                  v = 0;
-                  readFlag = 0;
                 }
               }
             }
-          }              
-        }
-        let faceIndexMeshUV = [];
-        let meshVertsFaceIndex_Length = meshVertsFaceIndex.length;
-        for(let i=0;i<meshVertsFaceIndex_Length;i++){
-          let tempMeshUV = [
-                meshUV[i][0].u, meshUV[i][0].v,
-                meshUV[i][1].u, meshUV[i][1].v,
-                meshUV[i][2].u, meshUV[i][2].v,
-                ]
-          faceIndexMeshUV.push(tempMeshUV);
-        }
-        daeLoadPack.faceIndexMeshUV = faceIndexMeshUV;
-        console.log(faceIndexMeshUV)
-
-        daeLoadPack.armatures = false;
+            meshVertsFaceIndex.push(tempMeshVertsFaceIndex);
+          }
+          
+          daeLoadPack.meshVertsFaceIndex = meshVertsFaceIndex[0];
+          console.log(meshVertsFaceIndex[0])
+          //uv
+          let tempUV = [];
+          let meshUV = [];
+          let objectMeshUV = [];
+          let u = 0;
+          let v = 0;
+          let readFlag = 0;//0:u,1:v,2:tempUV
+          char = [];
+          for(let j=0;j<loadMeshUV.length;j++){
+            for(let i=0;i<loadMeshUV[j].length;i++){
+              let tempChar = loadMeshUV[j][i];
+              if(char.length == 0 && loadMeshUV[j][i] != " "){
+                char = tempChar;
+                continue;
+              }else{
+                if(loadMeshUV[j][i] != " "){
+                    char += tempChar;
+                }else{
+                  let tempFloat = parseFloat(char)
+                  if(readFlag == 0){
+                    u = tempFloat;
+                    char = [];
+                    readFlag = 1;
+                  }else if(readFlag == 1){
+                    v = tempFloat;
+                    v = (v < 0) ? v * -1 : 1 - v;
+                    char = [];
+                    let uv = {"u":u,"v":v};
+                    tempUV.unshift(uv);
+                    if(tempUV.length %3 == 0){
+                      meshUV.push(tempUV);
+                      tempUV = [];
+                    }
+                    u = 0;
+                    v = 0;
+                    readFlag = 0;
+                  }
+                }
+              }
+            }
+            objectMeshUV.push(meshUV);
+            meshUV = [];             
+          }
+          let faceIndexMeshUV = [];
+          for(let j=0;j<loadMeshVerts.length;j++){
+            let tempFaceIndexMeshUV = [];
+            let meshVertsFaceIndex_Length = meshVertsFaceIndex[j].length;
+            for(let i=0;i<meshVertsFaceIndex_Length;i++){
+              let tempMeshUV = [
+                objectMeshUV[j][i][0].u, objectMeshUV[j][i][0].v,
+                objectMeshUV[j][i][1].u, objectMeshUV[j][i][1].v,
+                objectMeshUV[j][i][2].u, objectMeshUV[j][i][2].v,
+                    ]
+              tempFaceIndexMeshUV.push(tempMeshUV);
+            }
+            faceIndexMeshUV.push(tempFaceIndexMeshUV);
+          }
+          daeLoadPack.faceIndexMeshUV = faceIndexMeshUV[0];
+          console.log(faceIndexMeshUV)
+  
+          daeLoadPack.armatures = false;
         //armature
         let armatures = docelem.getElementsByTagName("library_controllers");
         if(armatures.length != 0){
@@ -820,111 +811,14 @@ function daeMekeSkinMeshBone(daeLoadPack){
   }
 }
 //ボーンなしシャドウマップ付き
-function objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,shadowViewMatrix,screen_size_h,screen_size_w){
-      let worldVerts = [];
-    let projectedVerts = [];
-    let objectProjectedVerts = []; 
-    let shadowProjectedVerts = [];
-    let objectShadowProjectedVerts = [];
-    let worldVertsArrayObject = [];
-
-    // let verts = setVector3(object.meshVerts[i][0]+worldMatrix[0].position[0],object.meshVerts[i][1]+worldMatrix[0].position[1],object.meshVerts[i][2]+worldMatrix[0].position[2]);
-    // verts = Vector3QuaternionMul(worldMatrix[1],verts);
-    // verts = setVector3(object.meshVerts[i][0]*worldMatrix[2].scaleXYZ[0],object.meshVerts[i][1]*worldMatrix[2].scaleXYZ[1],object.meshVerts[i][2]*worldMatrix[2].scaleXYZ[2]);
-    for(let j=0;j<object.meshVerts.length;j++){
-      let objectMeshVerts = object.meshVerts[j];
-      let meshVerts_Length = objectMeshVerts.length;
-      for (let i = 0; i < meshVerts_Length; i++) {
-        let verts = setVector3(objectMeshVerts[i][0]*worldTranslation[j].scaleXYZ[position_X],objectMeshVerts[i][1]*worldTranslation[j].scaleXYZ[position_Y],objectMeshVerts[i][2]*worldTranslation[j].scaleXYZ[position_Z]);
-        verts = Vector3QuaternionMul(worldTranslation[j].quaternion,verts);
-        verts = setVector3(verts[0]+worldTranslation[j].position[position_X],verts[1]+worldTranslation[j].position[position_Y],verts[2]+worldTranslation[j].position[position_Z]);
-        //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
-        let nomalVerts = vertsCopy(verts);
-        let shadowVerts = vertsCopy(verts);
-        worldVerts.push(verts);
-        protMatVecMul(viewMatrix,nomalVerts);
-        protMatVecMul(shadowViewMatrix,shadowVerts);
-       
-        let projectionMatrix =  matPers(nomalVerts[2]);
-        let shadowProjectionMatrix =  matPers(shadowVerts[2]);
-    
-        protMatVecMul(projectionMatrix,nomalVerts);
-        protMatVecMul(shadowProjectionMatrix,shadowVerts);
-    
-        //nomalVerts = matVecMul(viewPortMatrix,nomalVerts);
-        nomalVerts[0] = ((nomalVerts[0] + 0.5)*screen_size_w)|0;
-        nomalVerts[1] = ((nomalVerts[1] + 0.5)*screen_size_h)|0;
-        shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
-        shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;
-  
-        projectedVerts.push(nomalVerts);
-        shadowProjectedVerts.push(shadowVerts);  
-      }
-      objectProjectedVerts.push(projectedVerts);
-      objectShadowProjectedVerts.push(shadowProjectedVerts);
-      worldVertsArrayObject.push(worldVerts);
-      projectedVerts = [];
-      shadowProjectedVerts = [];
-      worldVerts = [];
-    }
-
-    let poly = [];
-    let shadowPoly = [];
-
-    for(let j=0;j<object.meshVertsFaceIndex.length;j++){
-      for(let i=0;i<object.meshVertsFaceIndex[j].length;i++){
-        poly.push(setPolygon(objectProjectedVerts[j][object.meshVertsFaceIndex[j][i][0]],objectProjectedVerts[j][object.meshVertsFaceIndex[j][i][1]],objectProjectedVerts[j][object.meshVertsFaceIndex[j][i][2]],
-          worldVertsArrayObject[j][object.meshVertsFaceIndex[j][i][0]],worldVertsArrayObject[j][object.meshVertsFaceIndex[j][i][1]],worldVertsArrayObject[j][object.meshVertsFaceIndex[j][i][2]],object.UVVector[j]));
-        shadowPoly.push(setShadowPolygon(objectShadowProjectedVerts[j][object.meshVertsFaceIndex[j][i][0]],objectShadowProjectedVerts[j][object.meshVertsFaceIndex[j][i][1]],objectShadowProjectedVerts[j][object.meshVertsFaceIndex[j][i][2]]));
-
-      }
-    }
-    projectedObjects.push(makeProjectedObject(object,poly));
-    objectShadowZsort(shadowProjectedObjects,object,shadowPoly);
-/*
+function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,screen_size_h,screen_size_w){
   let worldVerts = [];
   let projectedVerts = [];
-  let objectProjectedVerts = []; 
   let shadowProjectedVerts = [];
-  let objectShadowProjectedVerts = [];
 
   // let verts = setVector3(object.meshVerts[i][0]+worldMatrix[0].position[0],object.meshVerts[i][1]+worldMatrix[0].position[1],object.meshVerts[i][2]+worldMatrix[0].position[2]);
   // verts = Vector3QuaternionMul(worldMatrix[1],verts);
   // verts = setVector3(object.meshVerts[i][0]*worldMatrix[2].scaleXYZ[0],object.meshVerts[i][1]*worldMatrix[2].scaleXYZ[1],object.meshVerts[i][2]*worldMatrix[2].scaleXYZ[2]);
-  for(let j=0;j<object.meshVerts.length;j++){
-    let objectMeshVerts = object.meshVerts[j];
-    let meshVerts_Length = objectMeshVerts.length;
-    for (let i = 0; i < meshVerts_Length; i++) {
-      let verts = setVector3(objectMeshVerts[i][0]*worldTranslation.scaleXYZ[position_X],objectMeshVerts[i][1]*worldTranslation.scaleXYZ[position_Y],objectMeshVerts[i][2]*worldTranslation.scaleXYZ[position_Z]);
-      verts = Vector3QuaternionMul(worldTranslation.quaternion,verts);
-      verts = setVector3(verts[0]+worldTranslation.position[position_X],verts[1]+worldTranslation.position[position_Y],verts[2]+worldTranslation.position[position_Z]);
-      //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
-      let nomalVerts = vertsCopy(verts);
-      let shadowVerts = vertsCopy(verts);
-      worldVerts[i] = verts;
-      protMatVecMul(viewMatrix,nomalVerts);
-      protMatVecMul(shadowViewMatrix,shadowVerts);
-     
-      let projectionMatrix =  matPers(nomalVerts[2]);
-      let shadowProjectionMatrix =  matPers(shadowVerts[2]);
-  
-      protMatVecMul(projectionMatrix,nomalVerts);
-      protMatVecMul(shadowProjectionMatrix,shadowVerts);
-  
-      //nomalVerts = matVecMul(viewPortMatrix,nomalVerts);
-      nomalVerts[0] = ((nomalVerts[0] + 0.5)*screen_size_w)|0;
-      nomalVerts[1] = ((nomalVerts[1] + 0.5)*screen_size_h)|0;
-      shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
-      shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;
-  
-      projectedVerts.push(nomalVerts);
-      shadowProjectedVerts[i].push(shadowVerts);  
-    }
-    objectProjectedVerts.push(projectedVerts);
-    shadowProjectedVerts.push(objectShadowProjectedVerts);
-    projectedVerts = [];
-    shadowProjectedVerts = [];
-  }
   let meshVerts_Length = object.meshVerts.length;
   for (let i = 0; i < meshVerts_Length; i++) {
     let verts = setVector3(object.meshVerts[i][0]*worldTranslation.scaleXYZ[position_X],object.meshVerts[i][1]*worldTranslation.scaleXYZ[position_Y],object.meshVerts[i][2]*worldTranslation.scaleXYZ[position_Z]);
@@ -1130,48 +1024,40 @@ function vertsCulAABBMaxMinCenter(orgObject,worldMatrix,offsetX,offsetY,offsetZ)
   return maxminCenterObject;
 }
 //blenderLoad
-let blueImage = new Image();
-blueImage.src = 'box.jpg';
-let bluePixelImage = null;
-blueImage.addEventListener("load", function() {
-	bluePixelImage = pictureToPixelMap(backCtx,blueImage);
+let monkeys = [];
+let a = [];
+let monkeysImage = new Image();
+monkeysImage.src = 'box.jpg';
+let monkeyPixelImage = [];
+let monkeyLoad = [];
+let monkeyLoad1 = [];
+monkeysImage.addEventListener("load", function() {
+	monkeyPixelImage = pictureToPixelMap(backCtx,monkeysImage);
+	let monkeyVerts = {};
+  monkeyVerts.vertsPosition = [];
+	// monkeys.push(new Object(monkeyVerts,0.0,-0.6,0,180,0,0,0.5,0.5,0.5,0,false,true,monkeyPixelImage));
+	// monkeyLoad.push(new ModelLoadData(monkeys[0]));
+	// monkeyLoad[0].JSONLoader("cube.json", (() => monkeyLoad[0].onJSONLoaded()));	
 }, true);	
-
-//blenderLoad
-// let monkeys = [];
-// let monkeysImage = new Image();
-// monkeysImage.src = 'box.jpg';
-// let monkeyPixelImage = [];
-// let monkeyLoad = [];
-// let monkeyLoad1 = [];
-// monkeysImage.addEventListener("load", function() {
-// 	monkeyPixelImage = pictureToPixelMap(backCtx,monkeysImage);
-// 	let monkeyVerts = {};
-//   monkeyVerts.vertsPosition = [];
-// 	monkeys.push(new Object(monkeyVerts,0.0,-0.6,0,180,0,0,0.5,0.5,0.5,0,false,true,monkeyPixelImage));
-// 	monkeyLoad.push(new ModelLoadData(monkeys[0]));
-// 	monkeyLoad[0].JSONLoader("cube.json", (() => monkeyLoad[0].onJSONLoaded()));	
-// }, true);	
 //sky
 let sphereVerts8 = makeSphereVerts(16,10);
 let spheres = [];
 let skyImage = new Image();
-skyImage.src = 'sky.jpg';
+skyImage.src = 'tire.png';
 
-let skyPixelImage = null;
+let skyPixelImage = [];
 
 skyImage.addEventListener("load", function() {
 	skyPixelImage = pictureToPixelMap(backCtx,skyImage);
 	//spheres.push(new Object(sphereVerts8,0.0,0.0,5,0,0,0,16,true,false,skyPixelImage));
 }, true);
 
-
 //box
 let cubes = [];
 let cubeImage = new Image();
-cubeImage.src = 'sky.png';
+cubeImage.src = 'tire.png';
 
-let cubePixelImage = null;
+let cubePixelImage = [];
 
 let planeFaceIndex = [];
 //上面
@@ -1242,7 +1128,7 @@ let dices = [];
 let steves = [];
 let diceImage = new Image();
 diceImage.src = "steve.png";
-let dicePixelImage = null;
+let dicePixelImage = [];
 diceImage.addEventListener("load", function() {
   dicePixelImage = pictureToPixelMap(backCtx,diceImage);
 },true);
@@ -1279,7 +1165,7 @@ let planes = [];
 let roadImage = new Image();
 roadImage.src = 'road.png';
 
-let roadPixelImage = null;
+let roadPixelImage = [];
 
 roadImage.addEventListener("load", function() {
 	roadPixelImage = pictureToPixelMap(backCtx,roadImage);
@@ -1292,7 +1178,7 @@ roadImage.addEventListener("load", function() {
 let groundImage = new Image();
 groundImage.src = 'sand.jpg';
 
-let sandPixelImage = null;
+let sandPixelImage = [];
 
 groundImage.addEventListener("load", function() {
 	sandPixelImage = pictureToPixelMap(backCtx,groundImage);
@@ -1340,15 +1226,34 @@ function QuaternionMul(a,b)
       a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
   );
 }
-
+function subQuaternionMulVector3(a,b)
+{
+  // QuaternionとVector3の積の計算出力Quaternionは必ずW=0になるらしいので消す。
+  return setVector3(
+      a[3] * b[0] - a[2] * b[1] + a[1] * b[2],
+      a[2] * b[0] + a[3] * b[1] - a[0] * b[2],
+      -(a[1] * b[0]) + a[0] * b[1] + a[3] * b[2],
+  );
+}
+function subVector3MulQuaternion(a,b)
+{
+  // QuaternionとVector3の積の計算出力Quaternionは必ずW=0になるらしいので消す。
+  return setVector3(
+      a[0] * b[3] - a[2] * b[1] + a[1] * b[2],
+      a[1] * b[3] + a[2] * b[0] - a[0] * b[2],
+      a[2] * b[3] - a[1] * b[0] + a[0] * b[1],
+  );
+}
 function Vector3QuaternionMul(a,b){
-  let bQuaternion = Quaternion(b[0], b[1], b[2],0);
+  // ベクトルをQuaternionに変換w=0でもいいらしいので無視する。 q * p * q^-1 でベクトルを回転。w=0の場合、その後の計算はすべでw=0になるらしい。
+  let bQuaternion = setVector3(b[0], b[1], b[2]);
   //同じクォータニオンでもp(b)が元の頂点、q(a)が回転させたい軸、出力が回転させた結果
   let aConjugated = Conjugated(a[0],a[1],a[2],a[3]);
-  let abVector3 = QuaternionMul(a,bQuaternion);
-  var pos = QuaternionMul(abVector3,aConjugated);
+  let abVector3 = subQuaternionMulVector3(a,bQuaternion);
+  var pos = subVector3MulQuaternion(abVector3,aConjugated);
   return setVector3(pos[0], pos[1], pos[2]);
 }
+
 /// 回転角度と回転軸からQuaternionを作成する
 function QuaternionAngleAxis(angle,axis){
   let  halfRad = top_int(angle * 0.5);
@@ -1501,12 +1406,12 @@ let cubePixelImageLoad = false;
 let roadPixelImageLoad = false;
 let sandPixelImageLoad = false;
 let dicePixelImageLoad = false;
-let carLoad = false;
 let steve1Load = false;
+let steve2Load = false;
+let cube1Load = false;
 let sphere1Load = false;
 let sandLoad = false;
 let sands = [];
-let cars = [];
 const screen_size_h = SCREEN_SIZE_H;
 const screen_size_w = SCREEN_SIZE_W;
 
@@ -1546,19 +1451,19 @@ let myImageData = ctx.createImageData(screen_size_w, screen_size_h);
 let mainLoopId = setInterval(function(){
 //dataLoad
 if(dataLoad == false){
-  if(skyPixelImage != null && skyPixelImageLoad == false){
+  if(skyPixelImage.length != 0 && skyPixelImageLoad == false){
     skyPixelImageLoad = true;
   }
-  if(cubePixelImage != null && cubePixelImageLoad == false){
+  if(cubePixelImage.length != 0 && cubePixelImageLoad == false){
     cubePixelImageLoad = true;
   }
-  if(roadPixelImage != null && roadPixelImageLoad == false){
+  if(roadPixelImage.length != 0 && roadPixelImageLoad == false){
     roadPixelImageLoad = true;
   }
-  if(sandPixelImage != null  && sandPixelImageLoad == false){
+  if(sandPixelImage.length != 0 && sandPixelImageLoad == false){
     sandPixelImageLoad = true;
   }
-  if(dicePixelImage != null && dicePixelImageLoad == false){
+  if(dicePixelImage.length != 0 && dicePixelImageLoad == false){
     dicePixelImageLoad = true;
   }
   if(sandPixelImageLoad == true && sandLoadPack.daeLoad == true && sandLoad == false){
@@ -1566,6 +1471,7 @@ if(dataLoad == false){
     sandLoadPack.backCullingFlag = true;
     sandLoadPack.shadowFlag = true;
     sandLoadPack.lightShadowFlag = false;
+    let bones = [];
     sandLoadPack.bones[0].position[position_Y] = 0.5;
 
     //一個0.75の大きさ
@@ -1592,12 +1498,7 @@ if(dataLoad == false){
     sand9.bones[0].position[position_Z] = 1.50001;
     sandLoadPack.bones[0].position[position_Z] = -0.001;
     sand7.bones[0].position[position_Z] = -0.002;
-    let sand10 = daeLoadCopy(sandLoadPack);
-    sand10.bones[0].position[position_Y] = -1;
-    sand10.bones[0].position[position_Z] = 0.65;
-    sand10.bones[0].scaleXYZ[scale_X] = 2;
-    sand10.bones[0].scaleXYZ[scale_Y] = 3;
-    sand10.lightShadowFlag = true;
+
     sands.push(sandLoadPack);
     sands.push(sand2);
     sands.push(sand3);
@@ -1607,55 +1508,36 @@ if(dataLoad == false){
     sands.push(sand7);
     sands.push(sand8);
     sands.push(sand9);
-    //sands.push(sand10);
     
     sandLoad = true;
   }
-  if(skyPixelImageLoad == true && carLoadPack.daeLoad == true){
-    carLoadPack.textureImage = skyPixelImage;
-    carLoadPack.backCullingFlag = true;
-    carLoadPack.shadowFlag = true;
-    carLoadPack.lightShadowFlag = true;
-    carLoadPack.bones[0].position[position_Y] = 0;
-    carLoadPack.bones[0].position[position_Z] = 1.5;
-    carLoadPack.bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
-
-    carLoadPack.bones[0].rotXYZ[scale_Z] = 90;
-    carLoadPack.bones[0].rotXYZ[scale_X] = 90;    
-    
-    // sphere1LoadPack.bones[0].scaleXYZ[scale_Y] = 10;
-    // sphere1LoadPack.bones[0].scaleXYZ[scale_Z] = 10;
-    culUVVector(carLoadPack)
-    cars.push(carLoadPack);
-    console.log(cars[0].UVVector) 
-    carLoad = true;
+  if(cubePixelImageLoad == true && cube1LoadPack.daeLoad == true && cube1Load == false){
+    cube1LoadPack.textureImage = cubePixelImage;
+    cube1LoadPack.backCullingFlag = false;
+    cube1LoadPack.shadowFlag = false;
+    cube1LoadPack.lightShadowFlag = false;
+    cube1LoadPack.bones[0].position[position_Y] = -3.5;
+    // cube1LoadPack.bones[0].position[position_Z] = 1;
+    cube1LoadPack.bones[0].rotXYZ[scale_X] = 90;
+    cube1LoadPack.bones[0].scaleXYZ[scale_X] = 48;//*2
+    cube1LoadPack.bones[0].scaleXYZ[scale_Y] = 24;
+    cube1LoadPack.bones[0].scaleXYZ[scale_Z] = 24;
+    culUVVector(cube1LoadPack);
+    //dices.push(cube1LoadPack);
+    cube1Load = true;
   }
-  if(skyPixelImageLoad == true && cubePixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
-    sphere1LoadPack.textureImage = skyPixelImage;
-    sphere1LoadPack.backCullingFlag = true;
+  if(cubePixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
+    sphere1LoadPack.textureImage = cubePixelImage;
+    sphere1LoadPack.backCullingFlag = false;
     sphere1LoadPack.shadowFlag = true;
     sphere1LoadPack.lightShadowFlag = true;
     sphere1LoadPack.bones[0].position[position_Y] = -1;
     sphere1LoadPack.bones[0].position[position_Z] = 1.5;
     sphere1LoadPack.bones[0].scaleXYZ[scale_X] = 2;
-    sphere1LoadPack.bones[0].scaleXYZ[scale_Y] = 1.5;
     // sphere1LoadPack.bones[0].scaleXYZ[scale_Y] = 10;
     // sphere1LoadPack.bones[0].scaleXYZ[scale_Z] = 10;
     culUVVector(sphere1LoadPack)
-    //dices.push(sphere1LoadPack);
-    let sphere2 = daeLoadCopy(sphere1LoadPack);
-    sphere2.textureImage = cubePixelImage;
-    sphere2.backCullingFlag = false;
-    sphere2.shadowFlag = false;
-    sphere2.lightShadowFlag = false;
-    sphere2.bones[0].position[position_Y] = -3.5;
-    // sphere2.bones[0].position[position_Z] = 1;
-    sphere2.bones[0].rotXYZ[scale_X] = 90;
-    sphere2.bones[0].scaleXYZ[scale_X] = 48;//*2
-    sphere2.bones[0].scaleXYZ[scale_Y] = 24;
-    sphere2.bones[0].scaleXYZ[scale_Z] = 24;
-    culUVVector(sphere2);
-    dices.push(sphere2);
+    dices.push(sphere1LoadPack) 
     sphere1Load = true;
   }
   if(dicePixelImageLoad == true && steve1LoadPack.daeLoad == true && steve1Load == false){
@@ -1664,7 +1546,6 @@ if(dataLoad == false){
     steve1LoadPack.shadowFlag = true;
     steve1LoadPack.lightShadowFlag = true;
     culUVVector(steve1LoadPack)
-    let steve2 = daeLoadCopy(steve1LoadPack);
     steves.push(steve1LoadPack);
     for(let i=0;i<steves[0].bones.length;i++){
       steves[0].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
@@ -1692,8 +1573,17 @@ if(dataLoad == false){
     steves[0].bones[11].quaternion[1] = quaternionXYZRoll(-80,0,0);
     steves[0].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0);
 
-    steves.push(steve2);
+    steve1Load = true;
+  }
+  if(dicePixelImageLoad == true && steve2LoadPack.daeLoad == true && steve1Load == true && steve2Load == false){
+    steve2LoadPack.textureImage = dicePixelImage;
+    steve2LoadPack.backCullingFlag = true;
+    steve2LoadPack.shadowFlag = true;
+    steve2LoadPack.lightShadowFlag = true;
+    culUVVector(steve2LoadPack)
+    steves.push(steve2LoadPack); 
     steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
+
     for(let i=0;i<steves[1].bones.length;i++){
       steves[1].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
       steves[1].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
@@ -1713,16 +1603,15 @@ if(dataLoad == false){
     steves[1].bones[11].afterQuaternion = quaternionXYZRoll(-80,0,0);
     steves[1].bones[12].afterQuaternion = quaternionXYZRoll(80,0,0);
 
-    steves[1].bones[4].quaternion[1] = quaternionXYZRoll(80,0,80);
+    steves[1].bones[4].quaternion[1] = quaternionXYZRoll(0,0,80);
     steves[1].bones[6].quaternion[1] = quaternionXYZRoll(0,0,-80);
     steves[1].bones[8].quaternion[1] = quaternionXYZRoll(0,0,-80);
     steves[1].bones[10].quaternion[1] = quaternionXYZRoll(0,0,80);
     steves[1].bones[11].quaternion[1] = quaternionXYZRoll(-80,0,0);
     steves[1].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0);
-
-    steve1Load = true;
+    steve2Load = true;
   }
-  if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load  && sphere1Load && sandLoad && carLoad){
+  if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load && steve2Load && cube1Load && sandLoad){
     dataLoad = true;
   }
   ctx.font = '50pt Arial';
@@ -1908,7 +1797,7 @@ for(let i in steves){
 
   sunViewMatrix = matCamera(sunPos,sunLookat,up);
   matRound4X4(sunViewMatrix);
-	// cuberegister
+	//cuberegister
   // for(let object of cubes){
   //   let worldMatrix = matIdentity();
   //   mulMatTranslate(worldMatrix,object.centerObjX,object.centerObjY,object.centerObjZ);  
@@ -1930,27 +1819,6 @@ for(let i in steves){
     worldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
     worldTranslation.position = object.bones[0].position;
     worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
-    //objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
-  }
-  for(let object of cars){
-    // let worldMatrix = matIdentity();
-    // mulMatTranslate(worldMatrix,object.bones[0].position[position_X],object.bones[0].position[position_Y],object.bones[0].position[position_Z]);  
-    // mulMatRotateX(worldMatrix,object.bones[0].rotXYZ[rot_X]);
-    // mulMatRotateY(worldMatrix,object.bones[0].rotXYZ[rot_Y]);
-    // mulMatRotateZ(worldMatrix,object.bones[0].rotXYZ[rot_Z]); 
-    // mulMatScaling(worldMatrix,object.bones[0].scaleXYZ[scale_X],object.bones[0].scaleXYZ[scale_Y],object.bones[0].scaleXYZ[scale_Z]);
-    let worldTranslation = [];
-    let tempWorldTranslation = {};
-    tempWorldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
-    tempWorldTranslation.position = object.bones[0].position;
-    tempWorldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
-    worldTranslation.push(tempWorldTranslation);
-    tempWorldTranslation = {};
-    tempWorldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
-    tempWorldTranslation.position = object.bones[0].position;
-    tempWorldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
-    worldTranslation.push(tempWorldTranslation);
-    
     objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
   //steve
