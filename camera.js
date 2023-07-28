@@ -136,6 +136,7 @@ function daeLoader(fileName,daeLoadPack){
           let char = [];
           let meshVerts = [];
           daeLoadPack.objectNumber = loadMeshVerts.length;
+          console.log(loadMeshVerts.length)
           for(let j=0;j<daeLoadPack.objectNumber;j++){
             let tempMeshVerts = [];
             for(let i=0;i<loadMeshVerts[j].length;i++){
@@ -161,8 +162,8 @@ function daeLoader(fileName,daeLoadPack){
             }
             meshVerts.push(tempMeshVerts);
           }
-          daeLoadPack.meshVerts = meshVerts[0];
-          console.log(meshVerts[0])
+          daeLoadPack.meshVerts = meshVerts;
+          console.log(meshVerts)
           //meshIndex
           char = [];
           verts = [];
@@ -207,8 +208,8 @@ function daeLoader(fileName,daeLoadPack){
             meshVertsFaceIndex.push(tempMeshVertsFaceIndex);
           }
           
-          daeLoadPack.meshVertsFaceIndex = meshVertsFaceIndex[0];
-          console.log(meshVertsFaceIndex[0])
+          daeLoadPack.meshVertsFaceIndex = meshVertsFaceIndex;
+          console.log(meshVertsFaceIndex)
           //uv
           let tempUV = [];
           let meshUV = [];
@@ -814,6 +815,7 @@ function daeMekeSkinMeshBone(daeLoadPack){
 }
 //ボーンなしシャドウマップ付き
 function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,screen_size_h,screen_size_w){
+
   let worldVerts = [];
   let projectedVerts = [];
   let shadowProjectedVerts = [];
@@ -822,15 +824,18 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   // verts = Vector3QuaternionMul(worldMatrix[1],verts);
   // verts = setVector3(object.meshVerts[i][0]*worldMatrix[2].scaleXYZ[0],object.meshVerts[i][1]*worldMatrix[2].scaleXYZ[1],object.meshVerts[i][2]*worldMatrix[2].scaleXYZ[2]);
   for(let j=0;j<object.objectNumber;j++){
-    let meshVerts_Length = object.meshVerts.length;
+    let tempWorldVerts = [];
+    let tempProjectedVerts = [];
+    let tempShadowProjectedVerts = [];
+    let meshVerts_Length = object.meshVerts[j].length;
     for (let i = 0; i < meshVerts_Length; i++) {
-      let verts = setVector3(object.meshVerts[i][0]*worldTranslation.scaleXYZ[position_X],object.meshVerts[i][1]*worldTranslation.scaleXYZ[position_Y],object.meshVerts[i][2]*worldTranslation.scaleXYZ[position_Z]);
+      let verts = setVector3(object.meshVerts[j][i][0]*worldTranslation.scaleXYZ[position_X],object.meshVerts[j][i][1]*worldTranslation.scaleXYZ[position_Y],object.meshVerts[j][i][2]*worldTranslation.scaleXYZ[position_Z]);
       verts = Vector3QuaternionMul(worldTranslation.quaternion,verts);
       verts = setVector3(verts[0]+worldTranslation.position[position_X],verts[1]+worldTranslation.position[position_Y],verts[2]+worldTranslation.position[position_Z]);
       //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
       let nomalVerts = vertsCopy(verts);
       let shadowVerts = vertsCopy(verts);
-      worldVerts[i] = verts;
+      tempWorldVerts[i] = verts;
       protMatVecMul(viewMatrix,nomalVerts);
       protMatVecMul(shadowViewMatrix,shadowVerts);
     
@@ -846,20 +851,24 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
       shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
       shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;
 
-      projectedVerts[i] = nomalVerts;
-      shadowProjectedVerts[i] = shadowVerts;  
-    }  
+      tempProjectedVerts[i] = nomalVerts;
+      tempShadowProjectedVerts[i] = shadowVerts;  
+    }
+    worldVerts.push(tempWorldVerts);
+    projectedVerts.push(tempProjectedVerts);
+    shadowProjectedVerts.push(tempShadowProjectedVerts);
   }
+  console.log(projectedVerts)
 
   let poly = [];
   let shadowPoly = [];
-  let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
   for(let j=0;j<object.objectNumber;j++){
+      let meshVertsFaceIndex_Length = object.meshVertsFaceIndex[j].length;
      for(let i=0;i<meshVertsFaceIndex_Length;i++){
-      let triangleFaceIndex = object.meshVertsFaceIndex[i];
-      poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i]);
-      shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);
+      let triangleFaceIndex = object.meshVertsFaceIndex[j][i];
+      poly.push(setPolygon(projectedVerts[j][triangleFaceIndex[0]],projectedVerts[j][triangleFaceIndex[1]],projectedVerts[j][triangleFaceIndex[2]],
+        worldVerts[j][triangleFaceIndex[0]],worldVerts[j][triangleFaceIndex[1]],worldVerts[j][triangleFaceIndex[2]],object.UVVector[j][i]));
+      shadowPoly.push(setShadowPolygon(shadowProjectedVerts[j][triangleFaceIndex[0]],shadowProjectedVerts[j][triangleFaceIndex[1]],shadowProjectedVerts[j][triangleFaceIndex[2]]));
     } 
   }
 
@@ -1216,7 +1225,7 @@ function culUVVector(daeLoadPack){
     }
     UVVector.push(tempUVVector);
   }
-  daeLoadPack.UVVector = UVVector[0];
+  daeLoadPack.UVVector = UVVector;
 }
 
 function Quaternion(x,y, z, w){
@@ -1539,11 +1548,11 @@ if(dataLoad == false){
   if(cubePixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
     sphere1LoadPack.textureImage = cubePixelImage;
     sphere1LoadPack.backCullingFlag = false;
-    sphere1LoadPack.shadowFlag = true;
-    sphere1LoadPack.lightShadowFlag = true;
+    sphere1LoadPack.shadowFlag = false;
+    sphere1LoadPack.lightShadowFlag = false;
     sphere1LoadPack.bones[0].position[position_Y] = -1;
     sphere1LoadPack.bones[0].position[position_Z] = 1.5;
-    sphere1LoadPack.bones[0].scaleXYZ[scale_X] = 2;
+    sphere1LoadPack.bones[0].scaleXYZ[scale_X] = 1;
     // sphere1LoadPack.bones[0].scaleXYZ[scale_Y] = 10;
     // sphere1LoadPack.bones[0].scaleXYZ[scale_Z] = 10;
     culUVVector(sphere1LoadPack)
