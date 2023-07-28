@@ -45,6 +45,7 @@ daeLoader("sand.dae",sandLoadPack);
 
 function daeLoadCopy(daeLoadPack){
    let copyDae = {};
+   copyDae.objectNumber = daeLoadPack.objectNumber;
    copyDae.meshVerts = daeLoadPack.meshVerts.concat();
    copyDae.meshVertsFaceIndex = daeLoadPack.meshVertsFaceIndex.concat();
    copyDae.faceIndexMeshUV = daeLoadPack.faceIndexMeshUV.concat();
@@ -134,7 +135,8 @@ function daeLoader(fileName,daeLoadPack){
           let verts = [];
           let char = [];
           let meshVerts = [];
-          for(let j=0;j<loadMeshVerts.length;j++){
+          daeLoadPack.objectNumber = loadMeshVerts.length;
+          for(let j=0;j<daeLoadPack.objectNumber;j++){
             let tempMeshVerts = [];
             for(let i=0;i<loadMeshVerts[j].length;i++){
               let tempChar = loadMeshVerts[j][i];
@@ -170,7 +172,7 @@ function daeLoader(fileName,daeLoadPack){
           let UVIndex = [];
           //1index,2normal,3uv
           let readNow = 1;
-          for(let j=0;j<loadMeshIndex.length;j++){
+          for(let j=0;j<daeLoadPack.objectNumber;j++){
             let tempMeshVertsFaceIndex = [];
             for(let i=0;i<loadMeshIndex[j].length;i++){
               let tempChar = loadMeshIndex[j][i];
@@ -215,7 +217,7 @@ function daeLoader(fileName,daeLoadPack){
           let v = 0;
           let readFlag = 0;//0:u,1:v,2:tempUV
           char = [];
-          for(let j=0;j<loadMeshUV.length;j++){
+          for(let j=0;j<daeLoadPack.objectNumber;j++){
             for(let i=0;i<loadMeshUV[j].length;i++){
               let tempChar = loadMeshUV[j][i];
               if(char.length == 0 && loadMeshUV[j][i] != " "){
@@ -251,7 +253,7 @@ function daeLoader(fileName,daeLoadPack){
             meshUV = [];             
           }
           let faceIndexMeshUV = [];
-          for(let j=0;j<loadMeshVerts.length;j++){
+          for(let j=0;j<daeLoadPack.objectNumber;j++){
             let tempFaceIndexMeshUV = [];
             let meshVertsFaceIndex_Length = meshVertsFaceIndex[j].length;
             for(let i=0;i<meshVertsFaceIndex_Length;i++){
@@ -264,7 +266,7 @@ function daeLoader(fileName,daeLoadPack){
             }
             faceIndexMeshUV.push(tempFaceIndexMeshUV);
           }
-          daeLoadPack.faceIndexMeshUV = faceIndexMeshUV[0];
+          daeLoadPack.faceIndexMeshUV = faceIndexMeshUV;
           console.log(faceIndexMeshUV)
   
           daeLoadPack.armatures = false;
@@ -819,42 +821,46 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   // let verts = setVector3(object.meshVerts[i][0]+worldMatrix[0].position[0],object.meshVerts[i][1]+worldMatrix[0].position[1],object.meshVerts[i][2]+worldMatrix[0].position[2]);
   // verts = Vector3QuaternionMul(worldMatrix[1],verts);
   // verts = setVector3(object.meshVerts[i][0]*worldMatrix[2].scaleXYZ[0],object.meshVerts[i][1]*worldMatrix[2].scaleXYZ[1],object.meshVerts[i][2]*worldMatrix[2].scaleXYZ[2]);
-  let meshVerts_Length = object.meshVerts.length;
-  for (let i = 0; i < meshVerts_Length; i++) {
-    let verts = setVector3(object.meshVerts[i][0]*worldTranslation.scaleXYZ[position_X],object.meshVerts[i][1]*worldTranslation.scaleXYZ[position_Y],object.meshVerts[i][2]*worldTranslation.scaleXYZ[position_Z]);
-    verts = Vector3QuaternionMul(worldTranslation.quaternion,verts);
-    verts = setVector3(verts[0]+worldTranslation.position[position_X],verts[1]+worldTranslation.position[position_Y],verts[2]+worldTranslation.position[position_Z]);
-    //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
-    let nomalVerts = vertsCopy(verts);
-    let shadowVerts = vertsCopy(verts);
-    worldVerts[i] = verts;
-    protMatVecMul(viewMatrix,nomalVerts);
-    protMatVecMul(shadowViewMatrix,shadowVerts);
-   
-    let projectionMatrix =  matPers(nomalVerts[2]);
-    let shadowProjectionMatrix =  matPers(shadowVerts[2]);
+  for(let j=0;j<object.objectNumber;j++){
+    let meshVerts_Length = object.meshVerts.length;
+    for (let i = 0; i < meshVerts_Length; i++) {
+      let verts = setVector3(object.meshVerts[i][0]*worldTranslation.scaleXYZ[position_X],object.meshVerts[i][1]*worldTranslation.scaleXYZ[position_Y],object.meshVerts[i][2]*worldTranslation.scaleXYZ[position_Z]);
+      verts = Vector3QuaternionMul(worldTranslation.quaternion,verts);
+      verts = setVector3(verts[0]+worldTranslation.position[position_X],verts[1]+worldTranslation.position[position_Y],verts[2]+worldTranslation.position[position_Z]);
+      //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
+      let nomalVerts = vertsCopy(verts);
+      let shadowVerts = vertsCopy(verts);
+      worldVerts[i] = verts;
+      protMatVecMul(viewMatrix,nomalVerts);
+      protMatVecMul(shadowViewMatrix,shadowVerts);
+    
+      let projectionMatrix =  matPers(nomalVerts[2]);
+      let shadowProjectionMatrix =  matPers(shadowVerts[2]);
 
-    protMatVecMul(projectionMatrix,nomalVerts);
-    protMatVecMul(shadowProjectionMatrix,shadowVerts);
+      protMatVecMul(projectionMatrix,nomalVerts);
+      protMatVecMul(shadowProjectionMatrix,shadowVerts);
 
-    //nomalVerts = matVecMul(viewPortMatrix,nomalVerts);
-    nomalVerts[0] = ((nomalVerts[0] + 0.5)*screen_size_w)|0;
-    nomalVerts[1] = ((nomalVerts[1] + 0.5)*screen_size_h)|0;
-    shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
-    shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;
+      //nomalVerts = matVecMul(viewPortMatrix,nomalVerts);
+      nomalVerts[0] = ((nomalVerts[0] + 0.5)*screen_size_w)|0;
+      nomalVerts[1] = ((nomalVerts[1] + 0.5)*screen_size_h)|0;
+      shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
+      shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;
 
-    projectedVerts[i] = nomalVerts;
-    shadowProjectedVerts[i] = shadowVerts;  
+      projectedVerts[i] = nomalVerts;
+      shadowProjectedVerts[i] = shadowVerts;  
+    }  
   }
- 
+
   let poly = [];
   let shadowPoly = [];
   let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
-  for(let i=0;i<meshVertsFaceIndex_Length;i++){
-    let triangleFaceIndex = object.meshVertsFaceIndex[i];
-    poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i]);
-    shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);
+  for(let j=0;j<object.objectNumber;j++){
+     for(let i=0;i<meshVertsFaceIndex_Length;i++){
+      let triangleFaceIndex = object.meshVertsFaceIndex[i];
+      poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
+        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i]);
+      shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);
+    } 
   }
 
   //ｚソート
@@ -1191,22 +1197,26 @@ groundImage.addEventListener("load", function() {
 }, true);
 
 function culUVVector(daeLoadPack){
-  let faceIndexMeshUV_Length = daeLoadPack.faceIndexMeshUV.length;
   let UVVector = [];
-  for(let i=0;i<faceIndexMeshUV_Length;i++){
-    let Ax = (daeLoadPack.faceIndexMeshUV[i][2] - daeLoadPack.faceIndexMeshUV[i][0]) * daeLoadPack.textureImage.width;
-    let Ay = (daeLoadPack.faceIndexMeshUV[i][3] - daeLoadPack.faceIndexMeshUV[i][1]) * daeLoadPack.textureImage.height;
-    let Bx = (daeLoadPack.faceIndexMeshUV[i][4] - daeLoadPack.faceIndexMeshUV[i][0]) * daeLoadPack.textureImage.width;
-    let By = (daeLoadPack.faceIndexMeshUV[i][5] - daeLoadPack.faceIndexMeshUV[i][1]) * daeLoadPack.textureImage.height;
-    let mi = getInvert2(Ax,Ay,Bx,By);
-    if (!mi) return;
-    let preUV_List0 = daeLoadPack.faceIndexMeshUV[i][0] * daeLoadPack.textureImage.width;
-    mi.push(preUV_List0);
-    let preUV_List1 = daeLoadPack.faceIndexMeshUV[i][1] * daeLoadPack.textureImage.height;
-    mi.push(preUV_List1);
-    UVVector.push(mi);
+  for(let j=0;j<daeLoadPack.objectNumber;j++){
+    let faceIndexMeshUV_Length = daeLoadPack.faceIndexMeshUV[j].length;
+    let tempUVVector = [];
+    for(let i=0;i<faceIndexMeshUV_Length;i++){
+      let Ax = (daeLoadPack.faceIndexMeshUV[j][i][2] - daeLoadPack.faceIndexMeshUV[j][i][0]) * daeLoadPack.textureImage.width;
+      let Ay = (daeLoadPack.faceIndexMeshUV[j][i][3] - daeLoadPack.faceIndexMeshUV[j][i][1]) * daeLoadPack.textureImage.height;
+      let Bx = (daeLoadPack.faceIndexMeshUV[j][i][4] - daeLoadPack.faceIndexMeshUV[j][i][0]) * daeLoadPack.textureImage.width;
+      let By = (daeLoadPack.faceIndexMeshUV[j][i][5] - daeLoadPack.faceIndexMeshUV[j][i][1]) * daeLoadPack.textureImage.height;
+      let mi = getInvert2(Ax,Ay,Bx,By);
+      if (!mi) return;
+      let preUV_List0 = daeLoadPack.faceIndexMeshUV[j][i][0] * daeLoadPack.textureImage.width;
+      mi.push(preUV_List0);
+      let preUV_List1 = daeLoadPack.faceIndexMeshUV[j][i][1] * daeLoadPack.textureImage.height;
+      mi.push(preUV_List1);
+      tempUVVector.push(mi);
+    }
+    UVVector.push(tempUVVector);
   }
-  daeLoadPack.UVVector = UVVector;
+  daeLoadPack.UVVector = UVVector[0];
 }
 
 function Quaternion(x,y, z, w){
