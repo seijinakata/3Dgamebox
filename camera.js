@@ -36,14 +36,19 @@ let steve2LoadPack = {};
 let cube1LoadPack = {};
 let sphere1LoadPack = {};
 let sandLoadPack = {};
-daeLoader("car.dae",sphere1LoadPack);
-daeLoader("dice3.dae",steve1LoadPack);
-daeLoader("dice3.dae",steve2LoadPack);
-daeLoader("car.dae",cube1LoadPack);
 
-daeLoader("sand.dae",sandLoadPack);
+let steve1Loadpack = [];
+let steve2Loadpack = [];
+let cube1Loadpack = [];
+let sphere1Loadpack = [];
+let sandLoadpack = [];
+daeLoader("car.dae",sphere1LoadPack,sphere1Loadpack);
+daeLoader("dice3.dae",steve1LoadPack,steve1Loadpack);
+daeLoader("dice3.dae",steve2LoadPack,steve2Loadpack);
+daeLoader("car.dae",cube1LoadPack,cube1Loadpack);
+daeLoader("sand.dae",sandLoadPack,sandLoadpack);
 
-function daeLoadCopy(daeLoadPack){
+function daeLoadCopy(daeLoadPack,daeLoadpack){
    let copyDae = {};
    copyDae.objectNumber = daeLoadPack.objectNumber;
    copyDae.meshVerts = daeLoadPack.meshVerts.concat();
@@ -64,7 +69,7 @@ function daeLoadCopy(daeLoadPack){
    return copyDae;
 }
 
-function daeLoader(fileName,daeLoadPack){
+function daeLoader(fileName,daeLoadPack,daeLoadpack){
     let xmlhttp = new XMLHttpRequest();
     xmlhttp.open("GET", fileName);
     xmlhttp.send();
@@ -136,7 +141,11 @@ function daeLoader(fileName,daeLoadPack){
           let char = [];
           let meshVerts = [];
           daeLoadPack.objectNumber = loadMeshVerts.length;
-          console.log(loadMeshVerts.length)
+          for(let i=0;i<daeLoadPack.objectNumber;i++){
+            let objectDae = {};
+            daeLoadpack.push(objectDae);
+          }
+
           for(let j=0;j<daeLoadPack.objectNumber;j++){
             let tempMeshVerts = [];
             for(let i=0;i<loadMeshVerts[j].length;i++){
@@ -163,7 +172,10 @@ function daeLoader(fileName,daeLoadPack){
             meshVerts.push(tempMeshVerts);
           }
           daeLoadPack.meshVerts = meshVerts;
-          console.log(meshVerts)
+          daeLoadpack[0].objectNumber = loadMeshVerts.length;
+          for(let i=0;i<daeLoadPack.objectNumber;i++){
+            daeLoadpack[i].meshVerts = meshVerts[i];
+          }
           //meshIndex
           char = [];
           verts = [];
@@ -209,7 +221,9 @@ function daeLoader(fileName,daeLoadPack){
           }
           
           daeLoadPack.meshVertsFaceIndex = meshVertsFaceIndex;
-          console.log(meshVertsFaceIndex)
+          for(let i=0;i<daeLoadPack.objectNumber;i++){
+            daeLoadpack[i].meshVertsFaceIndex = meshVertsFaceIndex[i];
+          }
           //uv
           let tempUV = [];
           let meshUV = [];
@@ -268,8 +282,10 @@ function daeLoader(fileName,daeLoadPack){
             faceIndexMeshUV.push(tempFaceIndexMeshUV);
           }
           daeLoadPack.faceIndexMeshUV = faceIndexMeshUV;
-          console.log(faceIndexMeshUV)
-  
+          for(let i=0;i<daeLoadPack.objectNumber;i++){
+            daeLoadpack[i].faceIndexMeshUV = faceIndexMeshUV[i];
+          }
+          console.log(daeLoadpack)
           daeLoadPack.armatures = false;
         //armature
         let armatures = docelem.getElementsByTagName("library_controllers");
@@ -462,6 +478,15 @@ function daeLoader(fileName,daeLoadPack){
           boneContents.scaleXYZ = setVector3(1,1,1);
           bones.push(boneContents);
           daeLoadPack.bones = bones;
+          for(let i=0;i<daeLoadPack.objectNumber;i++){
+            let bones = [];
+            let boneContents = {};
+            boneContents.position = setVector3(0,0,0);
+            boneContents.rotXYZ = setVector3(0,0,0);
+            boneContents.scaleXYZ = setVector3(1,1,1);
+            bones.push(boneContents);
+            daeLoadpack[i].bones = bones;
+          }
         }
         daeLoadPack.daeLoad = true;
       } else {
@@ -1227,7 +1252,24 @@ function culUVVector(daeLoadPack){
   }
   daeLoadPack.UVVector = UVVector;
 }
-
+function culUVvector(daeLoadPack){
+  let UVVector = [];
+  let faceIndexMeshUV_Length = daeLoadPack.faceIndexMeshUV.length;
+  for(let i=0;i<faceIndexMeshUV_Length;i++){
+    let Ax = (daeLoadPack.faceIndexMeshUV[i][2] - daeLoadPack.faceIndexMeshUV[i][0]) * daeLoadPack.textureImage.width;
+    let Ay = (daeLoadPack.faceIndexMeshUV[i][3] - daeLoadPack.faceIndexMeshUV[i][1]) * daeLoadPack.textureImage.height;
+    let Bx = (daeLoadPack.faceIndexMeshUV[i][4] - daeLoadPack.faceIndexMeshUV[i][0]) * daeLoadPack.textureImage.width;
+    let By = (daeLoadPack.faceIndexMeshUV[i][5] - daeLoadPack.faceIndexMeshUV[i][1]) * daeLoadPack.textureImage.height;
+    let mi = getInvert2(Ax,Ay,Bx,By);
+    if (!mi) return;
+    let preUV_List0 = daeLoadPack.faceIndexMeshUV[i][0] * daeLoadPack.textureImage.width;
+    mi.push(preUV_List0);
+    let preUV_List1 = daeLoadPack.faceIndexMeshUV[i][1] * daeLoadPack.textureImage.height;
+    mi.push(preUV_List1);
+    UVVector.push(mi);
+  }
+  daeLoadPack.UVVector = UVVector;
+}
 function Quaternion(x,y, z, w){
   return [x,y,z,w];
 }
@@ -1546,6 +1588,19 @@ if(dataLoad == false){
     cube1Load = true;
   }
   if(cubePixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
+    for(let i=0;i<sphere1Loadpack[0].objectNumber;i++){
+      sphere1Loadpack[i].textureImage = cubePixelImage;
+      sphere1Loadpack[i].backCullingFlag = false;
+      sphere1Loadpack[i].shadowFlag = false;
+      sphere1Loadpack[i].lightShadowFlag = false;
+      sphere1Loadpack[i].bones[0].position[position_Y] = -1;
+      sphere1Loadpack[i].bones[0].position[position_Z] = 1.5;
+      sphere1Loadpack[i].bones[0].scaleXYZ[scale_X] = 1;
+      // sphere1Loadpack.bones[0].scaleXYZ[scale_Y] = 10;
+      // sphere1Loadpack.bones[0].scaleXYZ[scale_Z] = 10;
+      culUVvector(sphere1Loadpack[i]); 
+    }
+    
     sphere1LoadPack.textureImage = cubePixelImage;
     sphere1LoadPack.backCullingFlag = false;
     sphere1LoadPack.shadowFlag = false;
