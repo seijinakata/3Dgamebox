@@ -285,7 +285,6 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
           for(let i=0;i<daeLoadPack.objectNumber;i++){
             daeLoadpack[i].faceIndexMeshUV = faceIndexMeshUV[i];
           }
-          console.log(daeLoadpack)
           daeLoadPack.armatures = false;
         //armature
         let armatures = docelem.getElementsByTagName("library_controllers");
@@ -882,7 +881,6 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
       let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
      for(let i=0;i<meshVertsFaceIndex_Length;i++){
       let triangleFaceIndex = object.meshVertsFaceIndex[i];
-      console.log(projectedVerts)
       poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
         worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i]));
       shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));
@@ -1278,31 +1276,13 @@ function QuaternionMul(a,b)
       a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
   );
 }
-function subQuaternionMulVector3(a,b)
-{
-  // QuaternionとVector3の積の計算出力Quaternionは必ずW=0になるらしいので消す。
-  return setVector3(
-      a[3] * b[0] - a[2] * b[1] + a[1] * b[2],
-      a[2] * b[0] + a[3] * b[1] - a[0] * b[2],
-      -(a[1] * b[0]) + a[0] * b[1] + a[3] * b[2],
-  );
-}
-function subVector3MulQuaternion(a,b)
-{
-  // QuaternionとVector3の積の計算出力Quaternionは必ずW=0になるらしいので消す。
-  return setVector3(
-      a[0] * b[3] - a[2] * b[1] + a[1] * b[2],
-      a[1] * b[3] + a[2] * b[0] - a[0] * b[2],
-      a[2] * b[3] - a[1] * b[0] + a[0] * b[1],
-  );
-}
 function Vector3QuaternionMul(a,b){
-  // ベクトルをQuaternionに変換w=0でもいいらしいので無視する。 q * p * q^-1 でベクトルを回転。w=0の場合、その後の計算はすべでw=0になるらしい。
-  let bQuaternion = setVector3(b[0], b[1], b[2]);
+  // ベクトルをQuaternionに変換 q * p * q^-1 でベクトルを回転。w=0とおいて、最後wを無視する。
+  let bQuaternion = Quaternion(b[0], b[1], b[2],0);
   //同じクォータニオンでもp(b)が元の頂点、q(a)が回転させたい軸、出力が回転させた結果
   let aConjugated = Conjugated(a[0],a[1],a[2],a[3]);
-  let abVector3 = subQuaternionMulVector3(a,bQuaternion);
-  var pos = subVector3MulQuaternion(abVector3,aConjugated);
+  let abQuaternion = QuaternionMul(a,bQuaternion);
+  var pos = QuaternionMul(abQuaternion,aConjugated);
   return setVector3(pos[0], pos[1], pos[2]);
 }
 
@@ -1581,12 +1561,14 @@ if(dataLoad == false){
   if(cubePixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
     for(let i=0;i<sphere1Loadpack[0].objectNumber;i++){
       sphere1Loadpack[i].textureImage = cubePixelImage;
-      sphere1Loadpack[i].backCullingFlag = false;
-      sphere1Loadpack[i].shadowFlag = false;
-      sphere1Loadpack[i].lightShadowFlag = false;
+      sphere1Loadpack[i].backCullingFlag = true;
+      sphere1Loadpack[i].shadowFlag = true;
+      sphere1Loadpack[i].lightShadowFlag = true;
       sphere1Loadpack[i].bones[0].position[position_Y] = -1;
       sphere1Loadpack[i].bones[0].position[position_Z] = 1.5;
       sphere1Loadpack[i].bones[0].scaleXYZ[scale_X] = 1;
+      //sphere1Loadpack[i].bones[0].rotXYZ[position_Z] = 90;
+      sphere1Loadpack[i].bones[0].rotXYZ[position_Y] = 90;
       // sphere1Loadpack.bones[0].scaleXYZ[scale_Y] = 10;
       // sphere1Loadpack.bones[0].scaleXYZ[scale_Z] = 10;
       culUVvector(sphere1Loadpack[i]); 
@@ -2074,9 +2056,9 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
     }else{
       //何もないところは黒
       //dotPaint(j,i,0,0,0,255,ctx);
-      myImageData.data[base.r] = 0;  // Red
-      myImageData.data[base.g] = 0;  // Green
-      myImageData.data[base.b] = 0;  // Blue
+      myImageData.data[base.r] = 255;  // Red
+      myImageData.data[base.g] = 255;  // Green
+      myImageData.data[base.b] = 255;  // Blue
       myImageData.data[base.a] = 255; // Alpha
     }
   }
