@@ -875,7 +875,6 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
     projectedVerts.push(nomalVerts);
     shadowProjectedVerts.push(shadowVerts);  
   }
-
   let poly = [];
   let shadowPoly = [];
       let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
@@ -1257,6 +1256,7 @@ function culUVvector(daeLoadPack){
     mi.push(preUV_List1);
     UVVector.push(mi);
   }
+  console.log(33)
   daeLoadPack.UVVector = UVVector;
 }
 function Quaternion(x,y, z, w){
@@ -1564,15 +1564,16 @@ if(dataLoad == false){
       sphere1Loadpack[i].backCullingFlag = true;
       sphere1Loadpack[i].shadowFlag = true;
       sphere1Loadpack[i].lightShadowFlag = true;
-      sphere1Loadpack[i].bones[0].position[position_Y] = -1;
+      sphere1Loadpack[i].bones[0].position[position_Y] = 0;
       sphere1Loadpack[i].bones[0].position[position_Z] = 1.5;
-      sphere1Loadpack[i].bones[0].scaleXYZ[scale_X] = 1;
-      //sphere1Loadpack[i].bones[0].rotXYZ[position_Z] = 90;
-      sphere1Loadpack[i].bones[0].rotXYZ[position_Y] = 90;
+      sphere1Loadpack[i].bones[0].scaleXYZ = setVector3(0.1,0.1,0.1)
+      sphere1Loadpack[i].bones[0].rotXYZ[position_X] = 180;
+      //sphere1Loadpack[i].bones[0].rotXYZ[position_Y] = 90;
       // sphere1Loadpack.bones[0].scaleXYZ[scale_Y] = 10;
       // sphere1Loadpack.bones[0].scaleXYZ[scale_Z] = 10;
       culUVvector(sphere1Loadpack[i]); 
     }
+    console.log(sphere1Loadpack)
     
     sphere1LoadPack.textureImage = cubePixelImage;
     sphere1LoadPack.backCullingFlag = false;
@@ -2056,9 +2057,9 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
     }else{
       //何もないところは黒
       //dotPaint(j,i,0,0,0,255,ctx);
-      myImageData.data[base.r] = 255;  // Red
-      myImageData.data[base.g] = 255;  // Green
-      myImageData.data[base.b] = 255;  // Blue
+      myImageData.data[base.r] = 0;  // Red
+      myImageData.data[base.g] = 0;  // Green
+      myImageData.data[base.b] = 0;  // Blue
       myImageData.data[base.a] = 255; // Alpha
     }
   }
