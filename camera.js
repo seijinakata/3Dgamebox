@@ -42,7 +42,7 @@ let steve2Loadpack = [];
 let cube1Loadpack = [];
 let sphere1Loadpack = [];
 let sandLoadpack = [];
-daeLoader("car.dae",sphere1LoadPack,sphere1Loadpack);
+daeLoader("sphere.dae",sphere1LoadPack,sphere1Loadpack);
 daeLoader("dice3.dae",steve1LoadPack,steve1Loadpack);
 daeLoader("dice3.dae",steve2LoadPack,steve2Loadpack);
 daeLoader("car.dae",cube1LoadPack,cube1Loadpack);
@@ -527,7 +527,7 @@ let viewMatrix = matIdentity();
 let inverseViewMatrix = matIdentity();
 let sunViewMatrix = matIdentity();
 // Camera
-let cameraPos = setVector3(0.0,-1.6,-4);
+let cameraPos = setVector3(0.0,-3,-5);
 let lookat = setVector3(0.0,-1,1);
 let sunPos = setVector3(0,-3,-2);
 let sunLookat = setVector3(0.0,-0.0,0);
@@ -1071,7 +1071,7 @@ monkeysImage.addEventListener("load", function() {
 let sphereVerts8 = makeSphereVerts(16,10);
 let spheres = [];
 let skyImage = new Image();
-skyImage.src = 'tire.png';
+skyImage.src = 'sky.png';
 
 let skyPixelImage = [];
 
@@ -1256,7 +1256,6 @@ function culUVvector(daeLoadPack){
     mi.push(preUV_List1);
     UVVector.push(mi);
   }
-  console.log(33)
   daeLoadPack.UVVector = UVVector;
 }
 function Quaternion(x,y, z, w){
@@ -1544,48 +1543,38 @@ if(dataLoad == false){
     sandLoad = true;
   }
   if(cubePixelImageLoad == true && cube1LoadPack.daeLoad == true && cube1Load == false){
-    cube1LoadPack.textureImage = cubePixelImage;
-    cube1LoadPack.backCullingFlag = false;
-    cube1LoadPack.shadowFlag = false;
-    cube1LoadPack.lightShadowFlag = false;
-    cube1LoadPack.bones[0].position[position_Y] = -3.5;
-    // cube1LoadPack.bones[0].position[position_Z] = 1;
-    cube1LoadPack.bones[0].rotXYZ[scale_X] = 90;
-    cube1LoadPack.bones[0].scaleXYZ[scale_X] = 48;//*2
-    cube1LoadPack.bones[0].scaleXYZ[scale_Y] = 24;
-    cube1LoadPack.bones[0].scaleXYZ[scale_Z] = 24;
-    culUVVector(cube1LoadPack);
-    //dices.push(cube1LoadPack);
+    for(let i=0;i<cube1Loadpack[0].objectNumber;i++){
+      cube1Loadpack[i].textureImage = cubePixelImage;
+      cube1Loadpack[i].backCullingFlag = true;
+      cube1Loadpack[i].shadowFlag = true;
+      cube1Loadpack[i].lightShadowFlag = true;
+      cube1Loadpack[i].bones[0].position[position_Y] = 0;
+      cube1Loadpack[i].bones[0].position[position_Z] = 2.5;
+      cube1Loadpack[i].bones[0].scaleXYZ = setVector3(0.1,0.1,0.1)
+      cube1Loadpack[i].bones[0].rotXYZ[position_X] = 180;
+      cube1Loadpack[i].bones[0].rotXYZ[position_Y] = 180;
+      culUVvector(cube1Loadpack[i]); 
+    }
+    console.log(cube1Loadpack)
+    dices.push(cube1Loadpack);
     cube1Load = true;
   }
-  if(cubePixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
+  if(skyPixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
     for(let i=0;i<sphere1Loadpack[0].objectNumber;i++){
-      sphere1Loadpack[i].textureImage = cubePixelImage;
-      sphere1Loadpack[i].backCullingFlag = true;
-      sphere1Loadpack[i].shadowFlag = true;
-      sphere1Loadpack[i].lightShadowFlag = true;
-      sphere1Loadpack[i].bones[0].position[position_Y] = 0;
-      sphere1Loadpack[i].bones[0].position[position_Z] = 1.5;
-      sphere1Loadpack[i].bones[0].scaleXYZ = setVector3(0.1,0.1,0.1)
-      sphere1Loadpack[i].bones[0].rotXYZ[position_X] = 180;
+      sphere1Loadpack[i].textureImage = skyPixelImage;
+      sphere1Loadpack[i].backCullingFlag = false;
+      sphere1Loadpack[i].shadowFlag = false;
+      sphere1Loadpack[i].lightShadowFlag = false;
+      // sphere1Loadpack[i].bones[0].position[position_Y] = 0;
+      // sphere1Loadpack[i].bones[0].position[position_Z] = 1.5;
+      sphere1Loadpack[i].bones[0].scaleXYZ = setVector3(20,20,20);
+      sphere1Loadpack[i].bones[0].rotXYZ[position_X] = 90;
       //sphere1Loadpack[i].bones[0].rotXYZ[position_Y] = 90;
       // sphere1Loadpack.bones[0].scaleXYZ[scale_Y] = 10;
       // sphere1Loadpack.bones[0].scaleXYZ[scale_Z] = 10;
       culUVvector(sphere1Loadpack[i]); 
     }
-    console.log(sphere1Loadpack)
-    
-    sphere1LoadPack.textureImage = cubePixelImage;
-    sphere1LoadPack.backCullingFlag = false;
-    sphere1LoadPack.shadowFlag = false;
-    sphere1LoadPack.lightShadowFlag = false;
-    sphere1LoadPack.bones[0].position[position_Y] = -1;
-    sphere1LoadPack.bones[0].position[position_Z] = 1.5;
-    sphere1LoadPack.bones[0].scaleXYZ[scale_X] = 1;
-    // sphere1LoadPack.bones[0].scaleXYZ[scale_Y] = 10;
-    // sphere1LoadPack.bones[0].scaleXYZ[scale_Z] = 10;
-    culUVVector(sphere1LoadPack)
-    dices.push(sphere1Loadpack) 
+    dices.push(sphere1Loadpack) ;
     sphere1Load = true;
   }
   if(dicePixelImageLoad == true && steve1LoadPack.daeLoad == true && steve1Load == false){
