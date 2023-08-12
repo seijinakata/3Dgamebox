@@ -68,7 +68,31 @@ function daeLoadCopy(daeLoadPack,daeLoadpack){
    copyDae.UVVector = daeLoadPack.UVVector.concat();//concat?
    return copyDae;
 }
-
+function daeLoadcopy(daeLoadPack){
+  let copyDae = [];
+  for(let i=0;i<daeLoadPack[0].objectNumber;i++){
+    let object = daeLoadPack[i];
+    let tempCopyDae = {};
+    tempCopyDae.objectNumber = object.objectNumber;
+    tempCopyDae.meshVerts = object.meshVerts.concat();
+    tempCopyDae.meshVertsFaceIndex = object.meshVertsFaceIndex.concat();
+    tempCopyDae.faceIndexMeshUV = object.faceIndexMeshUV.concat();
+    tempCopyDae.textureImage = object.textureImage;
+    tempCopyDae.backCullingFlag = object.backCullingFlag;
+    tempCopyDae.shadowFlag = object.shadowFlag;
+    tempCopyDae.lightShadowFlag = object.lightShadowFlag;
+    let bones = [];
+    let boneContents = {};
+    boneContents.position = object.bones[0].position.concat();
+    boneContents.rotXYZ = object.bones[0].rotXYZ.concat();
+    boneContents.scaleXYZ = object.bones[0].scaleXYZ.concat();
+    bones.push(boneContents);
+    tempCopyDae.bones = bones;
+    tempCopyDae.UVVector = object.UVVector.concat();//concat?
+    copyDae.push(tempCopyDae); 
+  }
+  return copyDae;
+}
 function daeLoader(fileName,daeLoadPack,daeLoadpack){
     let xmlhttp = new XMLHttpRequest();
     xmlhttp.open("GET", fileName);
@@ -1555,8 +1579,10 @@ if(dataLoad == false){
       cube1Loadpack[i].bones[0].rotXYZ[position_Y] = 180;
       culUVvector(cube1Loadpack[i]); 
     }
-    console.log(cube1Loadpack)
+    let cube2 = daeLoadcopy(cube1Loadpack);
+    cube2[0].bones[0].position[position_Y] = 1;
     dices.push(cube1Loadpack);
+    dices.push(cube2);
     cube1Load = true;
   }
   if(skyPixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
