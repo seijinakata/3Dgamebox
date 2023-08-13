@@ -1502,6 +1502,7 @@ shdowBufferInit(shadowMap,screen_size_h,screen_size_w);
 let zBuffering = [];
 renderBufferInit(zBuffering,screen_size_h,screen_size_w);
 let myImageData = ctx.createImageData(screen_size_w, screen_size_h);
+let Sands = [];
 
 let mainLoopId = setInterval(function(){
 //dataLoad
@@ -1529,6 +1530,19 @@ if(dataLoad == false){
     let bones = [];
     sandLoadPack.bones[0].position[position_Y] = 0.5;
 
+    for(let i=0;i<sandLoadpack[0].objectNumber;i++){
+      sandLoadpack[i].textureImage = sandPixelImage;
+      sandLoadpack[i].backCullingFlag = true;
+      sandLoadpack[i].shadowFlag = true;
+      sandLoadpack[i].lightShadowFlag = false;
+      //sandLoadpack[i].bones[0].position[position_Y] = 0;
+      sandLoadpack[i].bones[0].position[position_Y] = 0.5;
+      //sandLoadpack[i].bones[0].scaleXYZ = setVector3(0.1,0.1,0.1)
+      // sandLoadpack[i].bones[0].rotXYZ[position_X] = 180;
+      // sandLoadpack[i].bones[0].rotXYZ[position_Y] = 180;
+      culUVvector(sandLoadpack[i]); 
+    }
+    Sands.push(sandLoadpack);
     //一個0.75の大きさ
     culUVVector(sandLoadPack);
 
@@ -1872,6 +1886,23 @@ for(let i in steves){
 	// }
   //dicesregister
   for(let Object of dices){
+    // let worldMatrix = matIdentity();
+    // mulMatTranslate(worldMatrix,object.bones[0].position[position_X],object.bones[0].position[position_Y],object.bones[0].position[position_Z]);  
+    // mulMatRotateX(worldMatrix,object.bones[0].rotXYZ[rot_X]);
+    // mulMatRotateY(worldMatrix,object.bones[0].rotXYZ[rot_Y]);
+    // mulMatRotateZ(worldMatrix,object.bones[0].rotXYZ[rot_Z]); 
+    // mulMatScaling(worldMatrix,object.bones[0].scaleXYZ[scale_X],object.bones[0].scaleXYZ[scale_Y],object.bones[0].scaleXYZ[scale_Z]);
+    for(let i=0;i<Object[0].objectNumber;i++){
+    let object = Object[i];
+    let worldTranslation = {};
+    worldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
+    worldTranslation.position = object.bones[0].position;
+    worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
+    objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    }
+
+  }
+  for(let Object of Sands){
     // let worldMatrix = matIdentity();
     // mulMatTranslate(worldMatrix,object.bones[0].position[position_X],object.bones[0].position[position_Y],object.bones[0].position[position_Z]);  
     // mulMatRotateX(worldMatrix,object.bones[0].rotXYZ[rot_X]);
