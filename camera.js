@@ -1535,14 +1535,41 @@ if(dataLoad == false){
       sandLoadpack[i].backCullingFlag = true;
       sandLoadpack[i].shadowFlag = true;
       sandLoadpack[i].lightShadowFlag = false;
-      //sandLoadpack[i].bones[0].position[position_Y] = 0;
-      sandLoadpack[i].bones[0].position[position_Y] = 0.5;
+      sandLoadpack[i].bones[0].position[position_Z] = 2;
+      sandLoadpack[i].bones[0].position[position_Y] = 2;
       //sandLoadpack[i].bones[0].scaleXYZ = setVector3(0.1,0.1,0.1)
       // sandLoadpack[i].bones[0].rotXYZ[position_X] = 180;
       // sandLoadpack[i].bones[0].rotXYZ[position_Y] = 180;
       culUVvector(sandLoadpack[i]); 
     }
+    let Sand1 = daeLoadcopy(sandLoadpack);
+    Sand1[0].bones[0].position[position_Z] += 0.75;
+    let Sand2 = daeLoadcopy(sandLoadpack);
+    Sand2[0].bones[0].position[position_Z] += 1.5;
+    let Sand3 = daeLoadcopy(sandLoadpack);
+    Sand3[0].bones[0].position[position_X] += -0.75;
+
+    let Sand4 = daeLoadcopy(Sand3);
+    Sand4[0].bones[0].position[position_Z] += 0.75;
+    let Sand5 = daeLoadcopy(Sand3);
+    Sand5[0].bones[0].position[position_Z] += 1.5;
+    let Sand6 = daeLoadcopy(sandLoadpack);
+    Sand6[0].bones[0].position[position_X] += 0.75;
+
+    let Sand7 = daeLoadcopy(Sand6);
+    Sand7[0].bones[0].position[position_Z] += 0.75;
+    let Sand8 = daeLoadcopy(Sand6);
+    Sand8[0].bones[0].position[position_Z] += 1.5;
     Sands.push(sandLoadpack);
+    Sands.push(Sand1);
+    Sands.push(Sand2);
+    Sands.push(Sand3);
+    Sands.push(Sand4);
+    Sands.push(Sand5);
+    Sands.push(Sand6);
+    Sands.push(Sand7);
+    Sands.push(Sand8);
+
     //一個0.75の大きさ
     culUVVector(sandLoadPack);
 
@@ -1596,7 +1623,7 @@ if(dataLoad == false){
     let cube2 = daeLoadcopy(cube1Loadpack);
     cube2[0].bones[0].position[position_Y] = 1;
     dices.push(cube1Loadpack);
-    dices.push(cube2);
+    //dices.push(cube2);
     cube1Load = true;
   }
   if(skyPixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
