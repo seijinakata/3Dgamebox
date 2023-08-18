@@ -195,7 +195,7 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             }
             meshVerts.push(tempMeshVerts);
           }
-          daeLoadPack.meshVerts = meshVerts;
+          daeLoadPack.meshVerts = meshVerts[0];
           daeLoadpack[0].objectNumber = loadMeshVerts.length;
           for(let i=0;i<daeLoadPack.objectNumber;i++){
             daeLoadpack[i].meshVerts = meshVerts[i];
@@ -244,7 +244,7 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             meshVertsFaceIndex.push(tempMeshVertsFaceIndex);
           }
           
-          daeLoadPack.meshVertsFaceIndex = meshVertsFaceIndex;
+          daeLoadPack.meshVertsFaceIndex = meshVertsFaceIndex[0];
           for(let i=0;i<daeLoadPack.objectNumber;i++){
             daeLoadpack[i].meshVertsFaceIndex = meshVertsFaceIndex[i];
           }
@@ -305,7 +305,7 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             }
             faceIndexMeshUV.push(tempFaceIndexMeshUV);
           }
-          daeLoadPack.faceIndexMeshUV = faceIndexMeshUV;
+          daeLoadPack.faceIndexMeshUV = faceIndexMeshUV[0];
           for(let i=0;i<daeLoadPack.objectNumber;i++){
             daeLoadpack[i].faceIndexMeshUV = faceIndexMeshUV[i];
           }
@@ -1645,11 +1645,26 @@ if(dataLoad == false){
     sphere1Load = true;
   }
   if(dicePixelImageLoad == true && steve1LoadPack.daeLoad == true && steve1Load == false){
+    for(let i=0;i<steve1Loadpack[0].objectNumber;i++){
+      steve1Loadpack[i].textureImage = dicePixelImage;
+      steve1Loadpack[i].backCullingFlag = false;
+      steve1Loadpack[i].shadowFlag = false;
+      steve1Loadpack[i].lightShadowFlag = false;
+      // steve1Loadpack[i].bones[0].position[position_Y] = 0;
+      // steve1Loadpack[i].bones[0].position[position_Z] = 1.5;
+      // steve1Loadpack[i].bones[0].scaleXYZ = setVector3(20,20,20);
+      // steve1Loadpack[i].bones[0].rotXYZ[position_X] = 90;
+      //steve1Loadpack[i].bones[0].rotXYZ[position_Y] = 90;
+      // steve1Loadpack.bones[0].scaleXYZ[scale_Y] = 10;
+      // steve1Loadpack.bones[0].scaleXYZ[scale_Z] = 10;
+      culUVvector(steve1Loadpack[i]); 
+    }
+
     steve1LoadPack.textureImage = dicePixelImage;
     steve1LoadPack.backCullingFlag = true;
     steve1LoadPack.shadowFlag = true;
     steve1LoadPack.lightShadowFlag = true;
-    culUVVector(steve1LoadPack)
+    culUVvector(steve1LoadPack)
     steves.push(steve1LoadPack);
     for(let i=0;i<steves[0].bones.length;i++){
       steves[0].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
@@ -1680,11 +1695,25 @@ if(dataLoad == false){
     steve1Load = true;
   }
   if(dicePixelImageLoad == true && steve2LoadPack.daeLoad == true && steve1Load == true && steve2Load == false){
+    for(let i=0;i<steve2Loadpack[0].objectNumber;i++){
+      steve2Loadpack[i].textureImage = dicePixelImage;
+      steve2Loadpack[i].backCullingFlag = false;
+      steve2Loadpack[i].shadowFlag = false;
+      steve2Loadpack[i].lightShadowFlag = false;
+      // steve2Loadpack[i].bones[0].position[position_Y] = 0;
+      // steve2Loadpack[i].bones[0].position[position_Z] = 1.5;
+      // steve2Loadpack[i].bones[0].scaleXYZ = setVector3(20,20,20);
+      // steve2Loadpack[i].bones[0].rotXYZ[position_X] = 90;
+      //steve2Loadpack[i].bones[0].rotXYZ[position_Y] = 90;
+      // steve2Loadpack.bones[0].scaleXYZ[scale_Y] = 10;
+      // steve2Loadpack.bones[0].scaleXYZ[scale_Z] = 10;
+      culUVvector(steve2Loadpack[i]); 
+    }
     steve2LoadPack.textureImage = dicePixelImage;
     steve2LoadPack.backCullingFlag = true;
     steve2LoadPack.shadowFlag = true;
     steve2LoadPack.lightShadowFlag = true;
-    culUVVector(steve2LoadPack)
+    culUVvector(steve2LoadPack)
     steves.push(steve2LoadPack); 
     steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
 
@@ -1948,7 +1977,7 @@ for(let i in steves){
   }
   //steve
   for(let object of steves){
-    //objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
 	}
 	// //planesregister
   // for(let object of planes){
