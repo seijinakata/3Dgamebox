@@ -310,10 +310,12 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             daeLoadpack[i].faceIndexMeshUV = faceIndexMeshUV[i];
           }
           daeLoadPack.armatures = false;
+          daeLoadpack[0].armatures = false;
         //armature
         let armatures = docelem.getElementsByTagName("library_controllers");
         if(armatures.length != 0){
           daeLoadPack.armatures = true;
+          daeLoadpack[0].armatures = true;
           //boneNameList
           let boneName = docelem.getElementsByTagName("Name_array");
           let bonesNameList = [];
