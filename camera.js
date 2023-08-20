@@ -108,32 +108,40 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
           //mesh
           let meshData = docelem.getElementsByTagName("mesh");
           let loadMeshVerts = [];
-          let loadMeshIndex = [];
           let loadMeshUV = [];
+          let loadMeshIndex = [];
+
+          
           for(let j=0;j<meshData.length;j++){
+            let tempLoadMeshVerts = [];
+            let tempLoadMeshUV = [];
+            let tempLoadMeshIndex = [];
             for(let i=0;i<meshData[j].children.length;i++){
               if(meshData[j].children[i].id.indexOf('positions') != -1){
                 if(meshData[j].children[i].children[0].textContent[meshData[j].children[i].children[0].textContent.length-1] != ' '){
                   //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
                   meshData[j].children[i].children[0].textContent += ' ';
                 }
-                loadMeshVerts.push(meshData[j].children[i].children[0].textContent);
+                tempLoadMeshVerts.push(meshData[j].children[i].children[0].textContent);
               }
               if(meshData[j].children[i].id.indexOf('map') != -1){
                 if(meshData[j].children[i].children[0].textContent[meshData[j].children[i].children[0].textContent.length-1] != ' '){
                   //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
                   meshData[j].children[i].children[0].textContent += ' ';   
                 }
-                loadMeshUV.push(meshData[j].children[i].children[0].textContent);
+                tempLoadMeshUV.push(meshData[j].children[i].children[0].textContent);
               }
               if(meshData[j].children[i].getAttribute('material')  != null && meshData[j].children[i].getAttribute('material').indexOf('material') != -1){
                 if(meshData[j].children[i].children[3].textContent[meshData[j].children[i].children[3].textContent.length-1] != ' '){
                   //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
                   meshData[j].children[i].children[3].textContent += ' ';
                 }
-                loadMeshIndex.push(meshData[j].children[i].children[3].textContent)
+                tempLoadMeshIndex.push(meshData[j].children[i].children[3].textContent)
               }
             }
+            loadMeshVerts.push(tempLoadMeshVerts);
+            loadMeshUV.push(tempLoadMeshUV);
+            loadMeshIndex.push(tempLoadMeshIndex);
           }
           // for(let i=0;i<meshData[0].children.length;i++){
           //   if(meshData[0].children[i].id.indexOf('positions') != -1){
@@ -169,16 +177,16 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             let objectDae = {};
             daeLoadpack.push(objectDae);
           }
-
+          daeLoadpack[0].objectNumber = loadMeshVerts.length;
           for(let j=0;j<daeLoadPack.objectNumber;j++){
             let tempMeshVerts = [];
-            for(let i=0;i<loadMeshVerts[j].length;i++){
-              let tempChar = loadMeshVerts[j][i];
-              if(char.length == 0 && loadMeshVerts[j][i] != " "){
+            for(let i=0;i<loadMeshVerts[j][0].length;i++){
+              let tempChar = loadMeshVerts[j][0][i];
+              if(char.length == 0 && loadMeshVerts[j][0][i] != " "){
                 char = tempChar;
                 continue;
               }else{
-                if(loadMeshVerts[j][i] != " "){
+                if(loadMeshVerts[j][0][i] != " "){
                     char += tempChar;
                 }else{
                   let tempInt = parseFloat(char);
@@ -196,7 +204,6 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             meshVerts.push(tempMeshVerts);
           }
           daeLoadPack.meshVerts = meshVerts[0];
-          daeLoadpack[0].objectNumber = loadMeshVerts.length;
           for(let i=0;i<daeLoadPack.objectNumber;i++){
             daeLoadpack[i].meshVerts = meshVerts[i];
           }
@@ -211,13 +218,13 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
           let readNow = 1;
           for(let j=0;j<daeLoadPack.objectNumber;j++){
             let tempMeshVertsFaceIndex = [];
-            for(let i=0;i<loadMeshIndex[j].length;i++){
-              let tempChar = loadMeshIndex[j][i];
-              if(char.length == 0 && loadMeshIndex[j][i] != " "){
+            for(let i=0;i<loadMeshIndex[j][0].length;i++){
+              let tempChar = loadMeshIndex[j][0][i];
+              if(char.length == 0 && loadMeshIndex[j][0][i] != " "){
                 char = tempChar;
                 continue;
               }else{
-                if(loadMeshIndex[j][i] != " "){
+                if(loadMeshIndex[j][0][i] != " "){
                     char += tempChar;
                 }else{
                   let tempInt = parseInt(char)
@@ -243,7 +250,6 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             }
             meshVertsFaceIndex.push(tempMeshVertsFaceIndex);
           }
-          
           daeLoadPack.meshVertsFaceIndex = meshVertsFaceIndex[0];
           for(let i=0;i<daeLoadPack.objectNumber;i++){
             daeLoadpack[i].meshVertsFaceIndex = meshVertsFaceIndex[i];
@@ -257,13 +263,13 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
           let readFlag = 0;//0:u,1:v,2:tempUV
           char = [];
           for(let j=0;j<daeLoadPack.objectNumber;j++){
-            for(let i=0;i<loadMeshUV[j].length;i++){
-              let tempChar = loadMeshUV[j][i];
-              if(char.length == 0 && loadMeshUV[j][i] != " "){
+            for(let i=0;i<loadMeshUV[j][0].length;i++){
+              let tempChar = loadMeshUV[j][0][i];
+              if(char.length == 0 && loadMeshUV[j][0][i] != " "){
                 char = tempChar;
                 continue;
               }else{
-                if(loadMeshUV[j][i] != " "){
+                if(loadMeshUV[j][0][i] != " "){
                     char += tempChar;
                 }else{
                   let tempFloat = parseFloat(char)
@@ -319,21 +325,25 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
           //boneNameList ボーンの名前を数字に置き換えるための配列
           let boneName = docelem.getElementsByTagName("Name_array");
           let bonesNameList = [];
-          let tempBonesNameList = [];
-          let boneNumber = 0;
           char = [];
-          boneName[0].textContent += ' ';
-          for(let i=0;i<boneName[0].textContent.length;i++){
-            if(boneName[0].textContent[i] != ' '){
-            char += boneName[0].textContent[i];
-            }else{
-              let tempboneName = [char,boneNumber];
-              char = [];
-              boneNumber += 1;
-              tempBonesNameList.push(tempboneName);
+          for(let j=0;j<boneName.length;j++){
+             let boneNumber = 0;
+            let tempBonesNameList = [];
+            boneName[j].textContent += ' ';
+            for(let i=0;i<boneName[j].textContent.length;i++){
+              if(boneName[j].textContent[i] != ' '){
+              char += boneName[j].textContent[i];
+              }else{
+                let tempboneName = [char,boneNumber];
+                char = [];
+                boneNumber += 1;
+                tempBonesNameList.push(tempboneName);
+              }
             }
+            bonesNameList.push(tempBonesNameList);
           }
-          daeLoadPack.bonesNameList = tempBonesNameList;
+
+          daeLoadPack.bonesNameList = bonesNameList[0];
           //dataLoad
           let loadBindPose = [];
           let loadSkinWaight = [];
@@ -481,7 +491,7 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
           let boneJointList = docelem.getElementsByTagName("node");
           let  tempResult = [];
           let boneParentRelation = [];
-          getAllChildNodesDepth(boneJointList[0].children.length, boneJointList[0].children,tempResult,boneParentRelation,tempBonesNameList);
+          getAllChildNodesDepth(boneJointList[0].children.length, boneJointList[0].children,tempResult,boneParentRelation,daeLoadPack.bonesNameList);
           console.log(boneParentRelation);
           daeLoadPack.boneParentRelation = boneParentRelation;
 
@@ -1610,7 +1620,7 @@ if(dataLoad == false){
     
     sandLoad = true;
   }
-  if(cubePixelImageLoad == true && cube1LoadPack.daeLoad == true && cube1Load == false){
+  if(skyPixelImageLoad == true && cubePixelImageLoad == true && cube1LoadPack.daeLoad == true && cube1Load == false){
     for(let i=0;i<cube1Loadpack[0].objectNumber;i++){
       cube1Loadpack[i].textureImage = cubePixelImage;
       cube1Loadpack[i].backCullingFlag = true;
