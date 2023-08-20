@@ -42,10 +42,11 @@ let steve2Loadpack = [];
 let cube1Loadpack = [];
 let sphere1Loadpack = [];
 let sandLoadpack = [];
+
+daeLoader("car.dae",cube1LoadPack,cube1Loadpack);
 daeLoader("sphere.dae",sphere1LoadPack,sphere1Loadpack);
 daeLoader("dice3.dae",steve1LoadPack,steve1Loadpack);
 daeLoader("dice3.dae",steve2LoadPack,steve2Loadpack);
-daeLoader("car.dae",cube1LoadPack,cube1Loadpack);
 daeLoader("sand.dae",sandLoadPack,sandLoadpack);
 
 function daeLoadCopy(daeLoadPack,daeLoadpack){
@@ -108,30 +109,29 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
           let meshData = docelem.getElementsByTagName("mesh");
           let loadMeshVerts = [];
           let loadMeshIndex = [];
-          let loadMeshUV = [];        
-          let libraryGeometries = docelem.getElementsByTagName("library_geometries");
-          for(let j=0;j<libraryGeometries[0].children.length;j++){
-            for(let i=0;i<libraryGeometries[0].children[j].children[0].children.length;i++){
-              if(libraryGeometries[0].children[j].children[0].children[i].id.indexOf('positions') != -1){
-                if(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent[libraryGeometries[0].children[j].children[0].children[i].children[0].textContent.length-1] != ' '){
+          let loadMeshUV = [];
+          for(let j=0;j<meshData.length;j++){
+            for(let i=0;i<meshData[j].children.length;i++){
+              if(meshData[j].children[i].id.indexOf('positions') != -1){
+                if(meshData[j].children[i].children[0].textContent[meshData[j].children[i].children[0].textContent.length-1] != ' '){
                   //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-                  libraryGeometries[0].children[j].children[0].children[i].children[0].textContent += ' ';
+                  meshData[j].children[i].children[0].textContent += ' ';
                 }
-                loadMeshVerts.push(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent);
+                loadMeshVerts.push(meshData[j].children[i].children[0].textContent);
               }
-              if(libraryGeometries[0].children[j].children[0].children[i].id.indexOf('map') != -1){
-                if(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent[libraryGeometries[0].children[j].children[0].children[i].children[0].textContent.length-1] != ' '){
+              if(meshData[j].children[i].id.indexOf('map') != -1){
+                if(meshData[j].children[i].children[0].textContent[meshData[j].children[i].children[0].textContent.length-1] != ' '){
                   //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-                  libraryGeometries[0].children[j].children[0].children[i].children[0].textContent += ' ';   
+                  meshData[j].children[i].children[0].textContent += ' ';   
                 }
-                loadMeshUV.push(libraryGeometries[0].children[j].children[0].children[i].children[0].textContent);
+                loadMeshUV.push(meshData[j].children[i].children[0].textContent);
               }
-              if(libraryGeometries[0].children[j].children[0].children[i].getAttribute('material')  != null && libraryGeometries[0].children[j].children[0].children[i].getAttribute('material').indexOf('material') != -1){
-                if(libraryGeometries[0].children[j].children[0].children[i].children[3].textContent[libraryGeometries[0].children[j].children[0].children[i].children[3].textContent.length-1] != ' '){
+              if(meshData[j].children[i].getAttribute('material')  != null && meshData[j].children[i].getAttribute('material').indexOf('material') != -1){
+                if(meshData[j].children[i].children[3].textContent[meshData[j].children[i].children[3].textContent.length-1] != ' '){
                   //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-                  libraryGeometries[0].children[j].children[0].children[i].children[3].textContent += ' ';
+                  meshData[j].children[i].children[3].textContent += ' ';
                 }
-                loadMeshIndex.push(libraryGeometries[0].children[j].children[0].children[i].children[3].textContent)
+                loadMeshIndex.push(meshData[j].children[i].children[3].textContent)
               }
             }
           }
@@ -316,9 +316,10 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
         if(armatures.length != 0){
           daeLoadPack.armatures = true;
           daeLoadpack[0].armatures = true;
-          //boneNameList
+          //boneNameList ボーンの名前を数字に置き換えるための配列
           let boneName = docelem.getElementsByTagName("Name_array");
           let bonesNameList = [];
+          let tempBonesNameList = [];
           let boneNumber = 0;
           char = [];
           boneName[0].textContent += ' ';
@@ -326,13 +327,13 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             if(boneName[0].textContent[i] != ' '){
             char += boneName[0].textContent[i];
             }else{
-              let tempboneNameList = [char,boneNumber];
+              let tempboneName = [char,boneNumber];
               char = [];
               boneNumber += 1;
-              bonesNameList.push(tempboneNameList);
+              tempBonesNameList.push(tempboneName);
             }
           }
-          daeLoadPack.bonesNameList = bonesNameList;
+          daeLoadPack.bonesNameList = tempBonesNameList;
           //dataLoad
           let loadBindPose = [];
           let loadSkinWaight = [];
@@ -480,7 +481,7 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
           let boneJointList = docelem.getElementsByTagName("node");
           let  tempResult = [];
           let boneParentRelation = [];
-          getAllChildNodesDepth(boneJointList[0].children.length, boneJointList[0].children,tempResult,boneParentRelation,bonesNameList);
+          getAllChildNodesDepth(boneJointList[0].children.length, boneJointList[0].children,tempResult,boneParentRelation,tempBonesNameList);
           console.log(boneParentRelation);
           daeLoadPack.boneParentRelation = boneParentRelation;
 
@@ -1746,7 +1747,7 @@ if(dataLoad == false){
     steves[1].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0);
     steve2Load = true;
   }
-  if(skyPixelImageLoad && cubePixelImageLoad && roadPixelImageLoad && sandPixelImageLoad && dicePixelImageLoad && steve1Load && steve2Load && cube1Load && sandLoad){
+  if(sphere1Load && steve1Load && steve2Load && cube1Load && sandLoad){
     dataLoad = true;
   }
   ctx.font = '50pt Arial';
