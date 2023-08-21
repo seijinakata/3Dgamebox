@@ -111,7 +111,6 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
           let loadMeshUV = [];
           let loadMeshIndex = [];
 
-          
           for(let j=0;j<meshData.length;j++){
             let tempLoadMeshVerts = [];
             let tempLoadMeshUV = [];
@@ -317,7 +316,7 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
           }
           daeLoadPack.armatures = false;
           daeLoadpack[0].armatures = false;
-        //armature
+        //armatureボーンを入れるなら1ファイルすべてのオブジェクトに入れる。
         let armatures = docelem.getElementsByTagName("library_controllers");
         if(armatures.length != 0){
           daeLoadPack.armatures = true;
@@ -349,37 +348,39 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
           let loadSkinWaight = [];
           let vertsBlendNumbers = [];
           let vertsBlendMatrixNumbers = [];
-
-          for(let i=0;i<armatures[0].children[0].children[0].children.length;i++){
-            if(armatures[0].children[0].children[0].children[i].id.indexOf('bind_poses') != -1){
-              if(armatures[0].children[0].children[0].children[i].children[0].textContent[armatures[0].children[0].children[0].children[i].children[0].textContent.length-1] != ' '){
+          for(let j=0;j<armatures.length;j++){
+           for(let i=0;i<armatures[j].children[0].children[0].children.length;i++){
+            if(armatures[j].children[0].children[0].children[i].id.indexOf('bind_poses') != -1){
+              if(armatures[j].children[0].children[0].children[i].children[0].textContent[armatures[j].children[0].children[0].children[i].children[0].textContent.length-1] != ' '){
                 //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-                armatures[0].children[0].children[0].children[i].children[0].textContent += ' ';
+                armatures[j].children[0].children[0].children[i].children[0].textContent += ' ';
               }
-              loadBindPose.push(armatures[0].children[0].children[0].children[i].children[0].textContent);
+              loadBindPose.push(armatures[j].children[0].children[0].children[i].children[0].textContent);
             }
-            if(armatures[0].children[0].children[0].children[i].id.indexOf('skin-weights') != -1){
-              if(armatures[0].children[0].children[0].children[i].children[0].textContent[armatures[0].children[0].children[0].children[i].children[0].textContent.length-1] != ' '){
+            if(armatures[j].children[0].children[0].children[i].id.indexOf('skin-weights') != -1){
+              if(armatures[j].children[0].children[0].children[i].children[0].textContent[armatures[j].children[0].children[0].children[i].children[0].textContent.length-1] != ' '){
                 //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-                armatures[0].children[0].children[0].children[i].children[0].textContent += ' ';
+                armatures[j].children[0].children[0].children[i].children[0].textContent += ' ';
               }
-              loadSkinWaight.push(armatures[0].children[0].children[0].children[i].children[0].textContent);
+              loadSkinWaight.push(armatures[j].children[0].children[0].children[i].children[0].textContent);
             }
-            if(armatures[0].children[0].children[0].children[i].tagName.indexOf('vertex_weights') != -1){
+            if(armatures[j].children[0].children[0].children[i].tagName.indexOf('vertex_weights') != -1){
               //vertsBlendNumbers
-              if(armatures[0].children[0].children[0].children[i].children[2].textContent[armatures[0].children[0].children[0].children[i].children[2].textContent.length-1] != ' '){
+              if(armatures[j].children[0].children[0].children[i].children[2].textContent[armatures[j].children[0].children[0].children[i].children[2].textContent.length-1] != ' '){
                 //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-                armatures[0].children[0].children[0].children[i].children[2].textContent += ' ';
+                armatures[j].children[0].children[0].children[i].children[2].textContent += ' ';
               }
-              vertsBlendNumbers.push(armatures[0].children[0].children[0].children[i].children[2].textContent);
+              vertsBlendNumbers.push(armatures[j].children[0].children[0].children[i].children[2].textContent);
               //vertsBlendMatrixNumbers
-              if(armatures[0].children[0].children[0].children[i].children[3].textContent[armatures[0].children[0].children[0].children[i].children[3].textContent.length-1] != ' '){
+              if(armatures[j].children[0].children[0].children[i].children[3].textContent[armatures[j].children[0].children[0].children[i].children[3].textContent.length-1] != ' '){
                 //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-                armatures[0].children[0].children[0].children[i].children[3].textContent += ' ';
+                armatures[j].children[0].children[0].children[i].children[3].textContent += ' ';
               }
-              vertsBlendMatrixNumbers.push(armatures[0].children[0].children[0].children[i].children[3].textContent);
+              vertsBlendMatrixNumbers.push(armatures[j].children[0].children[0].children[i].children[3].textContent);
             }
-          }
+          }           
+        }
+
           
           //bindPose
           let tempBind = [];
