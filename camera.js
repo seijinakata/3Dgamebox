@@ -373,101 +373,99 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
                 //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
                 armatures[j].children[0].children[0].children[i].children[3].textContent += ' ';
               }
-              vertsBlendMatrixNumbers.push(armatures[j].children[0].children[0].children[i].children[3].textContent);
+              tempVertsBlendMatrixNumbers.push(armatures[j].children[0].children[0].children[i].children[3].textContent);
             }
             if(armatures[j].children[0].children[0].children[i].id.indexOf('skin-weights') != -1){
               if(armatures[j].children[0].children[0].children[i].children[0].textContent[armatures[j].children[0].children[0].children[i].children[0].textContent.length-1] != ' '){
                 //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
                 armatures[j].children[0].children[0].children[i].children[0].textContent += ' ';
               }
-              loadSkinWaight.push(armatures[j].children[0].children[0].children[i].children[0].textContent);
+              tempLoadSkinWaight.push(armatures[j].children[0].children[0].children[i].children[0].textContent);
             }
 
           }
           loadBindPose.push(tempLoadBindPose);
-          //loadSkinWaight.push(tempLoadSkinWaight);
           vertsBlendNumbers.push(tempVertsBlendNumbers);
+          vertsBlendMatrixNumbers.push(tempVertsBlendMatrixNumbers);
+          loadSkinWaight.push(tempLoadSkinWaight);
         }
-
-          
-          //bindPose
-          let tempBind = [];
-          let bindPosePack = [];
-          for(let j=0;j<armatures.length;j++){
-
-          }
-          for(let j=0;j<armatures.length;j++){
-            let tempBindPosePack = [];
-            for(let i=0;i<loadBindPose[j][0].length;i++){
-              let tempChar = loadBindPose[j][0][i];
-              if(char.length == 0 && loadBindPose[j][0][i] != " "){
-                char = tempChar;
-                continue;
-              }else{
-                if(loadBindPose[j][0][i] != " "){
-                    char += tempChar;
-                }else{
-                  let tempFloat = parseFloat(char);
-                  char = [];
-                  tempBind.push(tempFloat)
-                  if(tempBind.length >= 4*4){
-                    let boneContents = {};
-                    boneContents.bindPose = tempBind;
-                    boneContents.inverseBindPose = CalInvMat4x4(tempBind);;
-                    tempBindPosePack.push(boneContents);
-                    tempBind = [];  
-            
-                  }
-                }
-              }  
-            }
-            bindPosePack.push(tempBindPosePack)         
-          }
-
-          daeLoadPack.bindPosePack = bindPosePack[0];
-          //vertsBoneBlendNumber１頂点にいくつのそれぞれの頂点の重みを加えるか。２なら２頂点。
-          let vertsBoneBlendFloatNumber = [];
-          for(let j=0;j<armatures.length;j++){
-            let tempVertsBoneBlendFloatNumber = [];
-            for(let i=0;i<vertsBlendNumbers[j][0].length;i++){
-              let tempChar = vertsBlendNumbers[j][0][i];
-              if(char.length == 0 && vertsBlendNumbers[j][0][i] != " "){
-                char = tempChar;
-                continue;
-              }else{
-                if(vertsBlendNumbers[j][0][i] != " "){
-                    char += tempChar;
-                }else{
-                  let tempFloat = parseFloat(char);
-                  char = [];
-                  tempVertsBoneBlendFloatNumber.push(tempFloat)
-                }
-              }  
-            }
-            vertsBoneBlendFloatNumber.push(tempVertsBoneBlendFloatNumber);
-          }
-
-          console.log(vertsBoneBlendFloatNumber)
-          //vertsBoneBlendMmatrixNumber２頂点ならどの頂点か？
-          let currentVerts = 0;
-          let vertsBlend = true;
-          let tempVertsBlend = [];
-          let blendBoneIndex = [];
-          for(let i=0;i<vertsBlendMatrixNumbers[0].length;i++){
-            let tempChar = vertsBlendMatrixNumbers[0][i];
-            if(char.length == 0 && vertsBlendMatrixNumbers[0][i] != " "){
+        //bindPose
+        let tempBind = [];
+        let bindPosePack = [];
+        for(let j=0;j<armatures.length;j++){
+          let tempBindPosePack = [];
+          for(let i=0;i<loadBindPose[j][0].length;i++){
+            let tempChar = loadBindPose[j][0][i];
+            if(char.length == 0 && loadBindPose[j][0][i] != " "){
               char = tempChar;
               continue;
             }else{
-              if(vertsBlendMatrixNumbers[0][i] != " "){
+              if(loadBindPose[j][0][i] != " "){
+                  char += tempChar;
+              }else{
+                let tempFloat = parseFloat(char);
+                char = [];
+                tempBind.push(tempFloat)
+                if(tempBind.length >= 4*4){
+                  let boneContents = {};
+                  boneContents.bindPose = tempBind;
+                  boneContents.inverseBindPose = CalInvMat4x4(tempBind);;
+                  tempBindPosePack.push(boneContents);
+                  tempBind = [];  
+          
+                }
+              }
+            }  
+          }
+          bindPosePack.push(tempBindPosePack)         
+        }
+        daeLoadPack.bindPosePack = bindPosePack[0];
+
+        //vertsBoneBlendNumber１頂点にいくつの頂点の重みを加えるか。２なら２頂点。
+        let vertsBoneBlendFloatNumber = [];
+        for(let j=0;j<armatures.length;j++){
+          let tempVertsBoneBlendFloatNumber = [];
+          for(let i=0;i<vertsBlendNumbers[j][0].length;i++){
+            let tempChar = vertsBlendNumbers[j][0][i];
+            if(char.length == 0 && vertsBlendNumbers[j][0][i] != " "){
+              char = tempChar;
+              continue;
+            }else{
+              if(vertsBlendNumbers[j][0][i] != " "){
+                  char += tempChar;
+              }else{
+                let tempFloat = parseFloat(char);
+                char = [];
+                tempVertsBoneBlendFloatNumber.push(tempFloat)
+              }
+            }  
+          }
+          vertsBoneBlendFloatNumber.push(tempVertsBoneBlendFloatNumber);
+        }
+
+        //vertsBoneBlendMmatrixNumber２頂点ならどの頂点か？
+        let currentVerts = 0;
+        let vertsBlend = true;
+        let tempVertsBlend = [];
+        let blendBoneIndex = [];
+        for(let j=0;j<armatures.length;j++){
+          let tempBlendBoneIndex = [];
+          for(let i=0;i<vertsBlendMatrixNumbers[j][0].length;i++){
+            let tempChar = vertsBlendMatrixNumbers[j][0][i];
+            if(char.length == 0 && vertsBlendMatrixNumbers[j][0][i] != " "){
+              char = tempChar;
+              continue;
+            }else{
+              if(vertsBlendMatrixNumbers[j][0][i] != " "){
                   char += tempChar;
               }else{
                 if(vertsBlend == true){
                 let tempFloat = parseFloat(char);
                 char = [];
                 tempVertsBlend.push(tempFloat);
-                if(tempVertsBlend.length >= vertsBoneBlendFloatNumber[0][currentVerts]){
-                  blendBoneIndex.push(tempVertsBlend);
+                //文字列は配列とみなしている可能性あり
+                if(tempVertsBlend.length >= vertsBoneBlendFloatNumber[j][currentVerts]){
+                  tempBlendBoneIndex.push(tempVertsBlend);
                   tempVertsBlend = [];
                   currentVerts += 1;
                 }
@@ -478,37 +476,44 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
                 }
               }
             }  
-          }
-          console.log(blendBoneIndex)
-          daeLoadPack.blendBoneIndex = blendBoneIndex;
-          //boneWeightそれぞれの頂点の重み
-          let tempBoneWeight = [];
+          } 
+          blendBoneIndex.push(tempBlendBoneIndex);          
+        }
+
+        console.log(blendBoneIndex)
+        daeLoadPack.blendBoneIndex = blendBoneIndex[0];
+        //boneWeightそれぞれの頂点の重み
+        let bonesWeight = [];
+        for(let j=0;j<armatures.length;j++){
           let vertsNumber = 0;
-          let bonesWeight = [];
-          let nowReadVertsNumber = vertsBoneBlendFloatNumber[0][vertsNumber];
-          for(let i=0;i<loadSkinWaight[0].length;i += 1){
-            let tempChar = loadSkinWaight[0][i];
-            if(char.length == 0 && loadSkinWaight[0][i] != " "){
+          let nowReadVertsNumber = vertsBoneBlendFloatNumber[j][vertsNumber];
+          let tempBoneWeight = [];
+          let tempBonesWeight = [];
+          for(let i=0;i<loadSkinWaight[j][0].length;i++){
+            let tempChar = loadSkinWaight[j][0][i];
+            if(char.length == 0 && loadSkinWaight[j][0][i] != " "){
               char = tempChar;
               continue;
             }else{
-              if(loadSkinWaight[0][i] != " "){
+              if(loadSkinWaight[j][0][i] != " "){
                   char += tempChar;
               }else{
                 let tempFloat = parseFloat(char);
                 char = [];
                 tempBoneWeight.push(tempFloat)
                 if(tempBoneWeight.length >= nowReadVertsNumber){
-                  bonesWeight.push(tempBoneWeight);
+                  tempBonesWeight.push(tempBoneWeight);
                   tempBoneWeight = [];
                   vertsNumber += 1;
-                  nowReadVertsNumber = vertsBoneBlendFloatNumber[0][vertsNumber]; 
+                  nowReadVertsNumber = vertsBoneBlendFloatNumber[j][vertsNumber];
                 }
               }
             }  
           }
-          console.log(bonesWeight)
-          daeLoadPack.bonesWeight = bonesWeight;
+          bonesWeight.push(tempBonesWeight);
+        }
+        daeLoadPack.bonesWeight = bonesWeight[0];
+
           //どのボーンが親が調べる
           let boneJointList = docelem.getElementsByTagName("node");
           let  tempResult = [];
