@@ -353,186 +353,191 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             let tempVertsBlendNumbers = [];
             let tempVertsBlendMatrixNumbers = [];
             let tempLoadSkinWaight = [];
-           for(let i=0;i<armatures[j].children[0].children[0].children.length;i++){
-            if(armatures[j].children[0].children[0].children[i].id.indexOf('bind_poses') != -1){
-              if(armatures[j].children[0].children[0].children[i].children[0].textContent[armatures[j].children[0].children[0].children[i].children[0].textContent.length-1] != ' '){
-                //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-                armatures[j].children[0].children[0].children[i].children[0].textContent += ' ';
-              }
-              tempLoadBindPose.push(armatures[j].children[0].children[0].children[i].children[0].textContent);
-            }
-            if(armatures[j].children[0].children[0].children[i].tagName.indexOf('vertex_weights') != -1){
-              //vertsBlendNumbers
-              if(armatures[j].children[0].children[0].children[i].children[2].textContent[armatures[j].children[0].children[0].children[i].children[2].textContent.length-1] != ' '){
-                //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-                armatures[j].children[0].children[0].children[i].children[2].textContent += ' ';
-              }
-              tempVertsBlendNumbers.push(armatures[j].children[0].children[0].children[i].children[2].textContent);
-              //vertsBlendMatrixNumbers
-              if(armatures[j].children[0].children[0].children[i].children[3].textContent[armatures[j].children[0].children[0].children[i].children[3].textContent.length-1] != ' '){
-                //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-                armatures[j].children[0].children[0].children[i].children[3].textContent += ' ';
-              }
-              tempVertsBlendMatrixNumbers.push(armatures[j].children[0].children[0].children[i].children[3].textContent);
-            }
-            if(armatures[j].children[0].children[0].children[i].id.indexOf('skin-weights') != -1){
-              if(armatures[j].children[0].children[0].children[i].children[0].textContent[armatures[j].children[0].children[0].children[i].children[0].textContent.length-1] != ' '){
-                //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
-                armatures[j].children[0].children[0].children[i].children[0].textContent += ' ';
-              }
-              tempLoadSkinWaight.push(armatures[j].children[0].children[0].children[i].children[0].textContent);
-            }
-
-          }
-          loadBindPose.push(tempLoadBindPose);
-          vertsBlendNumbers.push(tempVertsBlendNumbers);
-          vertsBlendMatrixNumbers.push(tempVertsBlendMatrixNumbers);
-          loadSkinWaight.push(tempLoadSkinWaight);
-        }
-        //bindPose
-        let tempBind = [];
-        let bindPosePack = [];
-        for(let j=0;j<armatures.length;j++){
-          let tempBindPosePack = [];
-          for(let i=0;i<loadBindPose[j][0].length;i++){
-            let tempChar = loadBindPose[j][0][i];
-            if(char.length == 0 && loadBindPose[j][0][i] != " "){
-              char = tempChar;
-              continue;
-            }else{
-              if(loadBindPose[j][0][i] != " "){
-                  char += tempChar;
-              }else{
-                let tempFloat = parseFloat(char);
-                char = [];
-                tempBind.push(tempFloat)
-                if(tempBind.length >= 4*4){
-                  let boneContents = {};
-                  boneContents.bindPose = tempBind;
-                  boneContents.inverseBindPose = CalInvMat4x4(tempBind);;
-                  tempBindPosePack.push(boneContents);
-                  tempBind = [];  
-          
+            for(let i=0;i<armatures[j].children[0].children[0].children.length;i++){
+              if(armatures[j].children[0].children[0].children[i].id.indexOf('bind_poses') != -1){
+                if(armatures[j].children[0].children[0].children[i].children[0].textContent[armatures[j].children[0].children[0].children[i].children[0].textContent.length-1] != ' '){
+                  //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                  armatures[j].children[0].children[0].children[i].children[0].textContent += ' ';
                 }
+                tempLoadBindPose.push(armatures[j].children[0].children[0].children[i].children[0].textContent);
               }
-            }  
-          }
-          bindPosePack.push(tempBindPosePack)         
-        }
-        daeLoadPack.bindPosePack = bindPosePack[0];
-
-        //vertsBoneBlendNumber１頂点にいくつの頂点の重みを加えるか。２なら２頂点。
-        let vertsBoneBlendFloatNumber = [];
-        for(let j=0;j<armatures.length;j++){
-          let tempVertsBoneBlendFloatNumber = [];
-          for(let i=0;i<vertsBlendNumbers[j][0].length;i++){
-            let tempChar = vertsBlendNumbers[j][0][i];
-            if(char.length == 0 && vertsBlendNumbers[j][0][i] != " "){
-              char = tempChar;
-              continue;
-            }else{
-              if(vertsBlendNumbers[j][0][i] != " "){
-                  char += tempChar;
-              }else{
-                let tempFloat = parseFloat(char);
-                char = [];
-                tempVertsBoneBlendFloatNumber.push(tempFloat)
-              }
-            }  
-          }
-          vertsBoneBlendFloatNumber.push(tempVertsBoneBlendFloatNumber);
-        }
-
-        //vertsBoneBlendMmatrixNumber２頂点ならどの頂点か？
-        let currentVerts = 0;
-        let vertsBlend = true;
-        let tempVertsBlend = [];
-        let blendBoneIndex = [];
-        for(let j=0;j<armatures.length;j++){
-          let tempBlendBoneIndex = [];
-          for(let i=0;i<vertsBlendMatrixNumbers[j][0].length;i++){
-            let tempChar = vertsBlendMatrixNumbers[j][0][i];
-            if(char.length == 0 && vertsBlendMatrixNumbers[j][0][i] != " "){
-              char = tempChar;
-              continue;
-            }else{
-              if(vertsBlendMatrixNumbers[j][0][i] != " "){
-                  char += tempChar;
-              }else{
-                if(vertsBlend == true){
-                let tempFloat = parseFloat(char);
-                char = [];
-                tempVertsBlend.push(tempFloat);
-                //文字列は配列とみなしている可能性あり
-                if(tempVertsBlend.length >= vertsBoneBlendFloatNumber[j][currentVerts]){
-                  tempBlendBoneIndex.push(tempVertsBlend);
-                  tempVertsBlend = [];
-                  currentVerts += 1;
+              if(armatures[j].children[0].children[0].children[i].tagName.indexOf('vertex_weights') != -1){
+                //vertsBlendNumbers
+                if(armatures[j].children[0].children[0].children[i].children[2].textContent[armatures[j].children[0].children[0].children[i].children[2].textContent.length-1] != ' '){
+                  //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                  armatures[j].children[0].children[0].children[i].children[2].textContent += ' ';
                 }
-                vertsBlend = false;
+                tempVertsBlendNumbers.push(armatures[j].children[0].children[0].children[i].children[2].textContent);
+                //vertsBlendMatrixNumbers
+                if(armatures[j].children[0].children[0].children[i].children[3].textContent[armatures[j].children[0].children[0].children[i].children[3].textContent.length-1] != ' '){
+                  //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                  armatures[j].children[0].children[0].children[i].children[3].textContent += ' ';
+                }
+                tempVertsBlendMatrixNumbers.push(armatures[j].children[0].children[0].children[i].children[3].textContent);
+              }
+              if(armatures[j].children[0].children[0].children[i].id.indexOf('skin-weights') != -1){
+                if(armatures[j].children[0].children[0].children[i].children[0].textContent[armatures[j].children[0].children[0].children[i].children[0].textContent.length-1] != ' '){
+                  //空白を最後にわざと付ける。空白でデータを区切れる。番兵。
+                  armatures[j].children[0].children[0].children[i].children[0].textContent += ' ';
+                }
+                tempLoadSkinWaight.push(armatures[j].children[0].children[0].children[i].children[0].textContent);
+              }
+            }
+            loadBindPose.push(tempLoadBindPose);
+            vertsBlendNumbers.push(tempVertsBlendNumbers);
+            vertsBlendMatrixNumbers.push(tempVertsBlendMatrixNumbers);
+            loadSkinWaight.push(tempLoadSkinWaight);
+          }
+          //bindPose
+          let tempBind = [];
+          let bindPosePack = [];
+          for(let j=0;j<armatures.length;j++){
+            let tempBindPosePack = [];
+            for(let i=0;i<loadBindPose[j][0].length;i++){
+              let tempChar = loadBindPose[j][0][i];
+              if(char.length == 0 && loadBindPose[j][0][i] != " "){
+                char = tempChar;
+                continue;
+              }else{
+                if(loadBindPose[j][0][i] != " "){
+                    char += tempChar;
                 }else{
-                  vertsBlend = true;
+                  let tempFloat = parseFloat(char);
                   char = [];
+                  tempBind.push(tempFloat)
+                  if(tempBind.length >= 4*4){
+                    let boneContents = {};
+                    boneContents.bindPose = tempBind;
+                    boneContents.inverseBindPose = CalInvMat4x4(tempBind);;
+                    tempBindPosePack.push(boneContents);
+                    tempBind = [];  
+            
+                  }
                 }
-              }
-            }  
-          } 
-          blendBoneIndex.push(tempBlendBoneIndex);          
-        }
-
-        console.log(blendBoneIndex)
-        daeLoadPack.blendBoneIndex = blendBoneIndex[0];
-        //boneWeightそれぞれの頂点の重み
-        let bonesWeight = [];
-        for(let j=0;j<armatures.length;j++){
-          let vertsNumber = 0;
-          let nowReadVertsNumber = vertsBoneBlendFloatNumber[j][vertsNumber];
-          let tempBoneWeight = [];
-          let tempBonesWeight = [];
-          for(let i=0;i<loadSkinWaight[j][0].length;i++){
-            let tempChar = loadSkinWaight[j][0][i];
-            if(char.length == 0 && loadSkinWaight[j][0][i] != " "){
-              char = tempChar;
-              continue;
-            }else{
-              if(loadSkinWaight[j][0][i] != " "){
-                  char += tempChar;
-              }else{
-                let tempFloat = parseFloat(char);
-                char = [];
-                tempBoneWeight.push(tempFloat)
-                if(tempBoneWeight.length >= nowReadVertsNumber){
-                  tempBonesWeight.push(tempBoneWeight);
-                  tempBoneWeight = [];
-                  vertsNumber += 1;
-                  nowReadVertsNumber = vertsBoneBlendFloatNumber[j][vertsNumber];
-                }
-              }
-            }  
+              }  
+            }
+            bindPosePack.push(tempBindPosePack)         
           }
-          bonesWeight.push(tempBonesWeight);
-        }
-        daeLoadPack.bonesWeight = bonesWeight[0];
+          daeLoadPack.bindPosePack = bindPosePack[0];
 
-          //どのボーンが親が調べる
-          let boneJointList = docelem.getElementsByTagName("node");
-          let  tempResult = [];
+          //vertsBoneBlendNumber１頂点にいくつの頂点の重みを加えるか。２なら２頂点。
+          let vertsBoneBlendFloatNumber = [];
+          for(let j=0;j<armatures.length;j++){
+            let tempVertsBoneBlendFloatNumber = [];
+            for(let i=0;i<vertsBlendNumbers[j][0].length;i++){
+              let tempChar = vertsBlendNumbers[j][0][i];
+              if(char.length == 0 && vertsBlendNumbers[j][0][i] != " "){
+                char = tempChar;
+                continue;
+              }else{
+                if(vertsBlendNumbers[j][0][i] != " "){
+                    char += tempChar;
+                }else{
+                  let tempFloat = parseFloat(char);
+                  char = [];
+                  tempVertsBoneBlendFloatNumber.push(tempFloat)
+                }
+              }  
+            }
+            vertsBoneBlendFloatNumber.push(tempVertsBoneBlendFloatNumber);
+          }
+
+          //vertsBoneBlendMmatrixNumber２頂点ならどの頂点か？
+          let currentVerts = 0;
+          let vertsBlend = true;
+          let tempVertsBlend = [];
+          let blendBoneIndex = [];
+          for(let j=0;j<armatures.length;j++){
+            let tempBlendBoneIndex = [];
+            for(let i=0;i<vertsBlendMatrixNumbers[j][0].length;i++){
+              let tempChar = vertsBlendMatrixNumbers[j][0][i];
+              if(char.length == 0 && vertsBlendMatrixNumbers[j][0][i] != " "){
+                char = tempChar;
+                continue;
+              }else{
+                if(vertsBlendMatrixNumbers[j][0][i] != " "){
+                    char += tempChar;
+                }else{
+                  if(vertsBlend == true){
+                  let tempFloat = parseFloat(char);
+                  char = [];
+                  tempVertsBlend.push(tempFloat);
+                  //文字列は配列とみなしている可能性あり
+                  if(tempVertsBlend.length >= vertsBoneBlendFloatNumber[j][currentVerts]){
+                    tempBlendBoneIndex.push(tempVertsBlend);
+                    tempVertsBlend = [];
+                    currentVerts += 1;
+                  }
+                  vertsBlend = false;
+                  }else{
+                    vertsBlend = true;
+                    char = [];
+                  }
+                }
+              }  
+            } 
+            blendBoneIndex.push(tempBlendBoneIndex);          
+          }
+
+          console.log(blendBoneIndex)
+          daeLoadPack.blendBoneIndex = blendBoneIndex[0];
+          //boneWeightそれぞれの頂点の重み
+          let bonesWeight = [];
+          for(let j=0;j<armatures.length;j++){
+            let vertsNumber = 0;
+            let nowReadVertsNumber = vertsBoneBlendFloatNumber[j][vertsNumber];
+            let tempBoneWeight = [];
+            let tempBonesWeight = [];
+            for(let i=0;i<loadSkinWaight[j][0].length;i++){
+              let tempChar = loadSkinWaight[j][0][i];
+              if(char.length == 0 && loadSkinWaight[j][0][i] != " "){
+                char = tempChar;
+                continue;
+              }else{
+                if(loadSkinWaight[j][0][i] != " "){
+                    char += tempChar;
+                }else{
+                  let tempFloat = parseFloat(char);
+                  char = [];
+                  tempBoneWeight.push(tempFloat)
+                  if(tempBoneWeight.length >= nowReadVertsNumber){
+                    tempBonesWeight.push(tempBoneWeight);
+                    tempBoneWeight = [];
+                    vertsNumber += 1;
+                    nowReadVertsNumber = vertsBoneBlendFloatNumber[j][vertsNumber];
+                  }
+                }
+              }  
+            }
+            bonesWeight.push(tempBonesWeight);
+          }
+          daeLoadPack.bonesWeight = bonesWeight[0];
           let boneParentRelation = [];
-          getAllChildNodesDepth(boneJointList[0].children.length, boneJointList[0].children,tempResult,boneParentRelation,daeLoadPack.bonesNameList);
-          console.log(boneParentRelation);
-          daeLoadPack.boneParentRelation = boneParentRelation;
+          //どのボーンが親が調べる
+          for(let j=0;j<armatures.length;j++){
+            let boneJointList = docelem.getElementsByTagName("node");
+            let  tempResult = [];
+            let tempBoneParentRelation = [];
+            getAllChildNodesDepth(boneJointList[j].children.length, boneJointList[j].children,tempResult,tempBoneParentRelation,daeLoadPack.bonesNameList);
+            boneParentRelation.push(tempBoneParentRelation);
+          }
+          daeLoadPack.boneParentRelation = boneParentRelation[0];
 
           //bonesInit
           let bones = [];
-          for(let i in daeLoadPack.bonesNameList){
-            let boneContents = {};
-            boneContents.skinmeshBone = null;
-            boneContents.position = setVector3(0,0,0);
-            boneContents.rotXYZ = setVector3(0,0,0);
-            boneContents.scaleXYZ = setVector3(1,1,1);
-            bones.push(boneContents);
+          for(let j=0;j<armatures.length;j++){
+            let tempBones = [];
+            for(let i=0;i<daeLoadPack.bonesNameList.length;i++){
+              let boneContents = {};
+              boneContents.skinmeshBone = null;
+              boneContents.position = setVector3(0,0,0);
+              boneContents.rotXYZ = setVector3(0,0,0);
+              boneContents.scaleXYZ = setVector3(1,1,1);
+              tempBones.push(boneContents);
+            }
+            bones.push(tempBones);     
           }
-          daeLoadPack.bones = bones;
+          daeLoadPack.bones = bones[0];
         }else{
           let bones = [];
           let boneContents = {};
