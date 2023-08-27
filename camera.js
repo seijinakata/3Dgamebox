@@ -343,6 +343,10 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
           }
 
           daeLoadPack.bonesNameList = bonesNameList[0];
+          for(let i=0;i<armatures.length;i++){
+            daeLoadpack[i].bonesNameList = bonesNameList[i];
+
+          }
           //dataLoad
           let loadBindPose = [];
           let vertsBlendNumbers = [];
@@ -419,7 +423,9 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             bindPosePack.push(tempBindPosePack)         
           }
           daeLoadPack.bindPosePack = bindPosePack[0];
-
+          for(let i=0;i<armatures.length;i++){
+            daeLoadpack[i].bindPosePack = bindPosePack[i];
+          }
           //vertsBoneBlendNumber１頂点にいくつの頂点の重みを加えるか。２なら２頂点。
           let vertsBoneBlendFloatNumber = [];
           for(let j=0;j<armatures.length;j++){
@@ -478,9 +484,11 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             } 
             blendBoneIndex.push(tempBlendBoneIndex);          
           }
-
           console.log(blendBoneIndex)
           daeLoadPack.blendBoneIndex = blendBoneIndex[0];
+          for(let i=0;i<armatures.length;i++){
+            daeLoadpack[i].blendBoneIndex = blendBoneIndex[i];
+          }
           //boneWeightそれぞれの頂点の重み
           let bonesWeight = [];
           for(let j=0;j<armatures.length;j++){
@@ -512,6 +520,9 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             bonesWeight.push(tempBonesWeight);
           }
           daeLoadPack.bonesWeight = bonesWeight[0];
+          for(let i=0;i<armatures.length;i++){
+            daeLoadpack[i].bonesWeight = bonesWeight[i];
+          }
           let boneParentRelation = [];
           //どのボーンが親が調べる
           for(let j=0;j<armatures.length;j++){
@@ -522,7 +533,9 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             boneParentRelation.push(tempBoneParentRelation);
           }
           daeLoadPack.boneParentRelation = boneParentRelation[0];
-
+          for(let i=0;i<armatures.length;i++){
+            daeLoadpack[i].boneParentRelation = boneParentRelation[i];
+          }
           //bonesInit
           let bones = [];
           for(let j=0;j<armatures.length;j++){
@@ -538,6 +551,9 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             bones.push(tempBones);     
           }
           daeLoadPack.bones = bones[0];
+          for(let i=0;i<armatures.length;i++){
+            daeLoadpack[i].bones = bones[i];
+          }
         }else{
           let bones = [];
           let boneContents = {};
@@ -1704,7 +1720,7 @@ if(dataLoad == false){
       // steve1Loadpack.bones[0].scaleXYZ[scale_Z] = 10;
       culUVvector(steve1Loadpack[i]); 
     }
-
+    console.log(steve1Loadpack)
     steve1LoadPack.textureImage = dicePixelImage;
     steve1LoadPack.backCullingFlag = true;
     steve1LoadPack.shadowFlag = true;
