@@ -1564,6 +1564,7 @@ let zBuffering = [];
 renderBufferInit(zBuffering,screen_size_h,screen_size_w);
 let myImageData = ctx.createImageData(screen_size_w, screen_size_h);
 let Sands = [];
+let steve = [];
 
 let mainLoopId = setInterval(function(){
 //dataLoad
@@ -1708,9 +1709,9 @@ if(dataLoad == false){
   if(dicePixelImageLoad == true && steve1LoadPack.daeLoad == true && steve1Load == false){
     for(let i=0;i<steve1Loadpack[0].objectNumber;i++){
       steve1Loadpack[i].textureImage = dicePixelImage;
-      steve1Loadpack[i].backCullingFlag = false;
-      steve1Loadpack[i].shadowFlag = false;
-      steve1Loadpack[i].lightShadowFlag = false;
+      steve1Loadpack[i].backCullingFlag = true;
+      steve1Loadpack[i].shadowFlag = true;
+      steve1Loadpack[i].lightShadowFlag = true;
       // steve1Loadpack[i].bones[0].position[position_Y] = 0;
       // steve1Loadpack[i].bones[0].position[position_Z] = 1.5;
       // steve1Loadpack[i].bones[0].scaleXYZ = setVector3(20,20,20);
@@ -1720,13 +1721,18 @@ if(dataLoad == false){
       // steve1Loadpack.bones[0].scaleXYZ[scale_Z] = 10;
       culUVvector(steve1Loadpack[i]); 
     }
-    console.log(steve1Loadpack)
+
     steve1LoadPack.textureImage = dicePixelImage;
     steve1LoadPack.backCullingFlag = true;
     steve1LoadPack.shadowFlag = true;
     steve1LoadPack.lightShadowFlag = true;
     culUVvector(steve1LoadPack)
     steves.push(steve1LoadPack);
+
+    for(let i=0;i<steve1Loadpack.length;i++){
+     steve.push(steve1Loadpack);
+    }
+ 
     for(let i=0;i<steves[0].bones.length;i++){
       steves[0].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
       steves[0].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
@@ -1737,8 +1743,26 @@ if(dataLoad == false){
       steves[0].bones[i].quaternionTime.push(0);
       steves[0].bones[i].quaternionTime.push(1);
       steves[0].bones[i].currentTime = 0;
-
     }
+    for(let i=0;i<steve[0][0].bones.length;i++){
+      steve[0][0].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
+      steve[0][0].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
+      steve[0][0].bones[i].quaternion = [];
+      steve[0][0].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
+      steve[0][0].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
+      steve[0][0].bones[i].quaternionTime = [];
+      steve[0][0].bones[i].quaternionTime.push(0);
+      steve[0][0].bones[i].quaternionTime.push(1);
+      steve[0][0].bones[i].currentTime = 0;
+    }
+  
+    steve[0][0].bones[4].afterQuaternion = quaternionXYZRoll(0,0,80);
+    steve[0][0].bones[6].afterQuaternion = quaternionXYZRoll(0,0,-80);
+    steve[0][0].bones[8].afterQuaternion = quaternionXYZRoll(0,0,-80);
+    steve[0][0].bones[10].afterQuaternion = quaternionXYZRoll(0,0,80);
+    steve[0][0].bones[11].afterQuaternion = quaternionXYZRoll(-80,0,0);
+    steve[0][0].bones[12].afterQuaternion = quaternionXYZRoll(80,0,0);
+
     steves[0].bones[4].afterQuaternion = quaternionXYZRoll(0,0,80);
     steves[0].bones[6].afterQuaternion = quaternionXYZRoll(0,0,-80);
     steves[0].bones[8].afterQuaternion = quaternionXYZRoll(0,0,-80);
@@ -2037,9 +2061,15 @@ for(let i in steves){
 
   }
   //steve
-  for(let object of steves){
+  //for(let object of steves){
+    for(let j=0;j<steve.length;j++){
+      for(let i=0;i<steve[j].length;i++){
+        let object = steve[j][i];
     objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
-	}
+
+      }
+    }
+	//}
 	// //planesregister
   // for(let object of planes){
   //   // let worldMatrix = matIdentity();
