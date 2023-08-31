@@ -49,24 +49,26 @@ daeLoader("dice3.dae",steve1LoadPack,steve1Loadpack);
 daeLoader("dice3.dae",steve2LoadPack,steve2Loadpack);
 daeLoader("sand.dae",sandLoadPack,sandLoadpack);
 
-function daeLoadCopy(daeLoadPack,daeLoadpack){
+function daeLoadCopy(daeLoadPack){
    let copyDae = {};
-   copyDae.objectNumber = daeLoadPack.objectNumber;
-   copyDae.meshVerts = daeLoadPack.meshVerts.concat();
-   copyDae.meshVertsFaceIndex = daeLoadPack.meshVertsFaceIndex.concat();
-   copyDae.faceIndexMeshUV = daeLoadPack.faceIndexMeshUV.concat();
+   copyDae.objectNumber = JSON.parse(JSON.stringify(daeLoadPack.objectNumber));
+   copyDae.meshVerts = JSON.parse(JSON.stringify(daeLoadPack.meshVerts));
+   copyDae.meshVertsFaceIndex = JSON.parse(JSON.stringify(daeLoadPack.meshVertsFaceIndex));
+    //テクスチャは使いまわすから参照型
+   copyDae.faceIndexMeshUV = daeLoadPack.faceIndexMeshUV;
    copyDae.textureImage = daeLoadPack.textureImage;
+   copyDae.UVVector = JSON.parse(JSON.stringify(daeLoadPack.UVVector));
    copyDae.backCullingFlag = daeLoadPack.backCullingFlag;
    copyDae.shadowFlag = daeLoadPack.shadowFlag;
    copyDae.lightShadowFlag = daeLoadPack.lightShadowFlag;
    let bones = [];
    let boneContents = {};
-   boneContents.position = daeLoadPack.bones[0].position.concat();
-   boneContents.rotXYZ = daeLoadPack.bones[0].rotXYZ.concat();
-   boneContents.scaleXYZ = daeLoadPack.bones[0].scaleXYZ.concat();
+   boneContents.position = setVector3(daeLoadPack.bones[0].position[position_X],daeLoadPack.bones[0].position[position_Y],daeLoadPack.bones[0].position[position_Z]);
+   boneContents.rotXYZ = setVector3(daeLoadPack.bones[0].rotXYZ[position_X],daeLoadPack.bones[0].rotXYZ[position_Y],daeLoadPack.bones[0].rotXYZ[position_Z]);
+   boneContents.scaleXYZ = setVector3(daeLoadPack.bones[0].scaleXYZ[position_X],daeLoadPack.bones[0].scaleXYZ[position_Y],daeLoadPack.bones[0].scaleXYZ[position_Z]);
    bones.push(boneContents);
    copyDae.bones = bones;
-   copyDae.UVVector = daeLoadPack.UVVector.concat();//concat?
+   
    return copyDae;
 }
 function daeLoadcopy(daeLoadPack){
@@ -85,14 +87,28 @@ function daeLoadcopy(daeLoadPack){
     tempCopyDae.shadowFlag = object.shadowFlag;
     tempCopyDae.lightShadowFlag = object.lightShadowFlag;
     tempCopyDae.armatures = object.armatures;
-    if(object.armatures == true){
-
+    if(daeLoadPack[0].armatures == true){
+      tempCopyDae.bonesNameList = JSON.parse(JSON.stringify(object.bonesNameList));
+      tempCopyDae.bindPosePack = JSON.parse(JSON.stringify(object.bindPosePack));
+      tempCopyDae.blendBoneIndex = JSON.parse(JSON.stringify(object.blendBoneIndex));
+      tempCopyDae.bonesWeight = JSON.parse(JSON.stringify(object.bonesWeight));
+      tempCopyDae.boneParentRelation = JSON.parse(JSON.stringify(object.boneParentRelation));
+      let bones = [];
+      for(let i=0;i<object.bonesNameList.length;i++){
+        let boneContents = {};
+        boneContents.skinmeshBone = null;
+        boneContents.position = setVector3(object.bones[0].position[position_X],object.bones[0].position[position_Y],object.bones[0].position[position_Z]);
+        boneContents.rotXYZ = setVector3(object.bones[0].rotXYZ[position_X],object.bones[0].rotXYZ[position_Y],object.bones[0].rotXYZ[position_Z]);
+        boneContents.scaleXYZ = setVector3(object.bones[0].scaleXYZ[position_X],object.bones[0].scaleXYZ[position_Y],object.bones[0].scaleXYZ[position_Z]);
+        bones.push(boneContents);
+      }
+      tempCopyDae.bones = bones;
     }else{
       let bones = [];
       let boneContents = {};
-      boneContents.position = object.bones[0].position.concat();
-      boneContents.rotXYZ = object.bones[0].rotXYZ.concat();
-      boneContents.scaleXYZ = object.bones[0].scaleXYZ.concat();
+      boneContents.position = setVector3(object.bones[0].position[position_X],object.bones[0].position[position_Y],object.bones[0].position[position_Z]);
+      boneContents.rotXYZ = setVector3(object.bones[0].rotXYZ[position_X],object.bones[0].rotXYZ[position_Y],object.bones[0].rotXYZ[position_Z]);
+      boneContents.scaleXYZ = setVector3(object.bones[0].scaleXYZ[position_X],object.bones[0].scaleXYZ[position_Y],object.bones[0].scaleXYZ[position_Z]);
       bones.push(boneContents);
       tempCopyDae.bones = bones; 
     }
@@ -1734,7 +1750,7 @@ if(dataLoad == false){
     steve1LoadPack.lightShadowFlag = true;
     culUVvector(steve1LoadPack)
     steves.push(steve1LoadPack);
-
+    let s = daeLoadcopy(steve1Loadpack);
     for(let i=0;i<steve1Loadpack.length;i++){
      steve.push(steve1Loadpack);
     }
@@ -1879,7 +1895,15 @@ for(let j=0;j<steves.length;j++){
    steves[j].bones[i].currentTime = t; 
   }
 }
-
+// for(let j=0;j<steve.length;j++){
+//   let objects = steve[j];
+//   for(let i=0;i<objects.objectNumber;i++){
+//     let object = objects[i];
+//     for(let k=0;k<object.bones.length;k++){
+//       object.bones[k].currentTime = t; 
+//     }
+//   }
+// }
 let steves_length = steves.length;
 for(let j=0;j<steves_length;j++){
   let steves_bonesNameList_length = steves[j].bonesNameList.length;
