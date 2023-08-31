@@ -74,22 +74,28 @@ function daeLoadcopy(daeLoadPack){
   for(let i=0;i<daeLoadPack[0].objectNumber;i++){
     let object = daeLoadPack[i];
     let tempCopyDae = {};
-    tempCopyDae.objectNumber = object.objectNumber;
-    tempCopyDae.meshVerts = object.meshVerts.concat();
-    tempCopyDae.meshVertsFaceIndex = object.meshVertsFaceIndex.concat();
-    tempCopyDae.faceIndexMeshUV = object.faceIndexMeshUV.concat();
+    tempCopyDae.objectNumber = JSON.parse(JSON.stringify(object.objectNumber));
+    tempCopyDae.meshVerts = JSON.parse(JSON.stringify(object.meshVerts));
+    tempCopyDae.meshVertsFaceIndex = JSON.parse(JSON.stringify(object.meshVertsFaceIndex));
+    //テクスチャは使いまわすから参照型
+    tempCopyDae.faceIndexMeshUV = object.faceIndexMeshUV;
     tempCopyDae.textureImage = object.textureImage;
+    tempCopyDae.UVVector = JSON.parse(JSON.stringify(object.UVVector));
     tempCopyDae.backCullingFlag = object.backCullingFlag;
     tempCopyDae.shadowFlag = object.shadowFlag;
     tempCopyDae.lightShadowFlag = object.lightShadowFlag;
-    let bones = [];
-    let boneContents = {};
-    boneContents.position = object.bones[0].position.concat();
-    boneContents.rotXYZ = object.bones[0].rotXYZ.concat();
-    boneContents.scaleXYZ = object.bones[0].scaleXYZ.concat();
-    bones.push(boneContents);
-    tempCopyDae.bones = bones;
-    tempCopyDae.UVVector = object.UVVector.concat();//concat?
+    tempCopyDae.armatures = object.armatures;
+    if(object.armatures == true){
+
+    }else{
+      let bones = [];
+      let boneContents = {};
+      boneContents.position = object.bones[0].position.concat();
+      boneContents.rotXYZ = object.bones[0].rotXYZ.concat();
+      boneContents.scaleXYZ = object.bones[0].scaleXYZ.concat();
+      bones.push(boneContents);
+      tempCopyDae.bones = bones; 
+    }
     copyDae.push(tempCopyDae); 
   }
   return copyDae;
