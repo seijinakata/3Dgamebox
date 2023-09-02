@@ -1769,11 +1769,14 @@ if(dataLoad == false){
     culUVvector(steve1LoadPack);
     let ss = daeLoadCopy(steve1LoadPack)
     steves.push(ss);
-    let s = daeLoadcopy(steve1Loadpack);
-    for(let i=0;i<s.length;i++){
-     steve.push(s);
+    let steve1 = daeLoadcopy(steve1Loadpack);
+    for(let i=0;i<steve1.length;i++){
+     steve.push(steve1);
     }
- 
+     let steve2 = daeLoadcopy(steve1Loadpack);
+    for(let i=0;i<steve1.length;i++){
+     steve.push(steve2);
+    }
     for(let i=0;i<steves[0].bones.length;i++){
       steves[0].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
       steves[0].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
@@ -1785,24 +1788,29 @@ if(dataLoad == false){
       steves[0].bones[i].quaternionTime.push(1);
       steves[0].bones[i].currentTime = 0;
     }
-    for(let i=0;i<steve[0][0].bones.length;i++){
-      steve[0][0].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
-      steve[0][0].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
-      steve[0][0].bones[i].quaternion = [];
-      steve[0][0].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
-      steve[0][0].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
-      steve[0][0].bones[i].quaternionTime = [];
-      steve[0][0].bones[i].quaternionTime.push(0);
-      steve[0][0].bones[i].quaternionTime.push(1);
-      steve[0][0].bones[i].currentTime = 0;
+    for(let j=0;j<steve.length;j++){
+      for(let i=0;i<steve[0][0].bones.length;i++){
+        steve[j][0].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
+        steve[j][0].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
+        steve[j][0].bones[i].quaternion = [];
+        steve[j][0].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
+        steve[j][0].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
+        steve[j][0].bones[i].quaternionTime = [];
+        steve[j][0].bones[i].quaternionTime.push(0);
+        steve[j][0].bones[i].quaternionTime.push(1);
+        steve[j][0].bones[i].currentTime = 0;
+      }  
     }
-  
-    steve[0][0].bones[4].quaternion[1] = quaternionXYZRoll(0,0,80);
-    steve[0][0].bones[6].quaternion[1] = quaternionXYZRoll(0,0,-80);
-    steve[0][0].bones[8].quaternion[1] = quaternionXYZRoll(0,0,-80);
-    steve[0][0].bones[10].quaternion[1] = quaternionXYZRoll(0,0,80);
-    steve[0][0].bones[11].quaternion[1] = quaternionXYZRoll(-80,0,0);
-    steve[0][0].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0);
+
+    for(let i=0;i<steve.length;i++){
+      steve[i][0].bones[4].quaternion[1] = quaternionXYZRoll(0,0,80);
+      steve[i][0].bones[6].quaternion[1] = quaternionXYZRoll(0,0,-80);
+      steve[i][0].bones[8].quaternion[1] = quaternionXYZRoll(0,0,-80);
+      steve[i][0].bones[10].quaternion[1] = quaternionXYZRoll(0,0,80);
+      steve[i][0].bones[11].quaternion[1] = quaternionXYZRoll(-80,0,0);
+      steve[i][0].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0); 
+    }
+
 
     // steves[0].bones[4].afterQuaternion = quaternionXYZRoll(0,0,80);
     // steves[0].bones[6].afterQuaternion = quaternionXYZRoll(0,0,-80);
@@ -1909,37 +1917,22 @@ if(t<0){
 }
 t += tPuls;
 
-for(let j=0;j<steves.length;j++){
-  for(let i=0;i<steves[j].bones.length;i++){
-   steves[j].bones[i].currentTime = t; 
-  }
-}
-for(let j=0;j<steve.length;j++){
+let steves_length = steve.length;
+for(let j=0;j<steves_length;j++){
   let objects = steve[j];
   for(let i=0;i<objects[0].objectNumber;i++){
     let object = objects[i];
-    for(let k=0;k<object.bones.length;k++){
+    let bones_length = object.bones.length;
+    let bonesNameList_length = object.bonesNameList.length;
+    for(let k=0;k<bones_length;k++){
       object.bones[k].currentTime = t; 
     }
-  }
-}
-let steves_length = steves.length;
-for(let j=0;j<steves_length;j++){
-  let steves_bonesNameList_length = steves[j].bonesNameList.length;
-  let currentStave = steves[j];
-  for(let i=0;i<steves_bonesNameList_length;i++){
-    currentStave.bones[i].skinmeshBone = null;
-  }
-}
-for(let j=0;j<steve.length;j++){
-  let objects = steve[j];
-  for(let i=0;i<objects[0].objectNumber;i++){
-    let object = objects[i];
-    for(let k=0;k<object.bonesNameList.length;k++){
+    for(let k=0;k<bonesNameList_length;k++){
       object.bones[k].skinmeshBone = null;
     }
   }
 }
+
 // steve[0][0].bones[0].position = setVector3(0.0,0,0);
 steve[0][0].bones[0].position = setVector3(-0.5,0,0.5);
 // steves[0].bones[0].rotXYZ = setVector3(0,0,0);
@@ -1980,9 +1973,6 @@ steve[0][0].bones[0].position = setVector3(-0.5,0,0.5);
 // slerpQuaternion(quaternion12,roxyz1,roxyz2,t);
 // console.log(quaternion12)
 //makeBones
-for(let i in steves){
-  daeMekeSkinMeshBone(steves[i]);
-}
 for(let j=0;j<steve.length;j++){
   let objects = steve[j];
   for(let i=0;i<objects[0].objectNumber;i++){
