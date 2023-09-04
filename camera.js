@@ -1562,7 +1562,7 @@ let steve1Load = false;
 let cube1Load = false;
 let sphere1Load = false;
 let sandLoad = false;
-let sands = [];
+
 const screen_size_h = SCREEN_SIZE_H;
 const screen_size_w = SCREEN_SIZE_W;
 
@@ -1598,7 +1598,7 @@ shdowBufferInit(shadowMap,screen_size_h,screen_size_w);
 let zBuffering = [];
 renderBufferInit(zBuffering,screen_size_h,screen_size_w);
 let myImageData = ctx.createImageData(screen_size_w, screen_size_h);
-let Sands = [];
+let sands = [];
 let steves = [];
 
 let mainLoopId = setInterval(function(){
@@ -1632,33 +1632,33 @@ if(dataLoad == false){
       // sandLoadpack[i].bones[0].rotXYZ[position_Y] = 180;
       culUVvector(sandLoadpack[i]); 
     }
-    let Sand1 = daeLoadcopy(sandLoadpack);
-    Sand1[0].bones[0].position[position_Z] += 0.75;
-    let Sand2 = daeLoadcopy(sandLoadpack);
-    Sand2[0].bones[0].position[position_Z] += 1.5;
-    let Sand3 = daeLoadcopy(sandLoadpack);
-    Sand3[0].bones[0].position[position_X] += -0.75;
+    let sand1 = daeLoadcopy(sandLoadpack);
+    sand1[0].bones[0].position[position_Z] += 0.75;
+    let sand2 = daeLoadcopy(sandLoadpack);
+    sand2[0].bones[0].position[position_Z] += 1.5;
+    let sand3 = daeLoadcopy(sandLoadpack);
+    sand3[0].bones[0].position[position_X] += -0.75;
 
-    let Sand4 = daeLoadcopy(Sand3);
-    Sand4[0].bones[0].position[position_Z] += 0.75;
-    let Sand5 = daeLoadcopy(Sand3);
-    Sand5[0].bones[0].position[position_Z] += 1.5;
-    let Sand6 = daeLoadcopy(sandLoadpack);
-    Sand6[0].bones[0].position[position_X] += 0.75;
+    let sand4 = daeLoadcopy(sand3);
+    sand4[0].bones[0].position[position_Z] += 0.75;
+    let sand5 = daeLoadcopy(sand3);
+    sand5[0].bones[0].position[position_Z] += 1.5;
+    let sand6 = daeLoadcopy(sandLoadpack);
+    sand6[0].bones[0].position[position_X] += 0.75;
 
-    let Sand7 = daeLoadcopy(Sand6);
-    Sand7[0].bones[0].position[position_Z] += 0.75;
-    let Sand8 = daeLoadcopy(Sand6);
-    Sand8[0].bones[0].position[position_Z] += 1.5;
-    Sands.push(sandLoadpack);
-    Sands.push(Sand1);
-    Sands.push(Sand2);
-    Sands.push(Sand3);
-    Sands.push(Sand4);
-    Sands.push(Sand5);
-    Sands.push(Sand6);
-    Sands.push(Sand7);
-    Sands.push(Sand8);
+    let sand7 = daeLoadcopy(sand6);
+    sand7[0].bones[0].position[position_Z] += 0.75;
+    let sand8 = daeLoadcopy(sand6);
+    sand8[0].bones[0].position[position_Z] += 1.5;
+    sands.push(sandLoadpack);
+    sands.push(sand1);
+    sands.push(sand2);
+    sands.push(sand3);
+    sands.push(sand4);
+    sands.push(sand5);
+    sands.push(sand6);
+    sands.push(sand7);
+    sands.push(sand8);
     
     sandLoad = true;
   }
@@ -1858,7 +1858,7 @@ for(let j=0;j<steves.length;j++){
     }
   }
   //cuberegister
-  for(let Object of Sands){
+  for(let Object of sands){
     // let worldMatrix = matIdentity();
     // mulMatTranslate(worldMatrix,object.bones[0].position[position_X],object.bones[0].position[position_Y],object.bones[0].position[position_Z]);  
     // mulMatRotateX(worldMatrix,object.bones[0].rotXYZ[rot_X]);
