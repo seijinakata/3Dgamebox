@@ -32,13 +32,11 @@ function getAllChildNodesDepth(childrenLength,element,tempResult,result,bonesNam
 }
 
 let steve1LoadPack = {};
-let steve2LoadPack = {};
 let cube1LoadPack = {};
 let sphere1LoadPack = {};
 let sandLoadPack = {};
 
 let steve1Loadpack = [];
-let steve2Loadpack = [];
 let cube1Loadpack = [];
 let sphere1Loadpack = [];
 let sandLoadpack = [];
@@ -46,7 +44,6 @@ let sandLoadpack = [];
 daeLoader("car.dae",cube1LoadPack,cube1Loadpack);
 daeLoader("sphere.dae",sphere1LoadPack,sphere1Loadpack);
 daeLoader("dice3.dae",steve1LoadPack,steve1Loadpack);
-daeLoader("dice3.dae",steve2LoadPack,steve2Loadpack);
 daeLoader("sand.dae",sandLoadPack,sandLoadpack);
 
 function daeLoadCopy(daeLoadPack){
@@ -1278,7 +1275,6 @@ cubeImage.addEventListener("load", function() {
 
 //dice
 let dices = [];
-let steves = [];
 let diceImage = new Image();
 diceImage.src = "steve.png";
 let dicePixelImage = [];
@@ -1563,7 +1559,6 @@ let roadPixelImageLoad = false;
 let sandPixelImageLoad = false;
 let dicePixelImageLoad = false;
 let steve1Load = false;
-let steve2Load = false;
 let cube1Load = false;
 let sphere1Load = false;
 let sandLoad = false;
@@ -1604,7 +1599,7 @@ let zBuffering = [];
 renderBufferInit(zBuffering,screen_size_h,screen_size_w);
 let myImageData = ctx.createImageData(screen_size_w, screen_size_h);
 let Sands = [];
-let steve = [];
+let steves = [];
 
 let mainLoopId = setInterval(function(){
 //dataLoad
@@ -1625,13 +1620,6 @@ if(dataLoad == false){
     dicePixelImageLoad = true;
   }
   if(sandPixelImageLoad == true && sandLoadPack.daeLoad == true && sandLoad == false){
-    sandLoadPack.textureImage = sandPixelImage;
-    sandLoadPack.backCullingFlag = true;
-    sandLoadPack.shadowFlag = true;
-    sandLoadPack.lightShadowFlag = false;
-    let bones = [];
-    sandLoadPack.bones[0].position[position_Y] = 0.5;
-
     for(let i=0;i<sandLoadpack[0].objectNumber;i++){
       sandLoadpack[i].textureImage = sandPixelImage;
       sandLoadpack[i].backCullingFlag = true;
@@ -1671,41 +1659,6 @@ if(dataLoad == false){
     Sands.push(Sand6);
     Sands.push(Sand7);
     Sands.push(Sand8);
-
-    //一個0.75の大きさ
-    culUVVector(sandLoadPack);
-
-    let sand2 = daeLoadCopy(sandLoadPack);
-    sand2.bones[0].position[position_Z] = 0.75;
-    let sand3 = daeLoadCopy(sandLoadPack);
-    sand3.bones[0].position[position_Z] = 1.5;
-    let sand4 = daeLoadCopy(sandLoadPack);
-    sand4.bones[0].position[position_X] = -0.750;
-
-    let sand5 = daeLoadCopy(sand4);
-    sand5.bones[0].position[position_Z] = 0.750001;
-    let sand6 = daeLoadCopy(sand4);
-    sand6.bones[0].position[position_Z] = 1.50001;
-    let sand7 = daeLoadCopy(sandLoadPack);
-    sand7.bones[0].position[position_X] = 0.750;
-    sand7.bones[0].position[position_Z] = -0.000;
-
-    let sand8 = daeLoadCopy(sand7);
-    sand8.bones[0].position[position_Z] = 0.750001;
-    let sand9 = daeLoadCopy(sand7);
-    sand9.bones[0].position[position_Z] = 1.50001;
-    sandLoadPack.bones[0].position[position_Z] = -0.001;
-    sand7.bones[0].position[position_Z] = -0.002;
-
-    sands.push(sandLoadPack);
-    sands.push(sand2);
-    sands.push(sand3);
-    sands.push(sand4);
-    sands.push(sand5);
-    sands.push(sand6);
-    sands.push(sand7);
-    sands.push(sand8);
-    sands.push(sand9);
     
     sandLoad = true;
   }
@@ -1761,124 +1714,41 @@ if(dataLoad == false){
       // steve1Loadpack.bones[0].scaleXYZ[scale_Z] = 10;
       culUVvector(steve1Loadpack[i]); 
     }
-
-    steve1LoadPack.textureImage = dicePixelImage;
-    steve1LoadPack.backCullingFlag = true;
-    steve1LoadPack.shadowFlag = true;
-    steve1LoadPack.lightShadowFlag = true;
-    culUVvector(steve1LoadPack);
-    let ss = daeLoadCopy(steve1LoadPack)
-    steves.push(ss);
     let steve1 = daeLoadcopy(steve1Loadpack);
     for(let i=0;i<steve1.length;i++){
-     steve.push(steve1);
+     steves.push(steve1);
     }
      let steve2 = daeLoadcopy(steve1Loadpack);
     for(let i=0;i<steve1.length;i++){
-     steve.push(steve2);
+     steves.push(steve2);
     }
-    for(let i=0;i<steves[0].bones.length;i++){
-      steves[0].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
-      steves[0].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
-      steves[0].bones[i].quaternion = [];
-      steves[0].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
-      steves[0].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
-      steves[0].bones[i].quaternionTime = [];
-      steves[0].bones[i].quaternionTime.push(0);
-      steves[0].bones[i].quaternionTime.push(1);
-      steves[0].bones[i].currentTime = 0;
-    }
-    for(let j=0;j<steve.length;j++){
-      for(let i=0;i<steve[0][0].bones.length;i++){
-        steve[j][0].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
-        steve[j][0].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
-        steve[j][0].bones[i].quaternion = [];
-        steve[j][0].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
-        steve[j][0].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
-        steve[j][0].bones[i].quaternionTime = [];
-        steve[j][0].bones[i].quaternionTime.push(0);
-        steve[j][0].bones[i].quaternionTime.push(1);
-        steve[j][0].bones[i].currentTime = 0;
+
+    for(let j=0;j<steves.length;j++){
+      for(let i=0;i<steves[0][0].bones.length;i++){
+        steves[j][0].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
+        steves[j][0].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
+        steves[j][0].bones[i].quaternion = [];
+        steves[j][0].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
+        steves[j][0].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
+        steves[j][0].bones[i].quaternionTime = [];
+        steves[j][0].bones[i].quaternionTime.push(0);
+        steves[j][0].bones[i].quaternionTime.push(1);
+        steves[j][0].bones[i].currentTime = 0;
       }  
     }
 
-    for(let i=0;i<steve.length;i++){
-      steve[i][0].bones[4].quaternion[1] = quaternionXYZRoll(0,0,80);
-      steve[i][0].bones[6].quaternion[1] = quaternionXYZRoll(0,0,-80);
-      steve[i][0].bones[8].quaternion[1] = quaternionXYZRoll(0,0,-80);
-      steve[i][0].bones[10].quaternion[1] = quaternionXYZRoll(0,0,80);
-      steve[i][0].bones[11].quaternion[1] = quaternionXYZRoll(-80,0,0);
-      steve[i][0].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0); 
+    for(let i=0;i<steves.length;i++){
+      steves[i][0].bones[4].quaternion[1] = quaternionXYZRoll(0,0,80);
+      steves[i][0].bones[6].quaternion[1] = quaternionXYZRoll(0,0,-80);
+      steves[i][0].bones[8].quaternion[1] = quaternionXYZRoll(0,0,-80);
+      steves[i][0].bones[10].quaternion[1] = quaternionXYZRoll(0,0,80);
+      steves[i][0].bones[11].quaternion[1] = quaternionXYZRoll(-80,0,0);
+      steves[i][0].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0); 
     }
-
-
-    // steves[0].bones[4].afterQuaternion = quaternionXYZRoll(0,0,80);
-    // steves[0].bones[6].afterQuaternion = quaternionXYZRoll(0,0,-80);
-    // steves[0].bones[8].afterQuaternion = quaternionXYZRoll(0,0,-80);
-    // steves[0].bones[10].afterQuaternion = quaternionXYZRoll(0,0,80);
-    // steves[0].bones[11].afterQuaternion = quaternionXYZRoll(-80,0,0);
-    // steves[0].bones[12].afterQuaternion = quaternionXYZRoll(80,0,0);
-
-    steves[0].bones[4].quaternion[1] = quaternionXYZRoll(0,0,80);
-    steves[0].bones[6].quaternion[1] = quaternionXYZRoll(0,0,-80);
-    steves[0].bones[8].quaternion[1] = quaternionXYZRoll(0,0,-80);
-    steves[0].bones[10].quaternion[1] = quaternionXYZRoll(0,0,80);
-    steves[0].bones[11].quaternion[1] = quaternionXYZRoll(-80,0,0);
-    steves[0].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0);
 
     steve1Load = true;
   }
-  if(dicePixelImageLoad == true && steve2LoadPack.daeLoad == true && steve1Load == true && steve2Load == false){
-    for(let i=0;i<steve2Loadpack[0].objectNumber;i++){
-      steve2Loadpack[i].textureImage = dicePixelImage;
-      steve2Loadpack[i].backCullingFlag = false;
-      steve2Loadpack[i].shadowFlag = false;
-      steve2Loadpack[i].lightShadowFlag = false;
-      // steve2Loadpack[i].bones[0].position[position_Y] = 0;
-      // steve2Loadpack[i].bones[0].position[position_Z] = 1.5;
-      // steve2Loadpack[i].bones[0].scaleXYZ = setVector3(20,20,20);
-      // steve2Loadpack[i].bones[0].rotXYZ[position_X] = 90;
-      //steve2Loadpack[i].bones[0].rotXYZ[position_Y] = 90;
-      // steve2Loadpack.bones[0].scaleXYZ[scale_Y] = 10;
-      // steve2Loadpack.bones[0].scaleXYZ[scale_Z] = 10;
-      culUVvector(steve2Loadpack[i]); 
-    }
-    steve2LoadPack.textureImage = dicePixelImage;
-    steve2LoadPack.backCullingFlag = true;
-    steve2LoadPack.shadowFlag = true;
-    steve2LoadPack.lightShadowFlag = true;
-    culUVvector(steve2LoadPack)
-    //steves.push(steve2LoadPack); 
-    // steves[1].bones[0].scaleXYZ = setVector3(0.7,0.7,0.7);
-
-    // for(let i=0;i<steves[1].bones.length;i++){
-    //   steves[1].bones[i].preQuaternion = quaternionXYZRoll(0,0,0);
-    //   steves[1].bones[i].afterQuaternion = quaternionXYZRoll(0,0,0);
-    //   steves[1].bones[i].quaternion = [];
-    //   steves[1].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
-    //   steves[1].bones[i].quaternion.push(quaternionXYZRoll(0,0,0));
-    //   steves[1].bones[i].quaternionTime = [];
-    //   steves[1].bones[i].quaternionTime.push(0);
-    //   steves[1].bones[i].quaternionTime.push(1);
-    //   steves[1].bones[i].currentTime = 0;
-
-    // }
-    // steves[1].bones[4].afterQuaternion = quaternionXYZRoll(0,0,80);
-    // steves[1].bones[6].afterQuaternion = quaternionXYZRoll(0,0,-80);
-    // steves[1].bones[8].afterQuaternion = quaternionXYZRoll(0,0,-80);
-    // steves[1].bones[10].afterQuaternion = quaternionXYZRoll(0,0,80);
-    // steves[1].bones[11].afterQuaternion = quaternionXYZRoll(-80,0,0);
-    // steves[1].bones[12].afterQuaternion = quaternionXYZRoll(80,0,0);
-
-    // steves[1].bones[4].quaternion[1] = quaternionXYZRoll(0,0,80);
-    // steves[1].bones[6].quaternion[1] = quaternionXYZRoll(0,0,-80);
-    // steves[1].bones[8].quaternion[1] = quaternionXYZRoll(0,0,-80);
-    // steves[1].bones[10].quaternion[1] = quaternionXYZRoll(0,0,80);
-    // steves[1].bones[11].quaternion[1] = quaternionXYZRoll(-80,0,0);
-    // steves[1].bones[12].quaternion[1] = quaternionXYZRoll(80,0,0);
-    steve2Load = true;
-  }
-  if(sphere1Load && steve1Load && steve2Load && cube1Load && sandLoad){
+  if(sphere1Load && steve1Load && cube1Load && sandLoad){
     dataLoad = true;
   }
   ctx.font = '50pt Arial';
@@ -1889,26 +1759,7 @@ if(dataLoad == false){
 
 const start = performance.now();
 
-//lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
-
-
-/*
-mulMatRotateZ(bones[steveLoadPack.boneParentRelation[0][2]].copyInverseBindPose,0);
-bones[steveLoadPack.boneParentRelation[0][2]].bone = matMul(bones[steveLoadPack.boneParentRelation[0][2]].copyInverseBindPose,bones[steveLoadPack.boneParentRelation[0][2]].bindPose);
-//bones[0].copyInverseBindPose = bones[0].inverseBindPose.concat();
-dicebones.push(bones[steveLoadPack.boneParentRelation[0][2]].bone);  
-if(bones[steveLoadPack.boneParentRelation[0][1]].parentCrossBone  == null){
-  bones[steveLoadPack.boneParentRelation[0][1]].parentCrossBone = matMul(bones[steveLoadPack.boneParentRelation[0][2]].bone,bones[steveLoadPack.boneParentRelation[0][1]].inverseBindPose);
-  bones[steveLoadPack.boneParentRelation[0][1]].copyParentCrossBone = bones[steveLoadPack.boneParentRelation[0][1]].parentCrossBone.concat();
-}
-mulMatRotateZ(bones[steveLoadPack.boneParentRelation[0][1]].copyParentCrossBone,0);
-bones[steveLoadPack.boneParentRelation[0][1]].bone = matMul(bones[steveLoadPack.boneParentRelation[0][1]].copyParentCrossBone,bones[steveLoadPack.boneParentRelation[0][1]].bindPose);
-bones[steveLoadPack.boneParentRelation[0][1]].copyParentCrossBone = bones[steveLoadPack.boneParentRelation[0][1]].parentCrossBone.concat();
-dicebones.push(bones[steveLoadPack.boneParentRelation[0][1]].bone);
-*/
-
-//bonesResetスキンメッシュ
-
+//スキンメッシュ
 if(t>1){
   tPuls = -0.1;
 }
@@ -1917,9 +1768,9 @@ if(t<0){
 }
 t += tPuls;
 
-let steves_length = steve.length;
+let steves_length = steves.length;
 for(let j=0;j<steves_length;j++){
-  let objects = steve[j];
+  let objects = steves[j];
   for(let i=0;i<objects[0].objectNumber;i++){
     let object = objects[i];
     let bones_length = object.bones.length;
@@ -1933,99 +1784,17 @@ for(let j=0;j<steves_length;j++){
   }
 }
 
-// steve[0][0].bones[0].position = setVector3(0.0,0,0);
-steve[0][0].bones[0].position = setVector3(-0.5,0,0.5);
-// steves[0].bones[0].rotXYZ = setVector3(0,0,0);
+// steves[0][0].bones[0].position = setVector3(0.0,0,0);
+steves[0][0].bones[0].position = setVector3(-0.5,0,0.5);
 
-// steves[0].bones[4].rotXYZ = setVector3(0,0,rot);
-// steves[0].bones[6].rotXYZ = setVector3(0,0,-1*rot);
-
-// steves[0].bones[8].rotXYZ = setVector3(0,0,-1*rot);
-// steves[0].bones[10].rotXYZ = setVector3(0,0,rot);
-
-// steves[0].bones[11].rotXYZ = setVector3(-1* rot,0,0);
-// steves[0].bones[12].rotXYZ = setVector3(rot,0,0);
-
-// steves[1].bones[0].rotXYZ = setVector3(0,0,0);
-
-// steves[1].bones[4].rotXYZ = setVector3(0,0,rot);
-// steves[1].bones[6].rotXYZ = setVector3(0,0,-1*rot);
-
-// steves[1].bones[8].rotXYZ = setVector3(0,0,-1*rot);
-// steves[1].bones[10].rotXYZ = setVector3(0,0,rot);
-
-// steves[1].bones[11].rotXYZ = setVector3(-1* rot,0,0);
-// steves[1].bones[12].rotXYZ = setVector3(rot,0,0);
-// let rox = QuaternionAngleAxis(0,[1,0,0]);
-// let roy = QuaternionAngleAxis(0,[0,1,0]);
-// let roz = QuaternionAngleAxis(0,[0,0,1]);
-// let roxy = QuaternionMul(rox,roy);
-// let roxyz1 = QuaternionMul(roxy,roz);
-
-// rox = QuaternionAngleAxis(40,[1,0,0]);
-// roy = QuaternionAngleAxis(0,[0,1,0]);
-// roz = QuaternionAngleAxis(0,[0,0,1]);
-// roxy = QuaternionMul(rox,roy);
-// let roxyz2 = QuaternionMul(roxy,roz);
-// console.log(roxyz2)
-// let t = 1;
-// let quaternion12 = [];
-// slerpQuaternion(quaternion12,roxyz1,roxyz2,t);
-// console.log(quaternion12)
 //makeBones
-for(let j=0;j<steve.length;j++){
-  let objects = steve[j];
+for(let j=0;j<steves.length;j++){
+  let objects = steves[j];
   for(let i=0;i<objects[0].objectNumber;i++){
     let object = objects[i];
     daeMekeSkinMeshBone(object);
   }
 }
-/*
-  //sphereregister
-  /*
-  for(let num =0;num<spheres.length;num++){
-    let sphere = spheres[num];
-   
-    if(moveSphereInfo.backGroundFlag == true){
-      backGroundCounter += 1;
-    }
-    
-    let Poly = [];
-    for(let i= 0;i<sphere.numCorners*sphere.numCorners/2;i++){
-    let  j = i + sphere.numCorners;
-    let p = i+sphere.numCorners+1; 
-    if(p % sphere.numCorners == 0) p -= sphere.numCorners;
-    let k = i + 1;
-    if(k % sphere.numCorners == 0) k -= sphere.numCorners;
-    let upUV = [
-       0, 0,
-       1, 0,
-       0, 1
-      ]
-    let downUV = [
-       0, 1,
-       1, 1,
-       1, 0
-      ]
-      Poly.push(new Polygon(moveSphereInfo[i],moveSphereInfo[j],moveSphereInfo[k],upUV,moveSphereInfo.image));
-    //    Polygones.push(new Polygon(spheres[num].dotMovePos[i],spheres[num].dotMovePos[j],spheres[num].dotMovePos[p],spheres[num].dotMovePos[k],4,sphereImage));
-      Poly.push(new Polygon(moveSphereInfo[j],moveSphereInfo[p],moveSphereInfo[k],downUV,moveSphereInfo.image));
-    }
-    let movesphere = new moveObject(moveSphereInfo,Poly);
-    shadowProjectedObjects.push(movesphere);
-  }*/
-	//blender2.7xjsonload
-  /*
-	for(let num=0;num<monkeys.length;num++){
-    let worldMatrix = matIdentity();
-    mulMatTranslate(worldMatrix,monkeys[num].centerObjX,monkeys[num].centerObjY,monkeys[num].centerObjZ);  
-    mulMatRotateX(worldMatrix,monkeys[num].objRotX);
-    mulMatRotateY(worldMatrix,monkeys[num].objRotY);
-    mulMatRotateZ(worldMatrix,monkeys[num].objRotZ); 
-    mulMatScaling(worldMatrix,monkeys[num].scaleX,monkeys[num].scaleY,monkeys[num].scaleZ);
-    //objectShadowMapPolygonPush(monkeys,worldMatrix,num,shadowProjectedObjects,sunViewMatrix);
-    //objectPolygonPush(monkeys,worldMatrix,num,projectedObjects,viewMatrix);	
-  }*/
 
   //プロジェクション
   //シャドウの投影後の情報格納
@@ -2035,51 +1804,42 @@ for(let j=0;j<steve.length;j++){
 
   viewMatrix = matCamera(cameraPos,lookat,up);
   matRound4X4(viewMatrix);
-  let cameraSort = [];
-  let current = 0;
-  if(cameraSort.length == 0){
-    let cameraVec = vecMinus(cameraPos,sands[current].bones[0].position);
-    let length = cul3dVecLength(cameraVec);
-    cameraSort[0] = sands[current];
-    cameraSort[0].cameraLength = length;
-    current++;
-  }
-  for(;current<sands.length;current++){
-    let cameraVec = vecMinus(cameraPos,sands[current].bones[0].position);
-    let length = cul3dVecLength(cameraVec);
-    let j=0;
-    for(;j<cameraSort.length;j++){
-      if(cameraSort[j].cameraLength>length){
-        let i=cameraSort.length;
-        for(;i>j;i--){
-          cameraSort[i] = cameraSort[i-1];
-        }
-        cameraSort[i] = sands[current];
-        cameraSort[i].cameraLength = length;
-        break;
-      }
-    }
-    if(j >= cameraSort.length){
-      cameraSort[j] = sands[current];
-      cameraSort[j].cameraLength = length;
-    }
-  }
+  // let cameraSort = [];
+  // let current = 0;
+  // if(cameraSort.length == 0){
+  //   let cameraVec = vecMinus(cameraPos,Sands[current].bones[0].position);
+  //   let length = cul3dVecLength(cameraVec);
+  //   cameraSort[0] = Sands[current];
+  //   cameraSort[0].cameraLength = length;
+  //   current++;
+  // }
+  // for(;current<Sands.length;current++){
+  //   let cameraVec = vecMinus(cameraPos,Sands[current].bones[0].position);
+  //   let length = cul3dVecLength(cameraVec);
+  //   let j=0;
+  //   for(;j<cameraSort.length;j++){
+  //     if(cameraSort[j].cameraLength>length){
+  //       let i=cameraSort.length;
+  //       for(;i>j;i--){
+  //         cameraSort[i] = cameraSort[i-1];
+  //       }
+  //       cameraSort[i] = Sands[current];
+  //       cameraSort[i].cameraLength = length;
+  //       break;
+  //     }
+  //   }
+  //   if(j >= cameraSort.length){
+  //     cameraSort[j] = Sands[current];
+  //     cameraSort[j].cameraLength = length;
+  //   }
+  // }
 
   inverseViewMatrix = CalInvMat4x4(viewMatrix);
   matRound4X4(inverseViewMatrix);
 
   sunViewMatrix = matCamera(sunPos,sunLookat,up);
   matRound4X4(sunViewMatrix);
-	//cuberegister
-  // for(let object of cubes){
-  //   let worldMatrix = matIdentity();
-  //   mulMatTranslate(worldMatrix,object.centerObjX,object.centerObjY,object.centerObjZ);  
-  //   mulMatRotateX(worldMatrix,object.objRotX);
-  //   mulMatRotateY(worldMatrix,object.objRotY);
-  //   mulMatRotateZ(worldMatrix,object.objRotZ); 
-  //   mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
-  //   objectPolygonPush(object,worldMatrix,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
-	// }
+
   //dicesregister
   for(let Object of dices){
     // let worldMatrix = matIdentity();
@@ -2096,8 +1856,8 @@ for(let j=0;j<steve.length;j++){
     worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
     objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
     }
-
   }
+  //cuberegister
   for(let Object of Sands){
     // let worldMatrix = matIdentity();
     // mulMatTranslate(worldMatrix,object.bones[0].position[position_X],object.bones[0].position[position_Y],object.bones[0].position[position_Z]);  
@@ -2113,47 +1873,16 @@ for(let j=0;j<steve.length;j++){
     worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
     objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
     }
-
   }
-  //steve
-  //for(let object of steves){
-    for(let j=0;j<steve.length;j++){
-      for(let i=0;i<steve[j].length;i++){
-         let object = steve[j][i];
-    objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
-
-      }
+  //steves
+  for(let j=0;j<steves.length;j++){
+    for(let i=0;i<steves[j].length;i++){
+      let object = steves[j][i];
+      objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
     }
-	//}
-	// //planesregister
-  // for(let object of planes){
-  //   // let worldMatrix = matIdentity();
-  //   // mulMatTranslate(worldMatrix,object.centerObjX,object.centerObjY,object.centerObjZ);  
-  //   // mulMatRotateX(worldMatrix,object.objRotX);
-  //   // mulMatRotateY(worldMatrix,object.objRotY);
-  //   // mulMatRotateZ(worldMatrix,object.objRotZ); 
-  //   // mulMatScaling(worldMatrix,object.scaleX,object.scaleY,object.scaleZ);
-  //   let worldTranslation = {};
-  //   worldTranslation.quaternion = quaternionXYZRoll(object.objRotX,object.objRotY,object.objRotZ);
-  //   worldTranslation.position = setVector3(object.centerObjX,object.centerObjY,object.centerObjZ);
-  //   worldTranslation.scaleXYZ = setVector3(object.scaleX,object.scaleY,object.scaleZ);
-  //   objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
-  // }
-  for(let object of cameraSort){
-    // let worldMatrix = matIdentity();
-    // mulMatTranslate(worldMatrix,object.bones[0].position[position_X],object.bones[0].position[position_Y],object.bones[0].position[position_Z]);  
-    // mulMatRotateX(worldMatrix,object.bones[0].rotXYZ[rot_X]);
-    // mulMatRotateY(worldMatrix,object.bones[0].rotXYZ[rot_Y]);
-    // mulMatRotateZ(worldMatrix,object.bones[0].rotXYZ[rot_Z]); 
-    // mulMatScaling(worldMatrix,object.bones[0].scaleXYZ[scale_X],object.bones[0].scaleXYZ[scale_Y],object.bones[0].scaleXYZ[scale_Z]);
-    let worldTranslation = {};
-    worldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
-    worldTranslation.position = object.bones[0].position;
-    worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
-    //objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
   }
+  //AABB
   /*
-  lookat = setVector3(shadowProjectedObjects[lookatIndex].orgObject.centerObjX,shadowProjectedObjects[lookatIndex].orgObject.centerObjY,shadowProjectedObjects[lookatIndex].orgObject.centerObjZ);
   for(let i = spheres.length;i<spheres.length+monkeys.length+cubes.length;i++){
   	let currentObject = shadowProjectedObjects[i];
   	let currentMaxMinCenter = vertsCulAABBMaxMinCenter(currentObject.orgObject,currentObject.worldMatrix,0,gravity,0);
