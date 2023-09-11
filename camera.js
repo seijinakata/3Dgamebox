@@ -1910,15 +1910,23 @@ for(let j=0;j<projectedObjectsLength;j++){
   let currentProjectedObject = projectedObjects[j];
   let projectedObjects_j_polygonNum = currentProjectedObject[poly_List].length;
 	for(let projectedPolyNum=0;projectedPolyNum<projectedObjects_j_polygonNum;projectedPolyNum++){
+    let currentVerts = currentProjectedObject[poly_List][projectedPolyNum][projected_Verts];
+    //各点のZ座標がこれより下なら作画しない。x,yががめんがいなら作画しない。
+    let triangleXMin = Math.min(currentVerts[0][0],currentVerts[1][0],currentVerts[2][0]);
+    let triangleXMax = Math.max(currentVerts[0][0],currentVerts[1][0],currentVerts[2][0]);
+    let triangleYMin = Math.min(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
+    let triangleYMax = Math.max(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
+    if (currentVerts[0][2] <= 0.0 || currentVerts[1][2] <= 0.0 || currentVerts[2][2] <= 0.0 || triangleYMax<0 
+      || triangleYMin > screen_size_h || triangleXMax<0 || triangleXMin > screen_size_w) continue;
 	  //-の方がこちらに近くなる座標軸だから
 	  if(currentProjectedObject[obj_BackCulling_Flag] == true){
       if(currentProjectedObject[poly_List][projectedPolyNum][cross_Z]<0){
-        triangleToBuffer(zBuffering,currentProjectedObject[obj_Image],currentProjectedObject[poly_List][projectedPolyNum][projected_Verts],currentProjectedObject[poly_List][projectedPolyNum][poly_Cross_World_Vector3],
+        triangleToBuffer(zBuffering,currentProjectedObject[obj_Image],currentVerts,currentProjectedObject[poly_List][projectedPolyNum][poly_Cross_World_Vector3],
             currentProjectedObject[poly_List][projectedPolyNum][UV_Vector],sunVec,currentProjectedObject[obj_Shadow_Flag],currentProjectedObject[obj_LightShadow_Flag]
            ,screen_size_h,screen_size_w);
 	    } 
 	  }else{
-      triangleToBuffer(zBuffering,currentProjectedObject[obj_Image],currentProjectedObject[poly_List][projectedPolyNum][projected_Verts],currentProjectedObject[poly_List][projectedPolyNum][poly_Cross_World_Vector3],
+      triangleToBuffer(zBuffering,currentProjectedObject[obj_Image],currentVerts,currentProjectedObject[poly_List][projectedPolyNum][poly_Cross_World_Vector3],
         currentProjectedObject[poly_List][projectedPolyNum][UV_Vector],sunVec,currentProjectedObject[obj_Shadow_Flag],currentProjectedObject[obj_LightShadow_Flag]
        ,screen_size_h,screen_size_w);
 	  }
@@ -1933,6 +1941,14 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
   }
   let shadowProjectedObjects_j_polygonNum = currentshadowProjectedObject[poly_List].length;
 	for(let projectedPolyNum=0;projectedPolyNum<shadowProjectedObjects_j_polygonNum;projectedPolyNum++){
+    let currentVerts = currentshadowProjectedObject[poly_List][projectedPolyNum][projected_Verts];
+    //各点のZ座標がこれより下なら作画しない。x,yががめんがいなら作画しない。
+    let triangleXMin = Math.min(currentVerts[0][0],currentVerts[1][0],currentVerts[2][0]);
+    let triangleXMax = Math.max(currentVerts[0][0],currentVerts[1][0],currentVerts[2][0]);
+    let triangleYMin = Math.min(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
+    let triangleYMax = Math.max(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
+    if (currentVerts[0][2] <= 0.0 || currentVerts[1][2] <= 0.0 || currentVerts[2][2] <= 0.0 || triangleYMax<0 
+      || triangleYMin > screen_size_h || triangleXMax<0 || triangleXMin > screen_size_w) continue;
 	  //-の方がこちらに近くなる座標軸だから
 	  if(currentshadowProjectedObject[obj_BackCulling_Flag] == true){
 	    if(currentshadowProjectedObject[poly_List][projectedPolyNum][cross_Z]<0){
