@@ -976,36 +976,36 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
     verts = Vector3QuaternionMul(worldTranslation.quaternion,verts);
     verts = setVector3(verts[0]+worldTranslation.position[position_X],verts[1]+worldTranslation.position[position_Y],verts[2]+worldTranslation.position[position_Z]);
     //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
-    let nomalVerts = vertsCopy(verts);
+    let normalVerts = vertsCopy(verts);
     let shadowVerts = vertsCopy(verts);
     worldVerts.push(verts);
-    protMatVecMul(viewMatrix,nomalVerts);
+    protMatVecMul(viewMatrix,normalVerts);
     protMatVecMul(shadowViewMatrix,shadowVerts);
   
-    let projectionMatrix =  matPers(nomalVerts[2]);
+    let projectionMatrix =  matPers(normalVerts[2]);
     let shadowProjectionMatrix =  matPers(shadowVerts[2]);
 
-    protMatVecMul(projectionMatrix,nomalVerts);
+    protMatVecMul(projectionMatrix,normalVerts);
     protMatVecMul(shadowProjectionMatrix,shadowVerts);
 
-    //nomalVerts = matVecMul(viewPortMatrix,nomalVerts);
-    nomalVerts[0] = ((nomalVerts[0] + 0.5)*screen_size_w)|0;
-    nomalVerts[1] = ((nomalVerts[1] + 0.5)*screen_size_h)|0;
+    //normalVerts = matVecMul(viewPortMatrix,normalVerts);
+    normalVerts[0] = ((normalVerts[0] + 0.5)*screen_size_w)|0;
+    normalVerts[1] = ((normalVerts[1] + 0.5)*screen_size_h)|0;
     shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
     shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;
 
-    projectedVerts.push(nomalVerts);
+    projectedVerts.push(normalVerts);
     shadowProjectedVerts.push(shadowVerts);  
   }
   let poly = [];
   let shadowPoly = [];
-      let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
-     for(let i=0;i<meshVertsFaceIndex_Length;i++){
-      let triangleFaceIndex = object.meshVertsFaceIndex[i];
-      poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i]));
-      shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));
-    } 
+  let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
+  for(let i=0;i<meshVertsFaceIndex_Length;i++){
+    let triangleFaceIndex = object.meshVertsFaceIndex[i];
+    poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
+      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i]));
+    shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));
+  } 
 
   //ｚソート
   projectedObjects.push(makeProjectedObject(object,poly));
@@ -1696,7 +1696,7 @@ if(dataLoad == false){
       // sphere1Loadpack.bones[0].scaleXYZ[scale_Z] = 10;
       culUVvector(sphere1Loadpack[i]); 
     }
-    dices.push(sphere1Loadpack) ;
+    dices.push(sphere1Loadpack);
     sphere1Load = true;
   }
   if(dicePixelImageLoad == true && steve1LoadPack.daeLoad == true && steve1Load == false){
@@ -1911,13 +1911,13 @@ for(let j=0;j<projectedObjectsLength;j++){
   let projectedObjects_j_polygonNum = currentProjectedObject[poly_List].length;
 	for(let projectedPolyNum=0;projectedPolyNum<projectedObjects_j_polygonNum;projectedPolyNum++){
     let currentVerts = currentProjectedObject[poly_List][projectedPolyNum][projected_Verts];
-    //各点のZ座標がこれより下なら作画しない。x,yががめんがいなら作画しない。
+    //各点のZ座標がこれより下なら作画しない。x,yが画面外なら作画しない。
+    if (currentVerts[0][2] <= 0.0 || currentVerts[1][2] <= 0.0 || currentVerts[2][2] <= 0.0 ) continue;
     let triangleXMin = Math.min(currentVerts[0][0],currentVerts[1][0],currentVerts[2][0]);
     let triangleXMax = Math.max(currentVerts[0][0],currentVerts[1][0],currentVerts[2][0]);
     let triangleYMin = Math.min(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
     let triangleYMax = Math.max(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
-    if (currentVerts[0][2] <= 0.0 || currentVerts[1][2] <= 0.0 || currentVerts[2][2] <= 0.0 || triangleYMax<0 
-      || triangleYMin > screen_size_h || triangleXMax<0 || triangleXMin > screen_size_w) continue;
+    if (triangleYMax<0 || triangleYMin > screen_size_h || triangleXMax<0 || triangleXMin > screen_size_w) continue;
 	  //-の方がこちらに近くなる座標軸だから
 	  if(currentProjectedObject[obj_BackCulling_Flag] == true){
       if(currentProjectedObject[poly_List][projectedPolyNum][cross_Z]<0){
@@ -1942,13 +1942,13 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
   let shadowProjectedObjects_j_polygonNum = currentshadowProjectedObject[poly_List].length;
 	for(let projectedPolyNum=0;projectedPolyNum<shadowProjectedObjects_j_polygonNum;projectedPolyNum++){
     let currentVerts = currentshadowProjectedObject[poly_List][projectedPolyNum][projected_Verts];
-    //各点のZ座標がこれより下なら作画しない。x,yががめんがいなら作画しない。
+    //各点のZ座標がこれより下なら作画しない。x,yが画面外なら作画しない。
+    if (currentVerts[0][2] <= 0.0 || currentVerts[1][2] <= 0.0 || currentVerts[2][2] <= 0.0 ) continue;
     let triangleXMin = Math.min(currentVerts[0][0],currentVerts[1][0],currentVerts[2][0]);
     let triangleXMax = Math.max(currentVerts[0][0],currentVerts[1][0],currentVerts[2][0]);
     let triangleYMin = Math.min(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
     let triangleYMax = Math.max(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
-    if (currentVerts[0][2] <= 0.0 || currentVerts[1][2] <= 0.0 || currentVerts[2][2] <= 0.0 || triangleYMax<0 
-      || triangleYMin > screen_size_h || triangleXMax<0 || triangleXMin > screen_size_w) continue;
+    if (triangleYMax<0 || triangleYMin > screen_size_h || triangleXMax<0 || triangleXMin > screen_size_w) continue;
 	  //-の方がこちらに近くなる座標軸だから
 	  if(currentshadowProjectedObject[obj_BackCulling_Flag] == true){
 	    if(currentshadowProjectedObject[poly_List][projectedPolyNum][cross_Z]<0){
