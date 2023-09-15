@@ -870,25 +870,32 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       matPlus(mixMatrix,waightMatrix); 
     }
     let boneWeightVerts = matVecMul(mixMatrix,object.meshVerts[i]);
-    let nomalBoneWeightVerts = vertsCopy(boneWeightVerts); 
+    let normalBoneWeightVerts = vertsCopy(boneWeightVerts); 
     let boneShadowWeightVerts = vertsCopy(boneWeightVerts);
 
     worldVerts[i] = boneWeightVerts;
-    protMatVecMul(viewMatrix,nomalBoneWeightVerts);
+    protMatVecMul(viewMatrix,normalBoneWeightVerts);
     protMatVecMul(shadowViewMatrix,boneShadowWeightVerts);
-
-    let projectionMatrix =  matPers(nomalBoneWeightVerts[2]);
-    let shadowProjectionMatrix =  matPers(boneShadowWeightVerts[2]);
-    protMatVecMul(projectionMatrix,nomalBoneWeightVerts);
-    protMatVecMul(shadowProjectionMatrix,boneShadowWeightVerts);
-
-    //boneWeightVerts = matVecMul(viewPortMatrix,boneWeightVerts);
-    nomalBoneWeightVerts[0] = ((nomalBoneWeightVerts[0] + 0.5)*screen_size_w)|0;
-    nomalBoneWeightVerts[1] = ((nomalBoneWeightVerts[1] + 0.5)*screen_size_h)|0;
-    boneShadowWeightVerts[0] = ((boneShadowWeightVerts[0] + 0.5)*screen_size_w)|0;
-    boneShadowWeightVerts[1] = ((boneShadowWeightVerts[1] + 0.5)*screen_size_h)|0;
-
-    projectedVerts[i] = nomalBoneWeightVerts;
+    if(normalBoneWeightVerts[2] > 0){
+      let projectionMatrix =  matPers(normalBoneWeightVerts[2]);
+      protMatVecMul(projectionMatrix,normalBoneWeightVerts);
+      //boneWeightVerts = matVecMul(viewPortMatrix,boneWeightVerts);
+      normalBoneWeightVerts[0] = ((normalBoneWeightVerts[0] + 0.5)*screen_size_w)|0;
+      normalBoneWeightVerts[1] = ((normalBoneWeightVerts[1] + 0.5)*screen_size_h)|0; 
+    }else{
+      //ラスタライズしないのでx,y,zは適当な値
+      normalBoneWeightVerts = setVector3(0,0,0);
+    }
+    if(boneShadowWeightVerts[2] > 0){
+      let shadowProjectionMatrix =  matPers(boneShadowWeightVerts[2]);
+      protMatVecMul(shadowProjectionMatrix,boneShadowWeightVerts);
+      boneShadowWeightVerts[0] = ((boneShadowWeightVerts[0] + 0.5)*screen_size_w)|0;
+      boneShadowWeightVerts[1] = ((boneShadowWeightVerts[1] + 0.5)*screen_size_h)|0;
+    }else{
+      //ラスタライズしないのでx,y,zは適当な値
+      boneShadowWeightVerts = setVector3(0,0,0);
+    }
+    projectedVerts[i] = normalBoneWeightVerts;
     shadowProjectedVerts[i] = boneShadowWeightVerts;
   }
  
@@ -981,19 +988,25 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
     worldVerts.push(verts);
     protMatVecMul(viewMatrix,normalVerts);
     protMatVecMul(shadowViewMatrix,shadowVerts);
-  
-    let projectionMatrix =  matPers(normalVerts[2]);
-    let shadowProjectionMatrix =  matPers(shadowVerts[2]);
-
-    protMatVecMul(projectionMatrix,normalVerts);
-    protMatVecMul(shadowProjectionMatrix,shadowVerts);
-
-    //normalVerts = matVecMul(viewPortMatrix,normalVerts);
-    normalVerts[0] = ((normalVerts[0] + 0.5)*screen_size_w)|0;
-    normalVerts[1] = ((normalVerts[1] + 0.5)*screen_size_h)|0;
-    shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
-    shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;
-
+    if(normalVerts[2] > 0){
+      let projectionMatrix =  matPers(normalVerts[2]);
+      protMatVecMul(projectionMatrix,normalVerts);
+      //normalVerts = matVecMul(viewPortMatrix,normalVerts);
+      normalVerts[0] = ((normalVerts[0] + 0.5)*screen_size_w)|0;
+      normalVerts[1] = ((normalVerts[1] + 0.5)*screen_size_h)|0;      
+    }else{
+      //ラスタライズしないのでx,y,zは適当な値
+      normalVerts = setVector3(0,0,0);
+    }
+    if(shadowVerts[2] > 0){
+      let shadowProjectionMatrix =  matPers(shadowVerts[2]);
+      protMatVecMul(shadowProjectionMatrix,shadowVerts); 
+      shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
+      shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;   
+    }else{
+      //ラスタライズしないのでx,y,zは適当な値
+      shadowVerts = setVector3(0,0,0);
+    }
     projectedVerts.push(normalVerts);
     shadowProjectedVerts.push(shadowVerts);  
   }
