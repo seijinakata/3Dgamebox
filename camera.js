@@ -1,7 +1,7 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
 import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round, roundVector2, NewtonMethod, cul3dVecLength} from './vector.js';
-import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2} from './matrix.js';
+import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
 import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, UV_Vector, pixel_A, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, pixel_LightShadow_Flag } from './enum.js';
@@ -874,10 +874,11 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
     let boneShadowWeightVerts = vertsCopy(boneWeightVerts);
 
     worldVerts[i] = boneWeightVerts;
-    protMatVecMul(viewMatrix,normalBoneWeightVerts);
-    protMatVecMul(shadowViewMatrix,boneShadowWeightVerts);
-    if(normalBoneWeightVerts[2] > 0){
-      let projectionMatrix =  matPers(normalBoneWeightVerts[2]);
+    let viewZ = matMulVertsZCamera(viewMatrix,normalBoneWeightVerts);
+    let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,boneShadowWeightVerts);
+    if(viewZ > 0){
+      let projectionMatrix =  matPers(viewZ);
+      normalBoneWeightVerts = matMulVertsXYZCamera(viewMatrix,normalBoneWeightVerts,viewZ);
       protMatVecMul(projectionMatrix,normalBoneWeightVerts);
       //boneWeightVerts = matVecMul(viewPortMatrix,boneWeightVerts);
       normalBoneWeightVerts[0] = ((normalBoneWeightVerts[0] + 0.5)*screen_size_w)|0;
@@ -886,8 +887,9 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       //ラスタライズしないのでx,y,zは適当な値
       normalBoneWeightVerts = setVector3(0,0,0);
     }
-    if(boneShadowWeightVerts[2] > 0){
-      let shadowProjectionMatrix =  matPers(boneShadowWeightVerts[2]);
+    if(shadowViewZ > 0){
+      let shadowProjectionMatrix =  matPers(shadowViewZ);
+      boneShadowWeightVerts = matMulVertsXYZCamera(shadowViewMatrix,boneShadowWeightVerts,shadowViewZ);
       protMatVecMul(shadowProjectionMatrix,boneShadowWeightVerts);
       boneShadowWeightVerts[0] = ((boneShadowWeightVerts[0] + 0.5)*screen_size_w)|0;
       boneShadowWeightVerts[1] = ((boneShadowWeightVerts[1] + 0.5)*screen_size_h)|0;
@@ -895,6 +897,29 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       //ラスタライズしないのでx,y,zは適当な値
       boneShadowWeightVerts = setVector3(0,0,0);
     }
+
+    // protMatVecMul(shadowViewMatrix,shadowVerts);
+    // if(viewZ > 0){
+    //   let projectionMatrix =  matPers(viewZ);
+    //   normalVerts = matMulVertsXYZCamera(viewMatrix,normalVerts,viewZ);
+    //   protMatVecMul(projectionMatrix,normalVerts);
+    //   //normalVerts = matVecMul(viewPortMatrix,normalVerts);
+    //   normalVerts[0] = ((normalVerts[0] + 0.5)*screen_size_w)|0;
+    //   normalVerts[1] = ((normalVerts[1] + 0.5)*screen_size_h)|0;      
+    // }else{
+    //   //ラスタライズしないのでx,y,zは適当な値
+    //   normalVerts = setVector3(0,0,0);
+    // }
+    // if(shadowViewZ > 0){
+    //   let shadowProjectionMatrix =  matPers(shadowVewZ);
+    //   shadowVerts = matMulVertsXYZCamera(shadowViewMatrix,shadowVerts,shadowViewZ);
+    //   protMatVecMul(shadowProjectionMatrix,shadowVerts); 
+    //   shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
+    //   shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;   
+    // }else{
+    //   //ラスタライズしないのでx,y,zは適当な値
+    //   shadowVerts = setVector3(0,0,0);
+    // }
     projectedVerts[i] = normalBoneWeightVerts;
     shadowProjectedVerts[i] = boneShadowWeightVerts;
   }
@@ -986,10 +1011,12 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
     let normalVerts = vertsCopy(verts);
     let shadowVerts = vertsCopy(verts);
     worldVerts.push(verts);
-    protMatVecMul(viewMatrix,normalVerts);
+    let viewZ = matMulVertsZCamera(viewMatrix,normalVerts);
+    let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,shadowVerts);
     protMatVecMul(shadowViewMatrix,shadowVerts);
-    if(normalVerts[2] > 0){
-      let projectionMatrix =  matPers(normalVerts[2]);
+    if(viewZ > 0){
+      let projectionMatrix =  matPers(viewZ);
+      normalVerts = matMulVertsXYZCamera(viewMatrix,normalVerts,viewZ);
       protMatVecMul(projectionMatrix,normalVerts);
       //normalVerts = matVecMul(viewPortMatrix,normalVerts);
       normalVerts[0] = ((normalVerts[0] + 0.5)*screen_size_w)|0;
@@ -998,8 +1025,9 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
       //ラスタライズしないのでx,y,zは適当な値
       normalVerts = setVector3(0,0,0);
     }
-    if(shadowVerts[2] > 0){
-      let shadowProjectionMatrix =  matPers(shadowVerts[2]);
+    if(shadowViewZ > 0){
+      let shadowProjectionMatrix =  matPers(shadowViewZ);
+      shadowVerts = matMulVertsXYZCamera(shadowViewMatrix,shadowVerts,shadowViewZ);
       protMatVecMul(shadowProjectionMatrix,shadowVerts); 
       shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
       shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;   
@@ -1930,7 +1958,7 @@ for(let j=0;j<projectedObjectsLength;j++){
     let triangleXMax = Math.max(currentVerts[0][0],currentVerts[1][0],currentVerts[2][0]);
     let triangleYMin = Math.min(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
     let triangleYMax = Math.max(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
-    if (triangleYMax<0 || triangleYMin > screen_size_h || triangleXMax<0 || triangleXMin > screen_size_w) continue;
+    if (triangleYMax<0 || triangleYMin >= screen_size_h || triangleXMax<0 || triangleXMin >= screen_size_w) continue;
 	  //-の方がこちらに近くなる座標軸だから
 	  if(currentProjectedObject[obj_BackCulling_Flag] == true){
       if(currentProjectedObject[poly_List][projectedPolyNum][cross_Z]<0){
@@ -1961,7 +1989,7 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
     let triangleXMax = Math.max(currentVerts[0][0],currentVerts[1][0],currentVerts[2][0]);
     let triangleYMin = Math.min(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
     let triangleYMax = Math.max(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
-    if (triangleYMax<0 || triangleYMin > screen_size_h || triangleXMax<0 || triangleXMin > screen_size_w) continue;
+    if (triangleYMax<0 || triangleYMin >= screen_size_h || triangleXMax<0 || triangleXMin >= screen_size_w) continue;
 	  //-の方がこちらに近くなる座標軸だから
 	  if(currentshadowProjectedObject[obj_BackCulling_Flag] == true){
 	    if(currentshadowProjectedObject[poly_List][projectedPolyNum][cross_Z]<0){

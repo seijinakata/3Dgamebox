@@ -1,7 +1,7 @@
 //４行目は使わないので消去しました
 //行列計算ループアンローリング
 //演算結果をreturnsしてその結果をもう一回関数に入れると重たくなるみたい。
-import {setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize,round} from './vector.js';
+import {setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize,round, setVector2} from './vector.js';
 import {sinLut,cosLut} from './camera.js';
 //一次元配列
 export function matCopy(m){
@@ -219,6 +219,16 @@ export function matCamera(camPos,lookat,up) {
                 z[0], z[1], z[2], (z[0] * -camPos[0] + z[1] * -camPos[1] + z[2] * -camPos[2])];
 
     }
+export function matMulVertsZCamera(matCamera,verts) {
+    let  ViewZ = verts[0]*matCamera[8] + verts[1] * matCamera[9] + verts[2] * matCamera[10] +  matCamera[11];
+    return ViewZ;
+}
+export function matMulVertsXYZCamera(matCamera,verts,ViewZ) {
+    let  ViewX = verts[0]*matCamera[0] + verts[1] * matCamera[1] + verts[2] * matCamera[2] + matCamera[3];
+    let  ViewY = verts[0]*matCamera[4] + verts[1] * matCamera[5] + verts[2] * matCamera[6] + matCamera[7];
+
+    return setVector3(ViewX,ViewY,ViewZ);
+}
 export function mulMatRotateX(m,r) {
         let c = 0;
         let s = 0;
