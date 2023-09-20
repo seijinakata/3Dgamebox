@@ -1610,6 +1610,11 @@ const screen_size_w = SCREEN_SIZE_W;
 const invScreen_size_h = 1/screen_size_h;
 const invScreen_size_w = 1/screen_size_w;
 
+const RED = 0;
+const GREEN = 1;
+const BLUE = 2;
+const ALPHA = 3;
+
 //baseRGBA,viewPortをあらかじめ計算しておく。
 let shadowViewPortY = [];
 let shadowViewPortX = [];
@@ -1621,12 +1626,12 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   let tmpShadowViewPortY = (pixelY*invScreen_size_h  - 0.5);
   shadowViewPortY.push(tmpShadowViewPortY);
   for (let pixelX=0;pixelX<screen_size_w;pixelX++) {
-    let baseRGBA = {};
+    let baseRGBA = [];
     let tmpBase = (pixelY * screen_size_w + pixelX) * 4;
-    baseRGBA.r = tmpBase + 0;
-    baseRGBA.g = tmpBase + 1;
-    baseRGBA.b = tmpBase + 2;
-    baseRGBA.a = tmpBase + 3;
+    baseRGBA[RED] = tmpBase + 0;
+    baseRGBA[GREEN] = tmpBase + 1;
+    baseRGBA[BLUE] = tmpBase + 2;
+    baseRGBA[ALPHA] = tmpBase + 3;
     basearray[pixelY][pixelX] = baseRGBA;
     //inverseViewPort
     let tmpShadowViewPortX = (pixelX*invScreen_size_w  - 0.5);
@@ -1639,6 +1644,8 @@ shdowBufferInit(shadowMap,screen_size_h,screen_size_w);
 let zBuffering = [];
 renderBufferInit(zBuffering,screen_size_h,screen_size_w);
 let myImageData = ctx.createImageData(screen_size_w, screen_size_h);
+//アクセス用
+let myImageDataDataImage = myImageData.data;
 let sands = [];
 let steves = [];
 
@@ -1812,7 +1819,8 @@ t += tPuls;
 let steves_length = steves.length;
 for(let j=0;j<steves_length;j++){
   let objects = steves[j];
-  for(let i=0;i<objects[0].objectNumber;i++){
+  let object_Number = objects[0].objectNumber;
+  for(let i=0;i<object_Number;i++){
     let object = objects[i];
     let bones_length = object.bones.length;
     let bonesNameList_length = object.bonesNameList.length;
@@ -1831,7 +1839,8 @@ steves[0][0].bones[0].position = setVector3(-0.5,0,0.5);
 //makeBones
 for(let j=0;j<steves.length;j++){
   let objects = steves[j];
-  for(let i=0;i<objects[0].objectNumber;i++){
+  let object_Number = objects[0].objectNumber;
+  for(let i=0;i<object_Number;i++){
     let object = objects[i];
     daeMekeSkinMeshBone(object);
   }
@@ -2076,25 +2085,25 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
           pixelG *= sunCosin;
           pixelB *= sunCosin; 
         }
-        myImageData.data[base.r] = pixelR;  // Red
-        myImageData.data[base.g] = pixelG;  // Green
-        myImageData.data[base.b] = pixelB;  // Blue
-        myImageData.data[base.a] = 255; // Alpha  
+        myImageDataDataImage[base[RED]] = pixelR;  // Red
+        myImageDataDataImage[base[GREEN]] = pixelG;  // Green
+        myImageDataDataImage[base[BLUE]] = pixelB;  // Blue
+        myImageDataDataImage[base[ALPHA]] = 255; // Alpha  
       }else{
-        myImageData.data[base.r] = pixel[pixel_R];  // Red
-        myImageData.data[base.g] = pixel[pixel_G];  // Green
-        myImageData.data[base.b] = pixel[pixel_B]; // Blue
+        myImageDataDataImage[base[RED]] = pixel[pixel_R];  // Red
+        myImageDataDataImage[base[GREEN]] = pixel[pixel_G];  // Green
+        myImageDataDataImage[base[BLUE]] = pixel[pixel_B]; // Blue
         //let pixela = pixel[4];
-        myImageData.data[base.a] = 255; // Alpha        
+        myImageDataDataImage[base[ALPHA]] = 255; // Alpha        
       }
     //dotPaint(j,i,getPixel.r,getPixel.g,getPixel.b,getPixel.a,ctx);    
     }else{
       //何もないところは黒
       //dotPaint(j,i,0,0,0,255,ctx);
-      myImageData.data[base.r] = 0;  // Red
-      myImageData.data[base.g] = 0;  // Green
-      myImageData.data[base.b] = 0;  // Blue
-      myImageData.data[base.a] = 255; // Alpha
+      myImageDataDataImage[base[RED]] = 0;  // Red
+      myImageDataDataImage[base[GREEN]] = 0;  // Green
+      myImageDataDataImage[base[BLUE]] = 0;  // Blue
+      myImageDataDataImage[base[ALPHA]] = 255; // Alpha
     }
   }
 }

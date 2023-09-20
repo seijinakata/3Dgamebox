@@ -169,6 +169,11 @@ export function branch(a,b,Y){
 
 export function pictureToPixelMap(ctx,image){
 
+	const RED = 0;
+	const GREEN = 1;
+	const BLUE = 2;
+	const ALPHA = 3;
+
 	ctx.clearRect(0,0,1500,1500);
 	ctx.drawImage(image,0,0,image.width, image.height);
 	let imageData = ctx.getImageData(0,0,image.width, image.height);
@@ -177,11 +182,11 @@ export function pictureToPixelMap(ctx,image){
 		imageData.twoDimensionsimageData[j] = [];
 		for(let i=0;i<image.width;i++){
 			let index = (i + j * image.width) * 4;
-			let data = {};
-			data.r = imageData.data[index];
-			data.g = imageData.data[index+1];
-			data.b = imageData.data[index+2];
-			data.a = imageData.data[index+3];
+			let data = [];
+			data[RED] = imageData.data[index];
+			data[GREEN] = imageData.data[index+1];
+			data[BLUE] = imageData.data[index+2];
+			data[ALPHA] = imageData.data[index+3];
 			imageData.twoDimensionsimageData[j][i] = data;
 		}
 	}
@@ -696,7 +701,10 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 	//アフィン変換の平行移動ベクトル
 	//縦移動、transform関数のf
 	//横移動、transform関数のe
-
+	const RED = 0;
+	const GREEN = 1;
+	const BLUE = 2;
+	const ALPHA = 3;
     //if(l<0)l=0;
     if(screen_size_w<=endX)endX=screen_size_w-1;
 	let zStep = endZ - startZ;
@@ -708,6 +716,9 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 	// tmpOrgy = y * iA[3] - e * iA[2] - f * iA[3];
 	// tmpOrgx = y * iA[1] - e * iA[0] - f * iA[1];
 	let zBufferingY = zBuffering[y];
+	let imageDataHeight = imageData.height;
+	let imageDataWidth = imageData.width;
+	let imageDataTwoDimensionsimageData = imageData.twoDimensionsimageData;
 	for(let i= startX;i<=endX;i++){
 		//Xが０未満でもz値を加算するため内部には入れない。
 		if(i>=0){
@@ -720,8 +731,8 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 				//let selectOrgy = startX * iA[2] + y * iA[3]/* アフィン後の座標に対応した元画像の座標 */
 				//- e * iA[2] - f * iA[3];// +  orgTexture.height / 2;
 				selectOrgy |= 0;/* 最近傍補間した元画像の座標 */
-				if(selectOrgy > imageData.height-1){
-					selectOrgy = imageData.height-1;
+				if(selectOrgy > imageDataHeight-1){
+					selectOrgy = imageDataHeight-1;
 				}
 				if(selectOrgy < 0){
 					selectOrgy = 0
@@ -741,8 +752,8 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 				//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
 				selectOrgx |= 0; /* 最近傍補間した元画像の座標 */
 				/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
-				if(selectOrgx > imageData.width-1){
-					selectOrgx = imageData.width-1;
+				if(selectOrgx > imageDataWidth-1){
+					selectOrgx = imageDataWidth-1;
 				}
 				if(selectOrgx < 0){
 					selectOrgx = 0
@@ -755,9 +766,9 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 					selectOrgx = textureUMin
 				}*/
 				//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
-				let imageDataRGBA = imageData.twoDimensionsimageData[selectOrgy][selectOrgx];
-				zBufferingY[i] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA.r,imageDataRGBA.g,
-					imageDataRGBA.b,imageDataRGBA.a,false,false);
+				let imageDataRGBA = imageDataTwoDimensionsimageData[selectOrgy][selectOrgx];
+				zBufferingY[i] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+					imageDataRGBA[BLUE],imageDataRGBA[ALPHA],false,false);
 
 			}
 		startZ+=dz;	
@@ -896,6 +907,10 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 }
 function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin){
 
+	const RED = 0;
+	const GREEN = 1;
+	const BLUE = 2;
+	const ALPHA = 3;
 //アフィン変換の平行移動ベクトル
 //縦移動、transform関数のf
 //横移動、transform関数のe
@@ -911,6 +926,9 @@ if(screen_size_w<=endX)endX=screen_size_w-1;
 	// tmpOrgy = y * iA[3] - e * iA[2] - f * iA[3];
 	// tmpOrgx = y * iA[1] - e * iA[0] - f * iA[1];
 	let zBufferingY = zBuffering[y];
+	let imageDataHeight = imageData.height;
+	let imageDataWidth = imageData.width;
+	let imageDataTwoDimensionsimageData = imageData.twoDimensionsimageData;
 	for(let i= startX;i<=endX;i++){
 		//Xが０未満でもz値を加算するため内部には入れない。
 		if(i>=0){
@@ -923,8 +941,8 @@ if(screen_size_w<=endX)endX=screen_size_w-1;
 				//let selectOrgy = startX * iA[2] + y * iA[3]/* アフィン後の座標に対応した元画像の座標 */
 				//- e * iA[2] - f * iA[3];// +  orgTexture.height / 2;
 				selectOrgy |= 0;/* 最近傍補間した元画像の座標 */
-				if(selectOrgy > imageData.height-1){
-					selectOrgy = imageData.height-1;
+				if(selectOrgy > imageDataHeight-1){
+					selectOrgy = imageDataHeight-1;
 				}
 				if(selectOrgy < 0){
 					selectOrgy = 0
@@ -944,8 +962,8 @@ if(screen_size_w<=endX)endX=screen_size_w-1;
 				//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
 				selectOrgx |= 0; /* 最近傍補間した元画像の座標 */
 				/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
-				if(selectOrgx > imageData.width-1){
-					selectOrgx = imageData.width-1;
+				if(selectOrgx > imageDataWidth-1){
+					selectOrgx = imageDataWidth-1;
 				}
 				if(selectOrgx < 0){
 					selectOrgx = 0
@@ -958,9 +976,9 @@ if(screen_size_w<=endX)endX=screen_size_w-1;
 					selectOrgx = textureUMin
 				}*/
 				//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
-				let imageDataRGBA = imageData.twoDimensionsimageData[selectOrgy][selectOrgx];
-				zBufferingY[i] = setPixel(startZ,imageDataRGBA.r,imageDataRGBA.g,
-					imageDataRGBA.b,imageDataRGBA.a,shadowFlag,lightShadowFlag,sunCosin);
+				let imageDataRGBA = imageDataTwoDimensionsimageData[selectOrgy][selectOrgx];
+				zBufferingY[i] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+					imageDataRGBA[BLUE],imageDataRGBA[ALPHA],shadowFlag,lightShadowFlag,sunCosin);
 
 			}
 		startZ+=dz;	
