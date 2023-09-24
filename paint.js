@@ -730,13 +730,13 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 				
 				//let selectOrgy = startX * iA[2] + y * iA[3]/* アフィン後の座標に対応した元画像の座標 */
 				//- e * iA[2] - f * iA[3];// +  orgTexture.height / 2;
+
 				selectOrgy |= 0;/* 最近傍補間した元画像の座標 */
-				if(selectOrgy > imageDataHeight-1){
-					selectOrgy = imageDataHeight-1;
-				}
-				if(selectOrgy < 0){
-					selectOrgy = 0
-				}
+				/* 元画像をはみ出る画素の場合ラスタライズをはじく */
+				if(selectOrgy > imageDataHeight-1 || selectOrgy < 0){
+					continue;
+				}				
+
 				/* 元画像をはみ出る画素の場合ははみ出る前のピクセルを詰める */
 				/*
 				if(selectOrgy >=  textureVMax){
@@ -750,14 +750,13 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 				let selectOrgx = tmpOrgx + i * iA[0];
 				//let selectOrgx = startX * iA[0] + y * iA[1]/* アフィン後の座標に対応した元画像の座標 */
 				//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
+
 				selectOrgx |= 0; /* 最近傍補間した元画像の座標 */
-				/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
-				if(selectOrgx > imageDataWidth-1){
-					selectOrgx = imageDataWidth-1;
-				}
-				if(selectOrgx < 0){
-					selectOrgx = 0
-				}
+				/* 元画像をはみ出る画素の場合ラスタライズをはじく */
+				if(selectOrgx > imageDataWidth-1 || selectOrgx < 0){
+					continue;
+				}				
+				
 				/*
 				if(selectOrgx >= textureUMax){
 					//画像配列は０から始まってるからheight,widthともに-1
@@ -940,14 +939,13 @@ if(screen_size_w<=endX)endX=screen_size_w-1;
 				
 				//let selectOrgy = startX * iA[2] + y * iA[3]/* アフィン後の座標に対応した元画像の座標 */
 				//- e * iA[2] - f * iA[3];// +  orgTexture.height / 2;
+
 				selectOrgy |= 0;/* 最近傍補間した元画像の座標 */
-				if(selectOrgy > imageDataHeight-1){
-					selectOrgy = imageDataHeight-1;
-				}
-				if(selectOrgy < 0){
-					selectOrgy = 0
-				}
-				/* 元画像をはみ出る画素の場合ははみ出る前のピクセルを詰める */
+				/* 元画像をはみ出る画素の場合ラスタライズをはじく */
+				if(selectOrgy > imageDataHeight-1 || selectOrgy < 0){
+					continue;
+				}				
+				
 				/*
 				if(selectOrgy >=  textureVMax){
 					//画像配列は０から始まってるからheight,widthともに-1
@@ -960,14 +958,13 @@ if(screen_size_w<=endX)endX=screen_size_w-1;
 				let selectOrgx = tmpOrgx + i * iA[0];
 				//let selectOrgx = startX * iA[0] + y * iA[1]/* アフィン後の座標に対応した元画像の座標 */
 				//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
+				
 				selectOrgx |= 0; /* 最近傍補間した元画像の座標 */
-				/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
-				if(selectOrgx > imageDataWidth-1){
-					selectOrgx = imageDataWidth-1;
-				}
-				if(selectOrgx < 0){
-					selectOrgx = 0
-				}
+				/* 元画像をはみ出る画素の場合ラスタライズをはじく */
+				if(selectOrgx > imageDataWidth-1 || selectOrgx < 0){
+					continue;
+				}				
+
 				/*
 				if(selectOrgx >= textureUMax){
 					//画像配列は０から始まってるからheight,widthともに-1
