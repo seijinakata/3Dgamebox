@@ -649,6 +649,10 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 
     //if(m<0)m=0;
     if(screen_size_h<mid)mid=screen_size_h;
+	
+	let imageDataHeight = imageData.height;
+	let imageDataWidth = imageData.width;
+	let imageDataTwoDimensionsimageData = imageData.twoDimensionsimageData;
 
     if(triangleTop<mid){//upper 
         let el = vecMinus(pl,pt);//pt->pl
@@ -665,7 +669,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 				let endX = top_int(sr[0]);
 				let startZ = sl[1];
 				let endZ = sr[1];
-				scan_horizontalNoSunCosin(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData);				
+				scan_horizontalNoSunCosin(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageDataHeight,imageDataWidth,imageDataTwoDimensionsimageData);				
 			}
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
@@ -688,7 +692,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 				let endX = top_int(sr[0]);
 				let startZ = sl[1];
 				let endZ = sr[1];
-				scan_horizontalNoSunCosin(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData);				
+				scan_horizontalNoSunCosin(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageDataHeight,imageDataWidth,imageDataTwoDimensionsimageData);				
 			}
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
@@ -696,7 +700,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
         }while(mid<triangleBtm);
     }
 }
-function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData){
+function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageDataHeight,imageDataWidth,imageDataTwoDimensionsimageData){
 
 	//アフィン変換の平行移動ベクトル
 	//縦移動、transform関数のf
@@ -716,9 +720,6 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 	// tmpOrgy = y * iA[3] - e * iA[2] - f * iA[3];
 	// tmpOrgx = y * iA[1] - e * iA[0] - f * iA[1];
 	let zBufferingY = zBuffering[y];
-	let imageDataHeight = imageData.height;
-	let imageDataWidth = imageData.width;
-	let imageDataTwoDimensionsimageData = imageData.twoDimensionsimageData;
 	for(let i= startX;i<=endX;i++){
 		//Xが０未満でもz値を加算するため内部には入れない。
 		if(i>=0){
@@ -858,6 +859,10 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
     //if(m<0)m=0;
     if(screen_size_h<mid)mid=screen_size_h;
 
+	let imageDataHeight = imageData.height;
+	let imageDataWidth = imageData.width;
+	let imageDataTwoDimensionsimageData = imageData.twoDimensionsimageData;
+
     if(triangleTop<mid){//upper 
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
@@ -873,7 +878,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 				let endX = top_int(sr[0]);
 				let startZ = sl[1];
 				let endZ = sr[1];
-				scan_horizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin);				
+				scan_horizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageDataHeight,imageDataWidth,imageDataTwoDimensionsimageData,shadowFlag,lightShadowFlag,sunCosin);				
 			}
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
@@ -896,7 +901,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 				let endX = top_int(sr[0]);
 				let startZ = sl[1];
 				let endZ = sr[1];
-				scan_horizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin);				
+				scan_horizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageDataHeight,imageDataWidth,imageDataTwoDimensionsimageData,shadowFlag,lightShadowFlag,sunCosin);				
 			}
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
@@ -904,7 +909,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
         }while(mid<triangleBtm);
     }
 }
-function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin){
+function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageDataHeight,imageDataWidth,imageDataTwoDimensionsimageData,shadowFlag,lightShadowFlag,sunCosin){
 
 	const RED = 0;
 	const GREEN = 1;
@@ -925,9 +930,7 @@ if(screen_size_w<=endX)endX=screen_size_w-1;
 	// tmpOrgy = y * iA[3] - e * iA[2] - f * iA[3];
 	// tmpOrgx = y * iA[1] - e * iA[0] - f * iA[1];
 	let zBufferingY = zBuffering[y];
-	let imageDataHeight = imageData.height;
-	let imageDataWidth = imageData.width;
-	let imageDataTwoDimensionsimageData = imageData.twoDimensionsimageData;
+
 	for(let i= startX;i<=endX;i++){
 		//Xが０未満でもz値を加算するため内部には入れない。
 		if(i>=0){
