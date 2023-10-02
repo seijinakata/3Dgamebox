@@ -4,6 +4,16 @@ import { culVecDot, round, roundVector2, setVector2,setVector3, vec2Minus, vec2P
 import { SCREEN_SIZE_W,SCREEN_SIZE_H} from "./camera.js";
 import { delta_X, delta_Z, position_X, position_Y, position_Z } from './enum.js';
 
+const TwoDimensionsimageData = 0;
+
+const Image_Height = 1;
+const image_Width = 2;
+
+const RED = 0;
+const GREEN = 1;
+const BLUE = 2;
+const ALPHA = 3;
+
 export class renderBuffer{
 
 	constructor(){
@@ -166,32 +176,66 @@ export function branch(a,b,Y){
     let  t = (Y-a[1])/(b[1]-a[1]);
     return setVector3(a[0]*(1-t)+b[0]*t,Y,a[2]*(1-t)+b[2]*t);
 }
-
 export function pictureToPixelMap(ctx,image){
 
-	const RED = 0;
-	const GREEN = 1;
-	const BLUE = 2;
-	const ALPHA = 3;
+	const image_Width = image.width;
+	const image_Height = image.height;
 
 	ctx.clearRect(0,0,1500,1500);
-	ctx.drawImage(image,0,0,image.width, image.height);
-	let imageData = ctx.getImageData(0,0,image.width, image.height);
-	imageData.twoDimensionsimageData = [];
-	for(let j=0;j<image.height;j++){
-		imageData.twoDimensionsimageData[j] = [];
-		for(let i=0;i<image.width;i++){
-			let index = (i + j * image.width) * 4;
+	ctx.drawImage(image,0,0,image_Width, image_Height);
+	let imageData = ctx.getImageData(0,0,image_Width, image_Height);
+	let returnImageData = {};
+	let tempTwoDimensionsimageData = [];
+	for(let j=0;j<image_Height;j++){
+		tempTwoDimensionsimageData[j] = [];
+		for(let i=0;i<image_Width;i++){
+			let index = (i + j * image_Width) * 4;
 			let data = [];
 			data[RED] = imageData.data[index];
 			data[GREEN] = imageData.data[index+1];
 			data[BLUE] = imageData.data[index+2];
 			data[ALPHA] = imageData.data[index+3];
-			imageData.twoDimensionsimageData[j][i] = data;
+			tempTwoDimensionsimageData[j][i] = data;
 		}
 	}
-	return imageData;
+	returnImageData.twoDimensionsimageData = tempTwoDimensionsimageData;
+	returnImageData.height = image_Height;
+	returnImageData.width = image_Width;
+	return returnImageData;
 }
+// export function pictureToPixelMap(ctx,image){
+
+// 	const RED = 0;
+// 	const GREEN = 1;
+// 	const BLUE = 2;
+// 	const ALPHA = 3;
+// 	let  image_Height = image.height;
+// 	let  image_Width = image.width;
+
+// 	ctx.clearRect(0,0,1500,1500);
+
+// 	ctx.drawImage(image,0,0,image.width, image.height);
+// 	let imageData = ctx.getImageData(0,0,image.width, image.height);
+// 	let returnImageData = {};
+// 	let twoDimensionsimageData = [];
+	
+// 	for(let j=0;j<image.height;j++){
+// 		twoDimensionsimageData[j] = [];
+// 		for(let i=0;image.width;i++){
+// 			let index = (i + j * image.width) * 4;
+// 			let data = [];
+// 			data[RED] = imageData.data[index];
+// 			data[GREEN] = imageData.data[index+1];
+// 			data[BLUE] = imageData.data[index+2];
+// 			data[ALPHA] = imageData.data[index+3];
+// 			twoDimensionsimageData[j][i] = data;
+// 		}
+// 	}
+// 	returnImageData.twoDimensionsimageData = twoDimensionsimageData;
+// 	returnImageData.height = image.height;
+// 	returnImageData.width = image.width;
+// 	return returnImageData;
+// }
 
 export function bufferInit(size_H,size_W){
 	let buffer = [];
@@ -603,22 +647,25 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ){
 
 	//if(l<0)l=0;
-	if(screen_size_w<endX)endX=screen_size_w;
 	let zStep = endZ - startZ;
-	let xStep = endX- startX;
+	let xStep = endX - startX;
+
+	if(screen_size_w<=endX)endX=screen_size_w-1;
 
 	let dz = zStep/xStep;
 	let zBufferingY = zBuffering[y];
-	do{
-		if(startX>=0){
-			let z = zBufferingY[startX];
-			if(z>startZ){
-				zBufferingY[startX] = startZ;
-			}
+	let i = startX;
+	//Xが０未満でのｚ値の加算
+	for(;i<0;i++){
+		startZ += dz;
+	}
+	for(;i<endX;i++){
+		let z = zBufferingY[i];
+		if(z>startZ){
+			zBufferingY[i] = startZ;
 		}
 		startZ+=dz;
-		startX++;
-	}while(startX<endX);
+	}
 }
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
 function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrgyef,tmpOrgxef,imageData){
@@ -705,14 +752,11 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 	//アフィン変換の平行移動ベクトル
 	//縦移動、transform関数のf
 	//横移動、transform関数のe
-	const RED = 0;
-	const GREEN = 1;
-	const BLUE = 2;
-	const ALPHA = 3;
     //if(l<0)l=0;
-    if(screen_size_w<=endX)endX=screen_size_w-1;
 	let zStep = endZ - startZ;
 	let xStep = endX - startX;
+
+    if(screen_size_w<=endX)endX=screen_size_w-1;
 
 	let dz = zStep/xStep;
 	let tmpOrgy = y * iA[3] + tmpOrgyef;
@@ -913,18 +957,15 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 }
 function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageDataHeight,imageDataWidth,imageDataTwoDimensionsimageData,shadowFlag,lightShadowFlag,sunCosin){
 
-	const RED = 0;
-	const GREEN = 1;
-	const BLUE = 2;
-	const ALPHA = 3;
 	//アフィン変換の平行移動ベクトル
 	//縦移動、transform関数のf
 	//横移動、transform関数のe
 
 	//if(l<0)l=0;
-	if(screen_size_w<=endX)endX=screen_size_w-1;
 	let zStep = endZ - startZ;
 	let xStep = endX - startX;
+
+	if(screen_size_w<=endX)endX=screen_size_w-1;
 
 	let dz = zStep/xStep;
 	let tmpOrgy = y * iA[3] + tmpOrgyef;
