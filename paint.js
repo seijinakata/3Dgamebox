@@ -7,7 +7,7 @@ import { delta_X, delta_Z, position_X, position_Y, position_Z } from './enum.js'
 const TwoDimensionsimageData = 0;
 
 const Image_Height = 1;
-const image_Width = 2;
+const Image_Width = 2;
 
 const RED = 0;
 const GREEN = 1;
@@ -203,39 +203,6 @@ export function pictureToPixelMap(ctx,image){
 	returnImageData.width = image_Width;
 	return returnImageData;
 }
-// export function pictureToPixelMap(ctx,image){
-
-// 	const RED = 0;
-// 	const GREEN = 1;
-// 	const BLUE = 2;
-// 	const ALPHA = 3;
-// 	let  image_Height = image.height;
-// 	let  image_Width = image.width;
-
-// 	ctx.clearRect(0,0,1500,1500);
-
-// 	ctx.drawImage(image,0,0,image.width, image.height);
-// 	let imageData = ctx.getImageData(0,0,image.width, image.height);
-// 	let returnImageData = {};
-// 	let twoDimensionsimageData = [];
-	
-// 	for(let j=0;j<image.height;j++){
-// 		twoDimensionsimageData[j] = [];
-// 		for(let i=0;image.width;i++){
-// 			let index = (i + j * image.width) * 4;
-// 			let data = [];
-// 			data[RED] = imageData.data[index];
-// 			data[GREEN] = imageData.data[index+1];
-// 			data[BLUE] = imageData.data[index+2];
-// 			data[ALPHA] = imageData.data[index+3];
-// 			twoDimensionsimageData[j][i] = data;
-// 		}
-// 	}
-// 	returnImageData.twoDimensionsimageData = twoDimensionsimageData;
-// 	returnImageData.height = image.height;
-// 	returnImageData.width = image.width;
-// 	return returnImageData;
-// }
 
 export function bufferInit(size_H,size_W){
 	let buffer = [];
