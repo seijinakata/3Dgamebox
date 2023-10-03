@@ -8,6 +8,9 @@ import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
 
+const Image_Height = 1;
+const Image_Width = 2;
+
 function getAllChildNodesDepth(childrenLength,element,tempResult,result,bonesNameList) {
   let boneHit = false;
     for(let i=0;i<childrenLength;i++){
@@ -780,15 +783,15 @@ class Object{
     let faceIndexMeshUV_Length = this.UV.length;
     let UVVector = [];
     for(let i=0;i<faceIndexMeshUV_Length;i++){
-      let Ax = (this.UV[i][2] - this.UV[i][0]) * this.textureImage.width;
-      let Ay = (this.UV[i][3] - this.UV[i][1]) * this.textureImage.height;
-      let Bx = (this.UV[i][4] - this.UV[i][0]) * this.textureImage.width;
-      let By = (this.UV[i][5] - this.UV[i][1]) * this.textureImage.height;
+      let Ax = (this.UV[i][2] - this.UV[i][0]) * this.textureImage[Image_Width];
+      let Ay = (this.UV[i][3] - this.UV[i][1]) * this.textureImage[Image_Height];
+      let Bx = (this.UV[i][4] - this.UV[i][0]) * this.textureImage[Image_Width];
+      let By = (this.UV[i][5] - this.UV[i][1]) * this.textureImage[Image_Height];
       let mi = getInvert2(Ax,Ay,Bx,By);
       if (!mi) return;
-      let preUV_List0 = this.UV[i][0] * this.textureImage.width;
+      let preUV_List0 = this.UV[i][0] * this.textureImage[Image_Width];
       mi.push(preUV_List0);
-      let preUV_List1 = this.UV[i][1] * this.textureImage.height;
+      let preUV_List1 = this.UV[i][1] * this.textureImage[Image_Height];
       mi.push(preUV_List1);
       UVVector.push(mi);
     }
@@ -1386,15 +1389,15 @@ function culUVVector(daeLoadPack){
     let faceIndexMeshUV_Length = daeLoadPack.faceIndexMeshUV[j].length;
     let tempUVVector = [];
     for(let i=0;i<faceIndexMeshUV_Length;i++){
-      let Ax = (daeLoadPack.faceIndexMeshUV[j][i][2] - daeLoadPack.faceIndexMeshUV[j][i][0]) * daeLoadPack.textureImage.width;
-      let Ay = (daeLoadPack.faceIndexMeshUV[j][i][3] - daeLoadPack.faceIndexMeshUV[j][i][1]) * daeLoadPack.textureImage.height;
-      let Bx = (daeLoadPack.faceIndexMeshUV[j][i][4] - daeLoadPack.faceIndexMeshUV[j][i][0]) * daeLoadPack.textureImage.width;
-      let By = (daeLoadPack.faceIndexMeshUV[j][i][5] - daeLoadPack.faceIndexMeshUV[j][i][1]) * daeLoadPack.textureImage.height;
+      let Ax = (daeLoadPack.faceIndexMeshUV[j][i][2] - daeLoadPack.faceIndexMeshUV[j][i][0]) * daeLoadPack.textureImage[Image_Width];
+      let Ay = (daeLoadPack.faceIndexMeshUV[j][i][3] - daeLoadPack.faceIndexMeshUV[j][i][1]) * daeLoadPack.textureImage[Image_Height];
+      let Bx = (daeLoadPack.faceIndexMeshUV[j][i][4] - daeLoadPack.faceIndexMeshUV[j][i][0]) * daeLoadPack.textureImage[Image_Width];
+      let By = (daeLoadPack.faceIndexMeshUV[j][i][5] - daeLoadPack.faceIndexMeshUV[j][i][1]) * daeLoadPack.textureImage[Image_Height];
       let mi = getInvert2(Ax,Ay,Bx,By);
       if (!mi) return;
-      let preUV_List0 = daeLoadPack.faceIndexMeshUV[j][i][0] * daeLoadPack.textureImage.width;
+      let preUV_List0 = daeLoadPack.faceIndexMeshUV[j][i][0] * daeLoadPack.textureImage[Image_Width];
       mi.push(preUV_List0);
-      let preUV_List1 = daeLoadPack.faceIndexMeshUV[j][i][1] * daeLoadPack.textureImage.height;
+      let preUV_List1 = daeLoadPack.faceIndexMeshUV[j][i][1] * daeLoadPack.textureImage[Image_Height];
       mi.push(preUV_List1);
       tempUVVector.push(mi);
     }
@@ -1406,15 +1409,15 @@ function culUVvector(daeLoadPack){
   let UVVector = [];
   let faceIndexMeshUV_Length = daeLoadPack.faceIndexMeshUV.length;
   for(let i=0;i<faceIndexMeshUV_Length;i++){
-    let Ax = (daeLoadPack.faceIndexMeshUV[i][2] - daeLoadPack.faceIndexMeshUV[i][0]) * daeLoadPack.textureImage.width;
-    let Ay = (daeLoadPack.faceIndexMeshUV[i][3] - daeLoadPack.faceIndexMeshUV[i][1]) * daeLoadPack.textureImage.height;
-    let Bx = (daeLoadPack.faceIndexMeshUV[i][4] - daeLoadPack.faceIndexMeshUV[i][0]) * daeLoadPack.textureImage.width;
-    let By = (daeLoadPack.faceIndexMeshUV[i][5] - daeLoadPack.faceIndexMeshUV[i][1]) * daeLoadPack.textureImage.height;
+    let Ax = (daeLoadPack.faceIndexMeshUV[i][2] - daeLoadPack.faceIndexMeshUV[i][0]) * daeLoadPack.textureImage[Image_Width];
+    let Ay = (daeLoadPack.faceIndexMeshUV[i][3] - daeLoadPack.faceIndexMeshUV[i][1]) * daeLoadPack.textureImage[Image_Height];
+    let Bx = (daeLoadPack.faceIndexMeshUV[i][4] - daeLoadPack.faceIndexMeshUV[i][0]) * daeLoadPack.textureImage[Image_Width];
+    let By = (daeLoadPack.faceIndexMeshUV[i][5] - daeLoadPack.faceIndexMeshUV[i][1]) * daeLoadPack.textureImage[Image_Height];
     let mi = getInvert2(Ax,Ay,Bx,By);
     if (!mi) return;
-    let preUV_List0 = daeLoadPack.faceIndexMeshUV[i][0] * daeLoadPack.textureImage.width;
+    let preUV_List0 = daeLoadPack.faceIndexMeshUV[i][0] * daeLoadPack.textureImage[Image_Width];
     mi.push(preUV_List0);
-    let preUV_List1 = daeLoadPack.faceIndexMeshUV[i][1] * daeLoadPack.textureImage.height;
+    let preUV_List1 = daeLoadPack.faceIndexMeshUV[i][1] * daeLoadPack.textureImage[Image_Height];
     mi.push(preUV_List1);
     UVVector.push(mi);
   }
