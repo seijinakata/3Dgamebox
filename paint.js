@@ -561,7 +561,7 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
     //if(m<0)m=0;
     if(screen_size_h<mid)mid=screen_size_h;
 
-    if(triangleTop<mid){//upper 
+    if(triangleTop<mid && mid>=0){//upper 
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
@@ -569,20 +569,20 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         //start position
         let sl = setVector2(pt[position_X],pt[position_Z]);
         let sr = setVector2(pt[position_X],pt[position_Z]);
-        do{
-			if(triangleTop>=0){
-				//Y座標ごとの切片
-				let startX = top_int(sl[delta_X]);
-				let endX = top_int(sr[delta_X]);
-				let startZ = sl[delta_Z];
-				let endZ = sr[delta_Z];
-				scan_ShadowHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ);				
-			}
-            sl = vec2Plus(sl,dl);//
+		for(;triangleTop<0;triangleTop++){
+			sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
-
-            triangleTop++;
-        }while(triangleTop<mid);
+		}
+        for(;triangleTop<mid;triangleTop++){
+			//Y座標ごとの切片
+			let startX = top_int(sl[0]);
+			let endX = top_int(sr[0]);
+			let startZ = sl[1];
+			let endZ = sr[1];
+			scan_ShadowHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ);					
+            sl = vec2Plus(sl,dl);//
+            sr = vec2Plus(sr,dr);//			
+		}
     }
     if(mid<triangleBtm){//lower
 		let el = vecMinus(pb,pl);//pl->pb
@@ -592,21 +592,20 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         //start position
         let sl = setVector2(pl[position_X],pl[position_Z]);
         let sr = setVector2(pr[position_X],pr[position_Z]);
-
-        do{
-			if(mid>=0){
+		for(;mid<0;mid++){
+			sl = vec2Plus(sl,dl);//
+            sr = vec2Plus(sr,dr);//
+		}
+        for(;mid<triangleBtm;mid++){
 			//Y座標ごとの切片
-				let startX = top_int(sl[delta_X]);
-				let endX = top_int(sr[delta_X]);
-				let startZ = sl[delta_Z];
-				let endZ = sr[delta_Z];
-				scan_ShadowHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ);				
-			}
+			let startX = top_int(sl[0]);
+			let endX = top_int(sr[0]);
+			let startZ = sl[1];
+			let endZ = sr[1];
+			scan_ShadowHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ);				
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
-
-            mid++;
-        }while(mid<triangleBtm);
+		}
     }
 }
 
@@ -663,7 +662,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
     //if(m<0)m=0;
     if(screen_size_h<mid)mid=screen_size_h;
 
-    if(triangleTop<mid){//upper 
+    if(triangleTop<mid && mid>=0){//upper 
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
@@ -671,19 +670,20 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
         //start position
         let sl = setVector2(pt[0],pt[2]);
         let sr = setVector2(pt[0],pt[2]);
-        do{
-			if(triangleTop>=0){
-				//Y座標ごとの切片
-				let startX = top_int(sl[0]);
-				let endX = top_int(sr[0]);
-				let startZ = sl[1];
-				let endZ = sr[1];
-				scan_horizontalNoSunCosin(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData);				
-			}
-            sl = vec2Plus(sl,dl);//
+		for(;triangleTop<0;triangleTop++){
+			sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
-            triangleTop++;
-        }while(triangleTop<mid);
+		}
+        for(;triangleTop<mid;triangleTop++){
+			//Y座標ごとの切片
+			let startX = top_int(sl[0]);
+			let endX = top_int(sr[0]);
+			let startZ = sl[1];
+			let endZ = sr[1];
+			scan_horizontalNoSunCosin(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData);					
+            sl = vec2Plus(sl,dl);//
+            sr = vec2Plus(sr,dr);//			
+		}
     }
     if(mid<triangleBtm){//lower
 		let el = vecMinus(pb,pl);//pl->pb
@@ -693,20 +693,20 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
         //start position
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
-
-        do{
-			if(mid>=0){
+		for(;mid<0;mid++){
+			sl = vec2Plus(sl,dl);//
+            sr = vec2Plus(sr,dr);//
+		}
+        for(;mid<triangleBtm;mid++){
 			//Y座標ごとの切片
-				let startX = top_int(sl[0]);
-				let endX = top_int(sr[0]);
-				let startZ = sl[1];
-				let endZ = sr[1];
-				scan_horizontalNoSunCosin(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData);				
-			}
+			let startX = top_int(sl[0]);
+			let endX = top_int(sr[0]);
+			let startZ = sl[1];
+			let endZ = sr[1];
+			scan_horizontalNoSunCosin(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData);								
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
-            mid++;
-        }while(mid<triangleBtm);
+		}
     }
 }
 function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData){
@@ -851,7 +851,6 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
     // if(!(triangleTop<triangleBtm))return;
 	// if(triangleBtm<0) return;
 
-	//if(triangleTop<0)triangleTop=0;
     if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;
 
     let pl = [],pr = [];
@@ -867,7 +866,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
     //if(m<0)m=0;
     if(screen_size_h<mid)mid=screen_size_h;
 
-    if(triangleTop<mid){//upper 
+    if(triangleTop<mid && mid>=0){//upper 
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
@@ -875,20 +874,22 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
         //start position
         let sl = setVector2(pt[0],pt[2]);
         let sr = setVector2(pt[0],pt[2]);
-        do{
-			if(triangleTop>=0){
-				//Y座標ごとの切片
-				let startX = top_int(sl[0]);
-				let endX = top_int(sr[0]);
-				let startZ = sl[1];
-				let endZ = sr[1];
-				scan_horizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin);				
-			}
-            sl = vec2Plus(sl,dl);//
+		for(;triangleTop<0;triangleTop++){
+			sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
-            triangleTop++;
-        }while(triangleTop<mid);
+		}
+        for(;triangleTop<mid;triangleTop++){
+			//Y座標ごとの切片
+			let startX = top_int(sl[0]);
+			let endX = top_int(sr[0]);
+			let startZ = sl[1];
+			let endZ = sr[1];
+			scan_horizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin);				
+            sl = vec2Plus(sl,dl);//
+            sr = vec2Plus(sr,dr);//			
+		}
     }
+	//こっちはmidもBtmもscreen_size_になって弾かれる.
     if(mid<triangleBtm){//lower
 		let el = vecMinus(pb,pl);//pl->pb
 		let er = vecMinus(pb,pr);//pr->pb
@@ -897,20 +898,20 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
         //start position
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
-
-        do{
-			if(mid>=0){
+		for(;mid<0;mid++){
+			sl = vec2Plus(sl,dl);//
+            sr = vec2Plus(sr,dr);//
+		}
+        for(;mid<triangleBtm;mid++){
 			//Y座標ごとの切片
-				let startX = top_int(sl[0]);
-				let endX = top_int(sr[0]);
-				let startZ = sl[1];
-				let endZ = sr[1];
-				scan_horizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin);				
-			}
+			let startX = top_int(sl[0]);
+			let endX = top_int(sr[0]);
+			let startZ = sl[1];
+			let endZ = sr[1];
+			scan_horizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin);				
             sl = vec2Plus(sl,dl);//
             sr = vec2Plus(sr,dr);//
-            mid++;
-        }while(mid<triangleBtm);
+		}
     }
 }
 function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin){
