@@ -1,7 +1,6 @@
 
 export function round(orgValue){
-    let newFloorValue = ((orgValue * 1000)|0) / 1000;
-    return newFloorValue;
+    return ((orgValue * 1000)|0) / 1000;
 }
 
 export function roundVector2(vector2){

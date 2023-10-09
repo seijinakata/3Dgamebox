@@ -9,25 +9,26 @@ export function matCopy(m){
     return copyMat;
 }
 export function matRound4X4(mat){
-    mat[0] = round( mat[0]);
-    mat[4] = round( mat[4]);
-    mat[8] = round( mat[8]);
+    let mat0 = round( mat[0]);
+    let mat4 = round( mat[4]);
+    let mat8 = round( mat[8]);
     //mat[12] = round( mat[12]);
 
-    mat[1] = round( mat[1]);
-    mat[5] = round( mat[5]);
-    mat[9] = round( mat[9]);
+    let mat1 = round( mat[1]);
+    let mat5 = round( mat[5]);
+    let mat9 = round( mat[9]);
     //mat[13] = round( mat[13]);
 
-    mat[2] = round( mat[2]);
-    mat[6] = round( mat[6]);
-    mat[10] = round( mat[10]);
+    let mat2 = round( mat[2]);
+    let mat6 = round( mat[6]);
+    let mat10 = round( mat[10]);
     //mat[14] = round( mat[14]);
 
-    mat[3] = round( mat[3]);
-    mat[7] = round( mat[7]);
-    mat[11] = round( mat[11]);
+    let mat3 = round( mat[3]);
+    let mat7 = round( mat[7]);
+    let mat11 = round( mat[11]);
     //mat[15] = round( mat[15]);
+    return [mat0,mat1,mat2,mat3,mat4,mat5,mat6,mat7,mat8,mat9,mat10,mat11];
 }
 
 export function matIdentity(){
@@ -122,32 +123,17 @@ export function matWaight(m,w) {
 export function matMul(m1,m2) {
     
         let m_0  = m1[0] * m2[0] + m1[1] * m2[4] + m1[2] * m2[8];// +m1[3] * m2[12];
-        m_0 = round(m_0);
         let m_1  = m1[0] * m2[1] + m1[1] * m2[5] + m1[2] * m2[9];// +m1[3] * m2[13];
-        m_1 = round(m_1);
         let m_2  = m1[0] * m2[2] + m1[1] * m2[6] + m1[2] * m2[10];// + m1[3] * m2[14];
-        m_2 = round(m_2);
         let m_3  = m1[0] * m2[3] + m1[1] * m2[7] + m1[2] * m2[11] + m1[3];// * m2[15];
-        m_3 = round(m_3);
-
         let m_4  = m1[4] * m2[0] + m1[5] * m2[4] + m1[6] * m2[8];// +m1[7] * m2[12];
-        m_4 = round(m_4);
         let m_5  = m1[4] * m2[1] + m1[5] * m2[5] + m1[6] * m2[9];// +m1[7] * m2[13];
-        m_5 = round(m_5);
         let m_6  = m1[4] * m2[2] + m1[5] * m2[6] + m1[6] * m2[10];// + m1[7] * m2[14];
-        m_6 = round(m_6);
         let m_7  = m1[4] * m2[3] + m1[5] * m2[7] + m1[6] * m2[11] + m1[7];// * m2[15];
-        m_7 = round(m_7);
- 
         let m_8  = m1[8] * m2[0] + m1[9] * m2[4] + m1[10] * m2[8];// +m1[11] * m2[12];
-        m_8 = round(m_8);
         let m_9  = m1[8] * m2[1] + m1[9] * m2[5] + m1[10] * m2[9];// +m1[11] * m2[13];
-        m_9 = round(m_9);
         let m_10  = m1[8] * m2[2] + m1[9] * m2[6] + m1[10] * m2[10];// + m1[11] * m2[14];
-        m_10 = round(m_10);
         let m_11  = m1[8] * m2[3] + m1[9] * m2[7] + m1[10] * m2[11] + m1[11];// * m2[15];
-        m_11 = round(m_11);
-
         //tmp[12] = m1[12] * m2[0] + m1[13] * m2[4] + m1[14] * m2[8] +m1[15] * m2[12];
         //tmp[13] = m1[12] * m2[1] + m1[13] * m2[5] + m1[14] * m2[9] +m1[15] * m2[13];
         //tmp[14] = m1[12] * m2[2] + m1[13] * m2[6] + m1[14] * m2[10] + m1[15] * m2[14];

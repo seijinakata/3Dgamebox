@@ -452,7 +452,7 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
                   if(tempBind.length >= 4*4){
                     let boneContents = {};
                     boneContents.bindPose = tempBind;
-                    boneContents.inverseBindPose = CalInvMat4x4(tempBind);;
+                    boneContents.inverseBindPose = CalInvMat4x4(tempBind);
                     tempBindPosePack.push(boneContents);
                     tempBind = [];  
             
@@ -524,7 +524,6 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             } 
             blendBoneIndex.push(tempBlendBoneIndex);          
           }
-          console.log(blendBoneIndex)
           daeLoadPack.blendBoneIndex = blendBoneIndex[0];
           for(let i=0;i<armatures.length;i++){
             daeLoadpack[i].blendBoneIndex = blendBoneIndex[i];
@@ -1856,7 +1855,7 @@ for(let j=0;j<steves.length;j++){
   let projectedObjects = [];
 
   viewMatrix = matCamera(cameraPos,lookat,up);
-  matRound4X4(viewMatrix);
+  viewMatrix = matRound4X4(viewMatrix);
   // let cameraSort = [];
   // let current = 0;
   // if(cameraSort.length == 0){
@@ -1888,11 +1887,7 @@ for(let j=0;j<steves.length;j++){
   // }
 
   inverseViewMatrix = CalInvMat4x4(viewMatrix);
-  matRound4X4(inverseViewMatrix);
-
   sunViewMatrix = matCamera(sunPos,sunLookat,up);
-  matRound4X4(sunViewMatrix);
-
   //dicesregister
   for(let Object of dices){
     // let worldMatrix = matIdentity();
@@ -2014,6 +2009,7 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
 }
 //作画
 let shadowMat = matMul(sunViewMatrix,inverseViewMatrix);
+shadowMat = matRound4X4(shadowMat);
 for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   let basearrayY = basearray[pixelY];
   let zBufferingY = zBuffering[pixelY];
@@ -2033,6 +2029,8 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         //inverseViewPort and inverseProjection
         let shadowPixelY = shadowViewPortY[pixelY] * pixelZ;
         let shadowPixelX = shadowViewPortX[pixelX] * pixelZ;
+        shadowPixelY = round(shadowPixelY);
+        shadowPixelX = round(shadowPixelX);
         /*
         //inverseViewPort
         shadowPixelX /= screen_size_w;
@@ -2049,11 +2047,12 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         */
         //view
         //shadowMatrixmul
+
+        
         let shadowMatrixPixelY = shadowMat[4]*shadowPixelX + shadowMat[5]*shadowPixelY + shadowMat[6]*pixelZ + shadowMat[7];
         let shadowMatrixPixelX = shadowMat[0]*shadowPixelX + shadowMat[1]*shadowPixelY + shadowMat[2]*pixelZ + shadowMat[3];
         pixelZ = shadowMat[8]*shadowPixelX + shadowMat[9]*shadowPixelY + shadowMat[10]*pixelZ + shadowMat[11];
         //let invPixelZ = 1/pixelZ;
-
         //projectionMatrix = matPers(pixelVector3[2]);
         //pixelVector3 = matVecMul(projectionMatrix,pixelVector3);
     
@@ -2083,7 +2082,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         }
         if(pixel[pixel_LightShadow_Flag] == true){
           //ライトシミュレーション
-          let sunCosin = pixel[pixel_SunCosin];
+          let sunCosin = round(pixel[pixel_SunCosin]);
           pixelR *= sunCosin;
           pixelG *= sunCosin;
           pixelB *= sunCosin; 

@@ -142,7 +142,7 @@ export function vertsCopy(verts){
 }
 //整数座標を求める
 export function top_int(x){
-    return (x+0.5)|0;
+    return x|0;
 }
 //増分を求める
 export function delta_xz(edge){
@@ -548,7 +548,7 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 	//if(triangleTop<0)triangleTop=0;
     if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;
 
-    let pl = [],pr = [];
+    let pl,pr;
 
     if(tmp[position_X]<pm[position_X]){
         pl = tmp;
@@ -649,7 +649,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 	//if(triangleTop<0)triangleTop=0;
     if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;
 
-    let pl = [],pr = [];
+    let pl,pr;
 
     if(tmp[0]<pm[0]){
         pl = tmp;
@@ -853,8 +853,8 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 
     if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;
 
-    let pl = [],pr = [];
-
+    let pl,pr;
+	
     if(tmp[0]<pm[0]){
         pl = tmp;
         pr = pm;
