@@ -832,6 +832,7 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector){
   Va = vecMinus(worldPos1,worldPos2);
   Vb = vecMinus(worldPos3,worldPos1);
   polygonElement[poly_Cross_World_Vector3] = culVecNormalize(culVecCross(Va,Vb));
+  polygonElement[poly_Cross_World_Vector3] = setVector3(round(polygonElement[poly_Cross_World_Vector3][0]),round(polygonElement[poly_Cross_World_Vector3][1]),polygonElement[poly_Cross_World_Vector3][2]);
   return polygonElement;
 }
 
@@ -1952,6 +1953,7 @@ for(let j=0;j<steves.length;j++){
 setZmaxShdowBufferInit(shadowMap,screen_size_h,screen_size_w);
 setZmaxRenderBuffer(zBuffering,screen_size_h,screen_size_w);
 let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
+sunVec = setVector3(round(sunVec[0]),round(sunVec[1]),sunVec[2]);
 //camera
 let projectedObjectsLength  = projectedObjects.length;
 for(let j=0;j<projectedObjectsLength;j++){
