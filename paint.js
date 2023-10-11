@@ -534,19 +534,9 @@ export function triangleToShadowBuffer(zBuffering,vertex_list,screen_size_h,scre
 //x,yの最初の初期値を０にするのはダメ差分を取るため。shadowMap用
 function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 
-	//viewport前は0から1000で管理4桁で四捨五入0.5は画面の中央
 	let mid = pm[position_Y];
 
-    let tmp = branch(pt,pb,mid);//pt->
-
-    let triangleTop = pt[position_Y];
-    let triangleBtm = pb[position_Y];
-
-    // if(!(triangleTop<triangleBtm))return;
-	// if(triangleBtm<0) return;
-
-	//if(triangleTop<0)triangleTop=0;
-    if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;
+    let tmp = branch(pt,pb,mid);//pt->mid
 
     let pl,pr;
 
@@ -561,7 +551,8 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
     //if(m<0)m=0;
     if(screen_size_h<mid)mid=screen_size_h;
 
-    if(triangleTop<mid && mid>=0){//upper 
+    if(mid>=0){//upper
+		let triangleTop = pt[position_Y];
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
@@ -584,7 +575,9 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
             sr = vec2Plus(sr,dr);//			
 		}
     }
-    if(mid<triangleBtm){//lower
+    if(mid<screen_size_h){//lower
+		let triangleBtm = pb[position_Y];
+		if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;	
 		let el = vecMinus(pb,pl);//pl->pb
 		let er = vecMinus(pb,pr);//pr->pb
         let dl = delta_xz(el);
@@ -635,19 +628,9 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
 function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrgyef,tmpOrgxef,imageData){
 
-	//viewport前は0から1000で管理4桁で四捨五入0.5は画面の中央
 	let mid = pm[1];
 
-    let tmp = branch(pt,pb,mid);//pt->
-
-    let triangleTop = pt[1];
-    let triangleBtm = pb[1];
-
-    // if(!(triangleTop<triangleBtm))return;
-	// if(triangleBtm<0) return;
-
-	//if(triangleTop<0)triangleTop=0;
-    if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;
+    let tmp = branch(pt,pb,mid);//pt->mid
 
     let pl,pr;
 
@@ -662,7 +645,8 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
     //if(m<0)m=0;
     if(screen_size_h<mid)mid=screen_size_h;
 
-    if(triangleTop<mid && mid>=0){//upper 
+    if(mid>=0){//upper
+		let triangleTop = pt[1];
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
@@ -685,7 +669,9 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
             sr = vec2Plus(sr,dr);//			
 		}
     }
-    if(mid<triangleBtm){//lower
+    if(mid<screen_size_h){//lower
+		let triangleBtm = pb[1];
+		if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;
 		let el = vecMinus(pb,pl);//pl->pb
 		let er = vecMinus(pb,pr);//pr->pb
         let dl = delta_xz(el);
@@ -840,18 +826,9 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
 function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin){
 
-	//viewport前は0から1000で管理4桁で四捨五入0.5は画面の中央
 	let mid = pm[1];
-
-    let tmp = branch(pt,pb,mid);//pt->
-
-    let triangleTop = pt[1];
-    let triangleBtm = pb[1];
-
-    // if(!(triangleTop<triangleBtm))return;
-	// if(triangleBtm<0) return;
-
-    if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;
+	
+    let tmp = branch(pt,pb,mid);//pt->mid
 
     let pl,pr;
 	
@@ -862,11 +839,10 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
         pl = pm;
         pr = tmp;           
     }
-
-    //if(m<0)m=0;
     if(screen_size_h<mid)mid=screen_size_h;
 
-    if(triangleTop<mid && mid>=0){//upper 
+    if(mid>=0){//upper 
+		let triangleTop = pt[1];
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
@@ -889,8 +865,9 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
             sr = vec2Plus(sr,dr);//			
 		}
     }
-	//こっちはmidもBtmもscreen_size_になって弾かれる.
-    if(mid<triangleBtm){//lower
+    if(mid<screen_size_h){//lower
+		let triangleBtm = pb[1];
+		if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;
 		let el = vecMinus(pb,pl);//pl->pb
 		let er = vecMinus(pb,pr);//pr->pb
         let dl = delta_xz(el);
