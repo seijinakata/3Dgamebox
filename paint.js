@@ -538,21 +538,17 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 
     let tmp = branch(pt,pb,mid);//pt->mid
 
-    let pl,pr;
-
-    if(tmp[position_X]<pm[position_X]){
-        pl = tmp;
-        pr = pm;
-    }else{
-        pl = pm;
-        pr = tmp;           
-    }
-
-    //if(m<0)m=0;
-    if(screen_size_h<mid)mid=screen_size_h;
+  	//tmp[0]がpm[0]より大きい時の初期値
+	let pl = tmp;
+	let pr = pm;
+	if(tmp[position_X]>=pm[position_X]){
+		pl = pm;
+		pr = tmp;
+	}
 
     if(mid>=0){//upper
 		let triangleTop = pt[position_Y];
+		if(screen_size_h<mid)mid=screen_size_h;
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
@@ -632,21 +628,17 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 
     let tmp = branch(pt,pb,mid);//pt->mid
 
-    let pl,pr;
-
-    if(tmp[0]<pm[0]){
-        pl = tmp;
-        pr = pm;
-    }else{
+	//tmp[0]がpm[0]より大きい時の初期値
+    let pl = tmp;
+	let pr = pm;
+	if(tmp[0]>=pm[0]){
         pl = pm;
-        pr = tmp;           
+        pr = tmp;
     }
-
-    //if(m<0)m=0;
-    if(screen_size_h<mid)mid=screen_size_h;
 
     if(mid>=0){//upper
 		let triangleTop = pt[1];
+		if(screen_size_h<mid)mid=screen_size_h;
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
@@ -830,19 +822,17 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 	
     let tmp = branch(pt,pb,mid);//pt->mid
 
-    let pl,pr;
-	
-    if(tmp[0]<pm[0]){
-        pl = tmp;
-        pr = pm;
-    }else{
+	//tmp[0]がpm[0]より大きい時の初期値
+    let pl = tmp;
+	let pr = pm;
+	if(tmp[0]>=pm[0]){
         pl = pm;
-        pr = tmp;           
+        pr = tmp;
     }
-    if(screen_size_h<mid)mid=screen_size_h;
 
-    if(mid>=0){//upper 
+    if(mid>=0){//upper
 		let triangleTop = pt[1];
+		if(screen_size_h<mid)mid=screen_size_h;
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
