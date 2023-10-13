@@ -552,13 +552,19 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
+		dl[0] = round(dl[0]);
         let dr = delta_xz(er);
+		dr[0] = round(dr[0]);
         //start position
         let sl = setVector2(pt[position_X],pt[position_Z]);
         let sr = setVector2(pt[position_X],pt[position_Z]);
-		for(;triangleTop<0;triangleTop++){
-			sl = vec2Plus(sl,dl);//
-            sr = vec2Plus(sr,dr);//
+		if(triangleTop<0){
+			let offset = -1 * triangleTop;
+			sl[0] += (offset * dl[0]);
+			sl[1] += (offset * dl[1]);
+			sr[0] += (offset * dr[0]);
+			sr[1] += (offset * dr[1]);
+			triangleTop = 0;
 		}
         for(;triangleTop<mid;triangleTop++){
 			//Y座標ごとの切片
@@ -577,13 +583,19 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 		let el = vecMinus(pb,pl);//pl->pb
 		let er = vecMinus(pb,pr);//pr->pb
         let dl = delta_xz(el);
+		dl[0] = round(dl[0]);
         let dr = delta_xz(er);
+		dr[0] = round(dr[0]);
         //start position
         let sl = setVector2(pl[position_X],pl[position_Z]);
         let sr = setVector2(pr[position_X],pr[position_Z]);
-		for(;mid<0;mid++){
-			sl = vec2Plus(sl,dl);//
-            sr = vec2Plus(sr,dr);//
+		if(mid<0){
+			let offset = -1 * mid;
+			sl[0] += (offset * dl[0]);
+			sl[1] += (offset * dl[1]);
+			sr[0] += (offset * dr[0]);
+			sr[1] += (offset * dr[1]);
+			mid = 0;
 		}
         for(;mid<triangleBtm;mid++){
 			//Y座標ごとの切片
@@ -608,10 +620,12 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 
 	let dz = zStep/xStep;
 	let zBufferingY = zBuffering[y];
-	let i = startX;
 	//Xが０未満でのｚ値の加算
-	for(;i<0;i++){
-		startZ += dz;
+	let i = startX;
+	if(startX<0){
+		let offset = -1 * startX;
+		startZ += (offset * dz);
+		i = 0;
 	}
 	for(;i<endX;i++){
 		let z = zBufferingY[i];
@@ -642,13 +656,19 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
+		dl[0] = round(dl[0]);
         let dr = delta_xz(er);
+		dr[0] = round(dr[0]);
         //start position
         let sl = setVector2(pt[0],pt[2]);
         let sr = setVector2(pt[0],pt[2]);
-		for(;triangleTop<0;triangleTop++){
-			sl = vec2Plus(sl,dl);//
-            sr = vec2Plus(sr,dr);//
+		if(triangleTop<0){
+			let offset = -1 * triangleTop;
+			sl[0] += (offset * dl[0]);
+			sl[1] += (offset * dl[1]);
+			sr[0] += (offset * dr[0]);
+			sr[1] += (offset * dr[1]);
+			triangleTop = 0;
 		}
         for(;triangleTop<mid;triangleTop++){
 			//Y座標ごとの切片
@@ -667,13 +687,19 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 		let el = vecMinus(pb,pl);//pl->pb
 		let er = vecMinus(pb,pr);//pr->pb
         let dl = delta_xz(el);
+		dl[0] = round(dl[0]);
         let dr = delta_xz(er);
+		dr[0] = round(dr[0]);
         //start position
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
-		for(;mid<0;mid++){
-			sl = vec2Plus(sl,dl);//
-            sr = vec2Plus(sr,dr);//
+		if(mid<0){
+			let offset = -1 * mid;
+			sl[0] += (offset * dl[0]);
+			sl[1] += (offset * dl[1]);
+			sr[0] += (offset * dr[0]);
+			sr[1] += (offset * dr[1]);
+			mid = 0;
 		}
         for(;mid<triangleBtm;mid++){
 			//Y座標ごとの切片
@@ -706,8 +732,10 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 	let zBufferingY = zBuffering[y];
 	let i = startX;
 	//Xが０未満でのｚ値の加算
-	for(;i<0;i++){
-		startZ += dz;
+	if(startX<0){
+		let offset = -1 * startX;
+		startZ += (offset * dz);
+		i = 0;
 	}
 	for(;i<=endX;i++){
 		let z = zBufferingY[i][0];
@@ -836,13 +864,19 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
+		dl[0] = round(dl[0]);
         let dr = delta_xz(er);
+		dr[0] = round(dr[0]);
         //start position
         let sl = setVector2(pt[0],pt[2]);
         let sr = setVector2(pt[0],pt[2]);
-		for(;triangleTop<0;triangleTop++){
-			sl = vec2Plus(sl,dl);//
-            sr = vec2Plus(sr,dr);//
+		if(triangleTop<0){
+			let offset = -1 * triangleTop;
+			sl[0] += (offset * dl[0]);
+			sl[1] += (offset * dl[1]);
+			sr[0] += (offset * dr[0]);
+			sr[1] += (offset * dr[1]);
+			triangleTop = 0;
 		}
         for(;triangleTop<mid;triangleTop++){
 			//Y座標ごとの切片
@@ -861,13 +895,19 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 		let el = vecMinus(pb,pl);//pl->pb
 		let er = vecMinus(pb,pr);//pr->pb
         let dl = delta_xz(el);
+		dl[0] = round(dl[0]);
         let dr = delta_xz(er);
+		dr[0] = round(dr[0]);
         //start position
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
-		for(;mid<0;mid++){
-			sl = vec2Plus(sl,dl);//
-            sr = vec2Plus(sr,dr);//
+		if(mid<0){
+			let offset = -1 * mid;
+			sl[0] += (offset * dl[0]);
+			sl[1] += (offset * dl[1]);
+			sr[0] += (offset * dr[0]);
+			sr[1] += (offset * dr[1]);
+			mid = 0;
 		}
         for(;mid<triangleBtm;mid++){
 			//Y座標ごとの切片
@@ -899,10 +939,12 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,t
 	// tmpOrgy = y * iA[3] - e * iA[2] - f * iA[3];
 	// tmpOrgx = y * iA[1] - e * iA[0] - f * iA[1];
 	let zBufferingY = zBuffering[y];
-	let i = startX;
 	//Xが０未満でのｚ値の加算
-	for(;i<0;i++){
-		startZ += dz;
+	let i = startX;
+	if(startX<0){
+		let offset = -1 * startX;
+		startZ += (offset * dz);
+		i = 0;
 	}
 	for(;i<=endX;i++){
 		let z = zBufferingY[i][0];
