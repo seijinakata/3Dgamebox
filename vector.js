@@ -2,10 +2,12 @@
 export function round(orgValue){
     return ((orgValue * 1000)|0) / 1000;
 }
-
-export function roundVector2(vector2){
-    round(vector2[0]);
-    round(vector2[1]);
+export function XRound(X){
+    X[0] = ((X[0] * 1000)|0) / 1000;
+}
+export function XYRound(XY){
+    XY[0] = ((XY[0] * 1000)|0) / 1000;
+    XY[1] = ((XY[1] * 1000)|0) / 1000;
 }
 
 export function setVector2(x,y){
@@ -22,11 +24,10 @@ export function setVector4(x,y,z,w){
     }
     
 export function vec2Plus(Va,Vb){
-    let vx = Va[0] + Vb[0];
-    let vy = Va[1] + Vb[1];
-    let vector2 = setVector2(vx,vy);
-    return vector2;
+    Va[0] = Va[0] + Vb[0];
+    Va[1] = Va[1] + Vb[1];
 }
+
 export function vec2Minus(Va,Vb){
     let vx = Va[0] - Vb[0];
     let vy = Va[1] - Vb[1];
@@ -61,11 +62,9 @@ export function vecDiv(Va,Vb){
     return vector3;
     }
 export function vecPlus(Va,Vb){
-    let vx = Va[0] + Vb[0];
-    let vy = Va[1] + Vb[1];
-    let vz = Va[2] + Vb[2];
-    let vector3 = setVector3(vx,vy,vz);
-    return vector3;
+    Va[0]= Va[0] + Vb[0];
+    Va[1]= Va[1] + Vb[1];
+    Va[2] = Va[2] + Vb[2];
     }
 export function vecMinus(Va,Vb){
     let vx = Va[0] - Vb[0];
@@ -134,8 +133,7 @@ export function cul3dVecLength(vector3){
     let distance = vector3[0] * vector3[0] + vector3[1] * vector3[1] + vector3[2] * vector3[2];
     let absDistance = (distance)>0 ? (distance) : -(distance);
     let invLength = 1/NewtonMethod(1,absDistance);
-    let normalizeVector3x = round(vector3[0] * invLength);
-    let normalizeVector3y = round(vector3[1] * invLength);
-    let normalizeVector3z = round(vector3[2] * invLength);
-    return [normalizeVector3x,normalizeVector3y,normalizeVector3z];
+    vector3[0] = vector3[0] * invLength;
+    vector3[1] = vector3[1] * invLength;
+    vector3[2] = vector3[2] * invLength;
 }

@@ -1,6 +1,6 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
-import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round, roundVector2, NewtonMethod, cul3dVecLength} from './vector.js';
+import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,NewtonMethod, cul3dVecLength, XYRound} from './vector.js';
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,sort_index,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
@@ -831,8 +831,10 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector){
   //ライトシミュレーション用
   Va = vecMinus(worldPos1,worldPos2);
   Vb = vecMinus(worldPos3,worldPos1);
-  polygonElement[poly_Cross_World_Vector3] = culVecNormalize(culVecCross(Va,Vb));
-  polygonElement[poly_Cross_World_Vector3] = setVector3(round(polygonElement[poly_Cross_World_Vector3][0]),round(polygonElement[poly_Cross_World_Vector3][1]),polygonElement[poly_Cross_World_Vector3][2]);
+
+  polygonElement[poly_Cross_World_Vector3] = culVecCross(Va,Vb);
+  culVecNormalize(polygonElement[poly_Cross_World_Vector3]);
+  XYRound(polygonElement[poly_Cross_World_Vector3]);
   return polygonElement;
 }
 
@@ -1009,7 +1011,7 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   for (let i = 0; i < meshVerts_Length; i++) {
     let verts = setVector3(object.meshVerts[i][0]*worldTranslation.scaleXYZ[position_X],object.meshVerts[i][1]*worldTranslation.scaleXYZ[position_Y],object.meshVerts[i][2]*worldTranslation.scaleXYZ[position_Z]);
     verts = Vector3QuaternionMul(worldTranslation.quaternion,verts);
-    verts = setVector3(verts[0]+worldTranslation.position[position_X],verts[1]+worldTranslation.position[position_Y],verts[2]+worldTranslation.position[position_Z]);
+    vecPlus(verts,worldTranslation.position);
     //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
     let normalVerts = vertsCopy(verts);
     let shadowVerts = vertsCopy(verts);
@@ -1856,7 +1858,6 @@ for(let j=0;j<steves.length;j++){
   let projectedObjects = [];
 
   viewMatrix = matCamera(cameraPos,lookat,up);
-  viewMatrix = matRound4X4(viewMatrix);
   // let cameraSort = [];
   // let current = 0;
   // if(cameraSort.length == 0){
@@ -1889,6 +1890,7 @@ for(let j=0;j<steves.length;j++){
 
   inverseViewMatrix = CalInvMat4x4(viewMatrix);
   sunViewMatrix = matCamera(sunPos,sunLookat,up);
+
   //dicesregister
   for(let Object of dices){
     // let worldMatrix = matIdentity();
@@ -1952,8 +1954,9 @@ for(let j=0;j<steves.length;j++){
 //ピクセル処理がボトルネック、ラスタライズ
 setZmaxShdowBufferInit(shadowMap,screen_size_h,screen_size_w);
 setZmaxRenderBuffer(zBuffering,screen_size_h,screen_size_w);
-let sunVec = culVecNormalize(vecMinus(sunPos,sunLookat));
-sunVec = setVector3(round(sunVec[0]),round(sunVec[1]),sunVec[2]);
+let sunVec = vecMinus(sunPos,sunLookat);
+culVecNormalize(sunVec);
+XYRound(sunVec);
 //camera
 let projectedObjectsLength  = projectedObjects.length;
 for(let j=0;j<projectedObjectsLength;j++){
@@ -2011,7 +2014,7 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
 }
 //作画
 let shadowMat = matMul(sunViewMatrix,inverseViewMatrix);
-shadowMat = matRound4X4(shadowMat);
+matRound4X4(shadowMat);
 for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   let basearrayY = basearray[pixelY];
   let zBufferingY = zBuffering[pixelY];

@@ -1,6 +1,6 @@
 //newをすると重くなる構造体はjson,配列に置き換え中
 import { matVecMul,matIdentity,matPers,getInverseMatrix, matMul,getInvert2, CalInvMat4x4,protMatVecMul } from "./matrix.js";
-import { culVecDot, round, roundVector2, setVector2,setVector3, vec2Minus, vec2Plus, vecMinus, vecMul } from "./vector.js";
+import { XRound, culVecDot, round, setVector2,setVector3, vec2Minus, vec2Plus, vecMinus, vecMul } from "./vector.js";
 import { SCREEN_SIZE_W,SCREEN_SIZE_H} from "./camera.js";
 import { delta_X, delta_Z, position_X, position_Y, position_Z } from './enum.js';
 
@@ -156,15 +156,18 @@ export function delta_xz(edge){
 }
 //ソート関数
 function swap(a,b){
-	let t = vertsCopy(a);
+	let tmpX = a[0];
+	let tmpY = a[1];
+	let tmpZ = a[2];
+	
 	a[0] = b[0];
-	b[0] = t[0];
+	b[0] = tmpX;
 
 	a[1] = b[1];
-	b[1] = t[1];
+	b[1] = tmpY;
 
 	a[2] = b[2];
-	b[2] = t[2];
+	b[2] = tmpZ;
 }
 export function sort_index(t,i){
     if(t[0][i]>t[1][i])swap(t[0],t[1]);
@@ -552,12 +555,14 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
-		dl[0] = round(dl[0]);
+		XRound(dl);
         let dr = delta_xz(er);
-		dr[0] = round(dr[0]);
+		XRound(dr);
         //start position
         let sl = setVector2(pt[position_X],pt[position_Z]);
+		XRound(sl);
         let sr = setVector2(pt[position_X],pt[position_Z]);
+		XRound(sr);
 		if(triangleTop<0){
 			let offset = -1 * triangleTop;
 			sl[0] += (offset * dl[0]);
@@ -573,8 +578,8 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 			let startZ = sl[1];
 			let endZ = sr[1];
 			scan_ShadowHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ);					
-            sl = vec2Plus(sl,dl);//
-            sr = vec2Plus(sr,dr);//			
+            vec2Plus(sl,dl);//
+            vec2Plus(sr,dr);//			
 		}
     }
     if(mid<screen_size_h){//lower
@@ -583,12 +588,14 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 		let el = vecMinus(pb,pl);//pl->pb
 		let er = vecMinus(pb,pr);//pr->pb
         let dl = delta_xz(el);
-		dl[0] = round(dl[0]);
+		XRound(dl);
         let dr = delta_xz(er);
-		dr[0] = round(dr[0]);
+		XRound(dr);
         //start position
-        let sl = setVector2(pl[position_X],pl[position_Z]);
-        let sr = setVector2(pr[position_X],pr[position_Z]);
+        let sl = setVector2(pl[0],pl[2]);
+		XRound(sl);
+        let sr = setVector2(pr[0],pr[2]);
+		XRound(sr);
 		if(mid<0){
 			let offset = -1 * mid;
 			sl[0] += (offset * dl[0]);
@@ -604,8 +611,8 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 			let startZ = sl[1];
 			let endZ = sr[1];
 			scan_ShadowHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ);				
-            sl = vec2Plus(sl,dl);//
-            sr = vec2Plus(sr,dr);//
+            vec2Plus(sl,dl);//
+            vec2Plus(sr,dr);//
 		}
     }
 }
@@ -656,12 +663,14 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
-		dl[0] = round(dl[0]);
+		XRound(dl);
         let dr = delta_xz(er);
-		dr[0] = round(dr[0]);
+		XRound(dr);
         //start position
-        let sl = setVector2(pt[0],pt[2]);
-        let sr = setVector2(pt[0],pt[2]);
+        let sl = setVector2(pt[position_X],pt[position_Z]);
+		XRound(sl);
+        let sr = setVector2(pt[position_X],pt[position_Z]);
+		XRound(sr);
 		if(triangleTop<0){
 			let offset = -1 * triangleTop;
 			sl[0] += (offset * dl[0]);
@@ -677,8 +686,8 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 			let startZ = sl[1];
 			let endZ = sr[1];
 			scan_horizontalNoSunCosin(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData);					
-            sl = vec2Plus(sl,dl);//
-            sr = vec2Plus(sr,dr);//			
+            vec2Plus(sl,dl);//
+            vec2Plus(sr,dr);//			
 		}
     }
     if(mid<screen_size_h){//lower
@@ -687,12 +696,14 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 		let el = vecMinus(pb,pl);//pl->pb
 		let er = vecMinus(pb,pr);//pr->pb
         let dl = delta_xz(el);
-		dl[0] = round(dl[0]);
+		XRound(dl);
         let dr = delta_xz(er);
-		dr[0] = round(dr[0]);
+		XRound(dr);
         //start position
         let sl = setVector2(pl[0],pl[2]);
+		XRound(sl);
         let sr = setVector2(pr[0],pr[2]);
+		XRound(sr);
 		if(mid<0){
 			let offset = -1 * mid;
 			sl[0] += (offset * dl[0]);
@@ -708,8 +719,8 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 			let startZ = sl[1];
 			let endZ = sr[1];
 			scan_horizontalNoSunCosin(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData);								
-            sl = vec2Plus(sl,dl);//
-            sr = vec2Plus(sr,dr);//
+            vec2Plus(sl,dl);//
+            vec2Plus(sr,dr);//
 		}
     }
 }
@@ -864,12 +875,14 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
-		dl[0] = round(dl[0]);
+		XRound(dl);
         let dr = delta_xz(er);
-		dr[0] = round(dr[0]);
+		XRound(dr);
         //start position
-        let sl = setVector2(pt[0],pt[2]);
-        let sr = setVector2(pt[0],pt[2]);
+        let sl = setVector2(pt[position_X],pt[position_Z]);
+		XRound(sl);
+        let sr = setVector2(pt[position_X],pt[position_Z]);
+		XRound(sr);
 		if(triangleTop<0){
 			let offset = -1 * triangleTop;
 			sl[0] += (offset * dl[0]);
@@ -885,8 +898,8 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 			let startZ = sl[1];
 			let endZ = sr[1];
 			scan_horizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin);				
-            sl = vec2Plus(sl,dl);//
-            sr = vec2Plus(sr,dr);//			
+            vec2Plus(sl,dl);//
+            vec2Plus(sr,dr);//			
 		}
     }
     if(mid<screen_size_h){//lower
@@ -895,12 +908,14 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 		let el = vecMinus(pb,pl);//pl->pb
 		let er = vecMinus(pb,pr);//pr->pb
         let dl = delta_xz(el);
-		dl[0] = round(dl[0]);
+		XRound(dl);
         let dr = delta_xz(er);
-		dr[0] = round(dr[0]);
+		XRound(dr);
         //start position
         let sl = setVector2(pl[0],pl[2]);
+		XRound(sl);
         let sr = setVector2(pr[0],pr[2]);
+		XRound(sr);
 		if(mid<0){
 			let offset = -1 * mid;
 			sl[0] += (offset * dl[0]);
@@ -916,8 +931,8 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 			let startZ = sl[1];
 			let endZ = sr[1];
 			scan_horizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin);				
-            sl = vec2Plus(sl,dl);//
-            sr = vec2Plus(sr,dr);//
+            vec2Plus(sl,dl);//
+            vec2Plus(sr,dr);//
 		}
     }
 }
@@ -1240,7 +1255,7 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 	//逆行列のad-bc
 	let det = a * d - c * b;
 	if(det == 0) {
-		return -1;
+		det = ((a+1) * d) - c * b;
 	}
 	let  inv_det = 1.0/det;
 

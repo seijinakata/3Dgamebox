@@ -1,7 +1,7 @@
 //４行目は使わないので消去しました
 //行列計算ループアンローリング
 //演算結果をreturnsしてその結果をもう一回関数に入れると重たくなるみたい。
-import {setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize,round, setVector2} from './vector.js';
+import {setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize,round, setVector2, XYRound} from './vector.js';
 import {sinLut,cosLut} from './camera.js';
 //一次元配列
 export function matCopy(m){
@@ -9,26 +9,20 @@ export function matCopy(m){
     return copyMat;
 }
 export function matRound4X4(mat){
-    let mat0 = round( mat[0]);
-    let mat4 = round( mat[4]);
-    let mat8 = round( mat[8]);
-    //mat[12] = round( mat[12]);
+    mat[0] = ((mat[0] * 1000)|0) / 1000;
+    mat[1] = ((mat[1] * 1000)|0) / 1000;
+    mat[2] = ((mat[2] * 1000)|0) / 1000;
+    mat[3] = ((mat[3] * 1000)|0) / 1000;
 
-    let mat1 = round( mat[1]);
-    let mat5 = round( mat[5]);
-    let mat9 = round( mat[9]);
-    //mat[13] = round( mat[13]);
+    mat[4] = ((mat[4] * 1000)|0) / 1000;
+    mat[5] = ((mat[5] * 1000)|0) / 1000;
+    mat[6] = ((mat[6] * 1000)|0) / 1000;
+    mat[7] = ((mat[7] * 1000)|0) / 1000;
 
-    let mat2 = round( mat[2]);
-    let mat6 = round( mat[6]);
-    let mat10 = round( mat[10]);
-    //mat[14] = round( mat[14]);
-
-    let mat3 = round( mat[3]);
-    let mat7 = round( mat[7]);
-    let mat11 = round( mat[11]);
-    //mat[15] = round( mat[15]);
-    return [mat0,mat1,mat2,mat3,mat4,mat5,mat6,mat7,mat8,mat9,mat10,mat11];
+    mat[8] = ((mat[8] * 1000)|0) / 1000;
+    mat[9] = ((mat[9] * 1000)|0) / 1000;
+    mat[10] = ((mat[10] * 1000)|0) / 1000;
+    mat[11] = ((mat[11] * 1000)|0) / 1000;
 }
 
 export function matIdentity(){
@@ -197,8 +191,10 @@ export function matPers(z) {
 }
 export function matCamera(camPos,lookat,up) {
         //カメラのローカル軸座標を求める(正規直交ベクトル)
-        let z = culVecNormalize(vecMinus(lookat,camPos));
-        let x = culVecNormalize(culVecCross(up, z));
+        let z = vecMinus(lookat,camPos);
+        culVecNormalize(z);
+        let x = culVecCross(up, z)
+        culVecNormalize(x);
         let y = culVecCross(z, x);
         return [x[0], x[1], x[2], (x[0] * -camPos[0] + x[1] * -camPos[1] + x[2] * -camPos[2]),
                 y[0], y[1], y[2], (y[0] * -camPos[0] + y[1] * -camPos[1] + y[2] * -camPos[2]),
