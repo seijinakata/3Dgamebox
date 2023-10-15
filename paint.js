@@ -169,10 +169,11 @@ function swap(a,b){
 	a[2] = b[2];
 	b[2] = tmpZ;
 }
-export function sort_index(t,i){
-    if(t[0][i]>t[1][i])swap(t[0],t[1]);
-    if(t[1][i]>t[2][i])swap(t[1],t[2]);
-    if(t[0][i]>t[1][i])swap(t[0],t[1]);
+//sortするのはY座標のみ
+export function sort_Yindex(t){
+    if(t[0][1]>t[1][1])swap(t[0],t[1]);
+    if(t[1][1]>t[2][1])swap(t[1],t[2]);
+    if(t[0][1]>t[1][1])swap(t[0],t[1]);
 }
 export function branch(a,b,Y){
     let  t = (Y-a[1])/(b[1]-a[1]);
@@ -526,7 +527,8 @@ export function triangleRasterize(buffer,bufferFrame,z,r,g,b,a,screen_size_h,scr
 //lengthが高さ、length[0]が横
 export function triangleToShadowBuffer(zBuffering,vertex_list,screen_size_h,screen_size_w)
 {
-	sort_index(vertex_list,1);//ys
+	//sortするのはY座標のみ
+	sort_Yindex(vertex_list);//ys
 	let pt = vertex_list[0];
 	let pm = vertex_list[1];
 	let pb = vertex_list[2];
@@ -564,7 +566,7 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         let sr = setVector2(pt[position_X],pt[position_Z]);
 		XRound(sr);
 		if(triangleTop<0){
-			let offset = -1 * triangleTop;
+			let offset = -triangleTop;
 			sl[0] += (offset * dl[0]);
 			sl[1] += (offset * dl[1]);
 			sr[0] += (offset * dr[0]);
@@ -597,7 +599,7 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         let sr = setVector2(pr[0],pr[2]);
 		XRound(sr);
 		if(mid<0){
-			let offset = -1 * mid;
+			let offset = -mid;
 			sl[0] += (offset * dl[0]);
 			sl[1] += (offset * dl[1]);
 			sr[0] += (offset * dr[0]);
@@ -619,7 +621,7 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 
 function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ){
 
-	//if(l<0)l=0;
+
 	let zStep = endZ - startZ;
 	let xStep = endX - startX;
 
@@ -672,7 +674,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
         let sr = setVector2(pt[position_X],pt[position_Z]);
 		XRound(sr);
 		if(triangleTop<0){
-			let offset = -1 * triangleTop;
+			let offset = -triangleTop;
 			sl[0] += (offset * dl[0]);
 			sl[1] += (offset * dl[1]);
 			sr[0] += (offset * dr[0]);
@@ -705,7 +707,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
         let sr = setVector2(pr[0],pr[2]);
 		XRound(sr);
 		if(mid<0){
-			let offset = -1 * mid;
+			let offset = -mid;
 			sl[0] += (offset * dl[0]);
 			sl[1] += (offset * dl[1]);
 			sr[0] += (offset * dr[0]);
@@ -744,7 +746,7 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 	let i = startX;
 	//Xが０未満でのｚ値の加算
 	if(startX<0){
-		let offset = -1 * startX;
+		let offset = -startX;
 		startZ += (offset * dz);
 		i = 0;
 	}
@@ -758,10 +760,14 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 				//let selectOrgy = startX * iA[2] + y * iA[3]/* アフィン後の座標に対応した元画像の座標 */
 				//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
 
-				selectOrgy |= 0;/* 最近傍補間した元画像の座標 */
-				/* 元画像をはみ出る画素の場合ラスタライズをはじく */
-				if(selectOrgy > imageData[Image_Height]-1 || selectOrgy < 0){
-					continue;
+				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
+				if(selectOrgy > imageData[Image_Height]-1){
+					selectOrgy = imageData[Image_Height]-1;
+				}else if(selectOrgy < 0){
+					selectOrgy = 0;
+				}else{
+					/* 最近傍補間した元画像の座標 */
+					selectOrgy |= 0;
 				}				
 
 				/* 元画像をはみ出る画素の場合ははみ出る前のピクセルを詰める */
@@ -778,10 +784,14 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 				//let selectOrgx = startX * iA[0] + y * iA[1]/* アフィン後の座標に対応した元画像の座標 */
 				//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
 
-				selectOrgx |= 0; /* 最近傍補間した元画像の座標 */
-				/* 元画像をはみ出る画素の場合ラスタライズをはじく */
-				if(selectOrgx > imageData[Image_Width]-1 || selectOrgx < 0){
-					continue;
+				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
+				if(selectOrgx > imageData[Image_Width]-1){
+					selectOrgx = imageData[Image_Width]-1;
+				}else if(selectOrgx < 0){
+					selectOrgx = 0;
+				}else{
+					/* 最近傍補間した元画像の座標 */
+					selectOrgx |= 0;
 				}				
 				
 				/*
@@ -884,7 +894,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
         let sr = setVector2(pt[position_X],pt[position_Z]);
 		XRound(sr);
 		if(triangleTop<0){
-			let offset = -1 * triangleTop;
+			let offset = -triangleTop;
 			sl[0] += (offset * dl[0]);
 			sl[1] += (offset * dl[1]);
 			sr[0] += (offset * dr[0]);
@@ -917,7 +927,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
         let sr = setVector2(pr[0],pr[2]);
 		XRound(sr);
 		if(mid<0){
-			let offset = -1 * mid;
+			let offset = -mid;
 			sl[0] += (offset * dl[0]);
 			sl[1] += (offset * dl[1]);
 			sr[0] += (offset * dr[0]);
@@ -957,7 +967,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,t
 	//Xが０未満でのｚ値の加算
 	let i = startX;
 	if(startX<0){
-		let offset = -1 * startX;
+		let offset = -startX;
 		startZ += (offset * dz);
 		i = 0;
 	}
@@ -971,11 +981,15 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,t
 			//let selectOrgy = startX * iA[2] + y * iA[3]/* アフィン後の座標に対応した元画像の座標 */
 			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
 
-			selectOrgy |= 0;/* 最近傍補間した元画像の座標 */
-			/* 元画像をはみ出る画素の場合ラスタライズをはじく */
-			if(selectOrgy > imageData[Image_Height]-1 || selectOrgy < 0){
-				continue;
-			}				
+			/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
+			if(selectOrgy > imageData[Image_Height]-1){
+				selectOrgy = imageData[Image_Height]-1;
+			}else if(selectOrgy < 0){
+				selectOrgy = 0;
+			}else{
+				/* 最近傍補間した元画像の座標 */
+				selectOrgy |= 0;
+			}			
 			
 			/*
 			if(selectOrgy >=  textureVMax){
@@ -990,11 +1004,15 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,t
 			//let selectOrgx = startX * iA[0] + y * iA[1]/* アフィン後の座標に対応した元画像の座標 */
 			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
 			
-			selectOrgx |= 0; /* 最近傍補間した元画像の座標 */
-			/* 元画像をはみ出る画素の場合ラスタライズをはじく */
-			if(selectOrgx > imageData[Image_Width]-1 || selectOrgx < 0){
-				continue;
-			}				
+			/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
+			if(selectOrgx > imageData[Image_Width]-1){
+				selectOrgx = imageData[Image_Width]-1;
+			}else if(selectOrgx < 0){
+				selectOrgx = 0;
+			}else{
+				/* 最近傍補間した元画像の座標 */
+				selectOrgx |= 0;
+			}	
 
 			/*
 			if(selectOrgx >= textureUMax){
@@ -1270,7 +1288,8 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 	let e = vertex_list[0][0] - (a * mi[2] + c * mi[3]);
 	let tmpOrgyef =  - (e * iA[2]) - f * iA[3];
 	let tmpOrgxef =  - (e * iA[0]) - f * iA[1];
-	sort_index(vertex_list,1);//ys
+	//sortするのはY座標のみ
+	sort_Yindex(vertex_list);
 	let pt = vertex_list[0];
 	let pm = vertex_list[1];
 	let pb = vertex_list[2];
