@@ -2032,10 +2032,8 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         //camera
         //let pixelVector3 = setVector3(pixelX,pixelY,pixelZ);
         //inverseViewPort and inverseProjection
-        let shadowPixelY = shadowViewPortY[pixelY] * pixelZ;
-        let shadowPixelX = shadowViewPortX[pixelX] * pixelZ;
-        shadowPixelY = round(shadowPixelY);
-        shadowPixelX = round(shadowPixelX);
+        let shadowPixelY = round(shadowViewPortY[pixelY] * pixelZ);
+        let shadowPixelX = round(shadowViewPortX[pixelX] * pixelZ);
         /*
         //inverseViewPort
         shadowPixelX /= screen_size_w;

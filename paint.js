@@ -557,14 +557,10 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
-		XRound(dl);
         let dr = delta_xz(er);
-		XRound(dr);
         //start position
         let sl = setVector2(pt[position_X],pt[position_Z]);
-		XRound(sl);
         let sr = setVector2(pt[position_X],pt[position_Z]);
-		XRound(sr);
 		if(triangleTop<0){
 			let offset = -triangleTop;
 			sl[0] += (offset * dl[0]);
@@ -573,6 +569,7 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 			sr[1] += (offset * dr[1]);
 			triangleTop = 0;
 		}
+		
         for(;triangleTop<mid;triangleTop++){
 			//Y座標ごとの切片
 			let startX = top_int(sl[0]);
@@ -581,7 +578,8 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 			let endZ = sr[1];
 			scan_ShadowHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ);					
             vec2Plus(sl,dl);//
-            vec2Plus(sr,dr);//			
+            vec2Plus(sr,dr);//
+			
 		}
     }
     if(mid<screen_size_h){//lower
@@ -590,14 +588,10 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 		let el = vecMinus(pb,pl);//pl->pb
 		let er = vecMinus(pb,pr);//pr->pb
         let dl = delta_xz(el);
-		XRound(dl);
         let dr = delta_xz(er);
-		XRound(dr);
         //start position
         let sl = setVector2(pl[0],pl[2]);
-		XRound(sl);
         let sr = setVector2(pr[0],pr[2]);
-		XRound(sr);
 		if(mid<0){
 			let offset = -mid;
 			sl[0] += (offset * dl[0]);
@@ -665,14 +659,10 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
-		XRound(dl);
         let dr = delta_xz(er);
-		XRound(dr);
         //start position
         let sl = setVector2(pt[position_X],pt[position_Z]);
-		XRound(sl);
         let sr = setVector2(pt[position_X],pt[position_Z]);
-		XRound(sr);
 		if(triangleTop<0){
 			let offset = -triangleTop;
 			sl[0] += (offset * dl[0]);
@@ -698,14 +688,10 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 		let el = vecMinus(pb,pl);//pl->pb
 		let er = vecMinus(pb,pr);//pr->pb
         let dl = delta_xz(el);
-		XRound(dl);
         let dr = delta_xz(er);
-		XRound(dr);
         //start position
         let sl = setVector2(pl[0],pl[2]);
-		XRound(sl);
         let sr = setVector2(pr[0],pr[2]);
-		XRound(sr);
 		if(mid<0){
 			let offset = -mid;
 			sl[0] += (offset * dl[0]);
@@ -753,6 +739,12 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,startX,endX,startZ
 	for(;i<=endX;i++){
 		let z = zBufferingY[i][0];
 			if(z>startZ){
+
+				// if(tmpOrgy == null){
+				// 	tmpOrgy = y * iA[3] + tmpOrgyef;
+				// 	tmpOrgx = y * iA[1] + tmpOrgxef;
+				// }
+
 				/* 元画像における縦方向座標を計算 */
 				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
 				let selectOrgy = tmpOrgy + i * iA[2];
@@ -885,14 +877,10 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
         let el = vecMinus(pl,pt);//pt->pl
         let er = vecMinus(pr,pt);//pt->pr
         let dl = delta_xz(el);
-		XRound(dl);
         let dr = delta_xz(er);
-		XRound(dr);
         //start position
         let sl = setVector2(pt[position_X],pt[position_Z]);
-		XRound(sl);
         let sr = setVector2(pt[position_X],pt[position_Z]);
-		XRound(sr);
 		if(triangleTop<0){
 			let offset = -triangleTop;
 			sl[0] += (offset * dl[0]);
@@ -918,14 +906,10 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 		let el = vecMinus(pb,pl);//pl->pb
 		let er = vecMinus(pb,pr);//pr->pb
         let dl = delta_xz(el);
-		XRound(dl);
         let dr = delta_xz(er);
-		XRound(dr);
         //start position
         let sl = setVector2(pl[0],pl[2]);
-		XRound(sl);
         let sr = setVector2(pr[0],pr[2]);
-		XRound(sr);
 		if(mid<0){
 			let offset = -mid;
 			sl[0] += (offset * dl[0]);
@@ -974,6 +958,12 @@ function scan_horizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,iA,t
 	for(;i<=endX;i++){
 		let z = zBufferingY[i][0];
 		if(z>startZ){
+
+			// if(tmpOrgy == null){
+			// 	tmpOrgy = y * iA[3] + tmpOrgyef;
+			// 	tmpOrgx = y * iA[1] + tmpOrgxef;
+			// }
+
 			/* 元画像における縦方向座標を計算 */
 			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
 			let selectOrgy = tmpOrgy + i * iA[2];

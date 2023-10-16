@@ -138,11 +138,8 @@ export function matMul(m1,m2) {
 //計算後新しく生成する
 export function matVecMul(m,v){
     let tmp0 = m[0]*v[0] + m[1]*v[1] + m[2]*v[2] + m[3];
-    tmp0 = round(tmp0);
     let tmp1 = m[4]*v[0] + m[5]*v[1] + m[6]*v[2] + m[7];
-    tmp1 = round(tmp1);
     let tmp2 = m[8]*v[0] + m[9]*v[1] + m[10]*v[2] + m[11];
-    tmp2 = round(tmp2);
     /*
     //projとの掛け算
     if (m[14] < 0) {//応用がきかないが、これでproj matと判断
@@ -156,11 +153,8 @@ export function matVecMul(m,v){
 //直接計算する
 export function protMatVecMul(m,v){
         let x = m[0]*v[0] + m[1]*v[1] + m[2]*v[2] + m[3];
-        x = round(x);
         let y = m[4]*v[0] + m[5]*v[1] + m[6]*v[2] + m[7];
-        y = round(y);
         let z = m[8]*v[0] + m[9]*v[1] + m[10]*v[2] + m[11];
-        z = round(z);
         v[0] = x;
         v[1] = y;
         v[2] = z;
