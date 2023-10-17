@@ -1263,7 +1263,7 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 	//逆行列のad-bc
 	let det = a * d - c * b;
 	if(det == 0) {
-		det = ((a+1) * d) - c * b;
+		return;
 	}
 	let  inv_det = 1.0/det;
 

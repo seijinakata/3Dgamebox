@@ -230,7 +230,7 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
                 }else{
                   let tempInt = parseFloat(char);
                   //vertsを丸める。影響のない小数点は切り捨てる。
-                  tempInt = round(tempInt);
+                  tempInt = tempInt;
                   verts.push(tempInt);
                   char = [];
                   if(verts.length %3 == 0){
@@ -834,7 +834,9 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector){
 
   polygonElement[poly_Cross_World_Vector3] = culVecCross(Va,Vb);
   culVecNormalize(polygonElement[poly_Cross_World_Vector3]);
-  XYRound(polygonElement[poly_Cross_World_Vector3]);
+  polygonElement[poly_Cross_World_Vector3][0] = ((polygonElement[poly_Cross_World_Vector3][0] * 100)|0) / 100;
+  polygonElement[poly_Cross_World_Vector3][1] = ((polygonElement[poly_Cross_World_Vector3][1] * 100)|0) / 100;
+
   return polygonElement;
 }
 
@@ -1615,6 +1617,9 @@ const screen_size_w = SCREEN_SIZE_W;
 const invScreen_size_h = 1/screen_size_h;
 const invScreen_size_w = 1/screen_size_w;
 
+const screen_size_h_Harf = 0.5*screen_size_h;
+const screen_size_w_Harf = 0.5*screen_size_w;
+
 const RED = 0;
 const GREEN = 1;
 const BLUE = 2;
@@ -1640,7 +1645,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
     basearray[pixelY][pixelX] = baseRGBA;
     //inverseViewPort
     let tmpShadowViewPortX = (pixelX*invScreen_size_w  - 0.5);
-    shadowViewPortX.push(tmpShadowViewPortX);   
+    shadowViewPortX.push(tmpShadowViewPortX);
   }
 }
 //zBufferInit
@@ -1956,7 +1961,8 @@ setZmaxShdowBufferInit(shadowMap,screen_size_h,screen_size_w);
 setZmaxRenderBuffer(zBuffering,screen_size_h,screen_size_w);
 let sunVec = vecMinus(sunPos,sunLookat);
 culVecNormalize(sunVec);
-XYRound(sunVec);
+sunVec[0] = ((sunVec[0] * 100)|0) / 100;
+sunVec[1] = ((sunVec[1] * 100)|0) / 100;
 //camera
 let projectedObjectsLength  = projectedObjects.length;
 for(let j=0;j<projectedObjectsLength;j++){
@@ -1970,7 +1976,7 @@ for(let j=0;j<projectedObjectsLength;j++){
     let triangleXMax = Math.max(currentVerts[0][0],currentVerts[1][0],currentVerts[2][0]);
     let triangleYMin = Math.min(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
     let triangleYMax = Math.max(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
-    if (triangleYMax<0 || triangleYMin >= screen_size_h || triangleXMax<0 || triangleXMin >= screen_size_w) continue;
+    if (triangleXMax<0 || triangleXMin >= screen_size_w && triangleYMin >= screen_size_h || triangleYMax<0 ) continue;
 	  //-の方がこちらに近くなる座標軸だから
 	  if(currentProjectedObject[obj_BackCulling_Flag] == true){
       if(currentProjectedObject[poly_List][projectedPolyNum][cross_Z]<0){
@@ -2051,7 +2057,6 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         //view
         //shadowMatrixmul
 
-        
         let shadowMatrixPixelY = shadowMat[4]*shadowPixelX + shadowMat[5]*shadowPixelY + shadowMat[6]*pixelZ + shadowMat[7];
         let shadowMatrixPixelX = shadowMat[0]*shadowPixelX + shadowMat[1]*shadowPixelY + shadowMat[2]*pixelZ + shadowMat[3];
         pixelZ = shadowMat[8]*shadowPixelX + shadowMat[9]*shadowPixelY + shadowMat[10]*pixelZ + shadowMat[11];
@@ -2071,6 +2076,8 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         shadowMatrixPixelY |= 0;
         shadowMatrixPixelX |= 0;  
         /*代入あり
+
+        /*代入あり
         shadowMatrixPixelY = ((shadowMatrixPixelY  + 0.5)*screen_size_h)|0;
         shadowMatrixPixelX = ((shadowMatrixPixelX  + 0.5)*screen_size_w)|0;
         */
@@ -2084,8 +2091,8 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
           }
         }
         if(pixel[pixel_LightShadow_Flag] == true){
-          //ライトシミュレーション
-          let sunCosin = round(pixel[pixel_SunCosin]);
+          //ライトシミュレーション色はIntだから深い小数点演算は意味ない
+          let sunCosin = ((pixel[pixel_SunCosin] * 100)|0) / 100;
           pixelR *= sunCosin;
           pixelG *= sunCosin;
           pixelB *= sunCosin; 
@@ -2099,7 +2106,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         myImageDataDataImage[base[GREEN]] = pixel[pixel_G];  // Green
         myImageDataDataImage[base[BLUE]] = pixel[pixel_B]; // Blue
         //let pixela = pixel[4];
-        myImageDataDataImage[base[ALPHA]] = 255; // Alpha        
+        myImageDataDataImage[base[ALPHA]] = 255; // Alpha         
       }
     //dotPaint(j,i,getPixel.r,getPixel.g,getPixel.b,getPixel.a,ctx);    
     }else{
