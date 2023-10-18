@@ -175,6 +175,7 @@ export function sort_Yindex(t){
     if(t[1][1]>t[2][1])swap(t[1],t[2]);
     if(t[0][1]>t[1][1])swap(t[0],t[1]);
 }
+
 export function branch(a,b,Y){
     let  t = (Y-a[1])/(b[1]-a[1]);
     return setVector3(a[0]*(1-t)+b[0]*t,Y,a[2]*(1-t)+b[2]*t);
@@ -546,7 +547,7 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
   	//tmp[0]がpm[0]より大きい時の初期値
 	let pl = tmp;
 	let pr = pm;
-	if(tmp[position_X]>=pm[position_X]){
+	if(tmp[position_X]>pm[position_X]){
 		pl = pm;
 		pr = tmp;
 	}
@@ -648,7 +649,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 	//tmp[0]がpm[0]より大きい時の初期値
     let pl = tmp;
 	let pr = pm;
-	if(tmp[0]>=pm[0]){
+	if(tmp[0]>pm[0]){
         pl = pm;
         pr = tmp;
     }
@@ -866,7 +867,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 	//tmp[0]がpm[0]より大きい時の初期値
     let pl = tmp;
 	let pr = pm;
-	if(tmp[0]>=pm[0]){
+	if(tmp[0]>pm[0]){
         pl = pm;
         pr = tmp;
     }

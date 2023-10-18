@@ -1,4 +1,13 @@
-
+export function maxCul(t,i){
+	let tmpMax = t[0][i]
+    if(t[1][i]>tmpMax)tmpMax = t[1][i];
+    if(t[2][1]>tmpMax)tmpMax = t[2][i];
+}
+export function minCul(t,i){
+	let tmpMin = t[0][i]
+    if(t[1][i]<tmpMin)tmpMin = t[1][i];
+    if(t[2][1]<tmpMin)tmpMin = t[2][i];
+}
 export function round(orgValue){
     return ((orgValue * 1000)|0) / 1000;
 }

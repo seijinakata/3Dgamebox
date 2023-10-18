@@ -1,6 +1,6 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
-import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,NewtonMethod, cul3dVecLength, XYRound} from './vector.js';
+import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul} from './vector.js';
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
@@ -1020,7 +1020,6 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
     worldVerts.push(verts);
     let viewZ = matMulVertsZCamera(viewMatrix,normalVerts);
     let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,shadowVerts);
-    protMatVecMul(shadowViewMatrix,shadowVerts);
     if(viewZ > 0){
       let projectionMatrix =  matPers(viewZ);
       normalVerts = matMulVertsXYZCamera(viewMatrix,normalVerts,viewZ);
@@ -1056,7 +1055,7 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   } 
 
   //ｚソート
-  projectedObjects.push(makeProjectedObject(object,poly));
+  objectZsort(projectedObjects,object,poly);
   objectShadowZsort(shadowPprojectedObjects,object,shadowPoly);
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
@@ -1071,43 +1070,35 @@ function objectZsort(projectedObjects,object,poly){
     let projectedObjectLength = projectedObjects.length;
     if(projectedObjectLength == 0){
       projectedObjects[0] = makeProjectedObject(object,poly);
-    }else{
-      let loopEndFlag = false;
-      for(let j=0;j<projectedObjectLength;j++){
-        if(projectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>poly[0][projected_Verts][0][position_Z]){
-          for(let i=projectedObjectLength-1;j<=i;i--){
-            projectedObjects[i+1] = projectedObjects[i]
-          }
-          projectedObjects[j] = makeProjectedObject(object,poly);
-          loopEndFlag = true;
-          break;
+      return;
+    }
+    for(let j=0;j<projectedObjectLength;j++){
+      if(projectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>poly[0][projected_Verts][0][position_Z]){
+        for(let i=projectedObjectLength-1;j<=i;i--){
+          projectedObjects[i+1] = projectedObjects[i]
         }
-      }
-      if(loopEndFlag == false){
-        projectedObjects[projectedObjectLength] = makeProjectedObject(object,poly);
+        projectedObjects[j] = makeProjectedObject(object,poly);
+        return;
       }
     }
+    projectedObjects[projectedObjectLength] = makeProjectedObject(object,poly);
 }
 function objectShadowZsort(shadowPprojectedObjects,object,shadowPoly){
   let shadowPprojectedObjectsLength = shadowPprojectedObjects.length;
   if(shadowPprojectedObjectsLength == 0){
     shadowPprojectedObjects[0] = makeShaddowProjectedObject(object,shadowPoly);
-  }else{
-    let loopEndFlag = false;
-    for(let j=0;j<shadowPprojectedObjectsLength;j++){
-      if(shadowPprojectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>shadowPoly[0][projected_Verts][0][position_Z]){
-        for(let i=shadowPprojectedObjectsLength-1;j<=i;i--){
-          shadowPprojectedObjects[i+1] = shadowPprojectedObjects[i]
-        }
-        shadowPprojectedObjects[j] = makeShaddowProjectedObject(object,shadowPoly);
-        loopEndFlag = true;
-        break;
+    return;
+  }
+  for(let j=0;j<shadowPprojectedObjectsLength;j++){
+    if(shadowPprojectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>shadowPoly[0][projected_Verts][0][position_Z]){
+      for(let i=shadowPprojectedObjectsLength-1;j<=i;i--){
+        shadowPprojectedObjects[i+1] = shadowPprojectedObjects[i]
       }
-    }
-    if(loopEndFlag == false){
-      shadowPprojectedObjects[shadowPprojectedObjectsLength] = makeShaddowProjectedObject(object,shadowPoly);
+      shadowPprojectedObjects[j] = makeShaddowProjectedObject(object,shadowPoly);
+      return;
     }
   }
+  shadowPprojectedObjects[shadowPprojectedObjectsLength] = makeShaddowProjectedObject(object,shadowPoly);
 }
 //ループに入る前に生成 z = 99999;pushを使わないようにするため
 function renderBufferInit(buffer,pixelY,pixelX){
@@ -1972,11 +1963,11 @@ for(let j=0;j<projectedObjectsLength;j++){
     let currentVerts = currentProjectedObject[poly_List][projectedPolyNum][projected_Verts];
     //各点のZ座標がこれより下なら作画しない。x,yが画面外なら作画しない。
     if (currentVerts[0][2] <= 0.0 || currentVerts[1][2] <= 0.0 || currentVerts[2][2] <= 0.0 ) continue;
-    let triangleXMin = Math.min(currentVerts[0][0],currentVerts[1][0],currentVerts[2][0]);
-    let triangleXMax = Math.max(currentVerts[0][0],currentVerts[1][0],currentVerts[2][0]);
-    let triangleYMin = Math.min(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
-    let triangleYMax = Math.max(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
-    if (triangleXMax<0 || triangleXMin >= screen_size_w && triangleYMin >= screen_size_h || triangleYMax<0 ) continue;
+    let triangleXMin = minCul(currentVerts,0);
+    let triangleXMax = maxCul(currentVerts,0);
+    let triangleYMin = minCul(currentVerts,1);
+    let triangleYMax = maxCul(currentVerts,1);
+    if (triangleYMax<0 || triangleYMin >= screen_size_h || triangleXMax<0 || triangleXMin >= screen_size_w) continue;
 	  //-の方がこちらに近くなる座標軸だから
 	  if(currentProjectedObject[obj_BackCulling_Flag] == true){
       if(currentProjectedObject[poly_List][projectedPolyNum][cross_Z]<0){
@@ -2003,10 +1994,10 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
     let currentVerts = currentshadowProjectedObject[poly_List][projectedPolyNum][projected_Verts];
     //各点のZ座標がこれより下なら作画しない。x,yが画面外なら作画しない。
     if (currentVerts[0][2] <= 0.0 || currentVerts[1][2] <= 0.0 || currentVerts[2][2] <= 0.0 ) continue;
-    let triangleXMin = Math.min(currentVerts[0][0],currentVerts[1][0],currentVerts[2][0]);
-    let triangleXMax = Math.max(currentVerts[0][0],currentVerts[1][0],currentVerts[2][0]);
-    let triangleYMin = Math.min(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
-    let triangleYMax = Math.max(currentVerts[0][1],currentVerts[1][1],currentVerts[2][1]);
+    let triangleXMin = minCul(currentVerts,0);
+    let triangleXMax = maxCul(currentVerts,0);
+    let triangleYMin = minCul(currentVerts,1);
+    let triangleYMax = maxCul(currentVerts,1);
     if (triangleYMax<0 || triangleYMin >= screen_size_h || triangleXMax<0 || triangleXMin >= screen_size_w) continue;
 	  //-の方がこちらに近くなる座標軸だから
 	  if(currentshadowProjectedObject[obj_BackCulling_Flag] == true){
