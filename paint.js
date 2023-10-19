@@ -570,11 +570,13 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 			sr[1] += (offset * dr[1]);
 			triangleTop = 0;
 		}
-		
         for(;triangleTop<mid;triangleTop++){
 			//Y座標ごとの切片
 			let startX = top_int(sl[0]);
 			let endX = top_int(sr[0]);
+			//endX,startXが画面外でも増分では画面内に入ってくる。
+			if(endX<0 && dr[0]<=0) break;
+			if(startX>screen_size_w && dl[0]>=0) break;
 			let startZ = sl[1];
 			let endZ = sr[1];
 			scan_ShadowHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ);					
@@ -605,6 +607,9 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 			//Y座標ごとの切片
 			let startX = top_int(sl[0]);
 			let endX = top_int(sr[0]);
+			//endX,startXが画面外でも増分では画面内に入ってくる。
+			if(endX<0 && dr[0]<=0) break;
+			if(startX>screen_size_w && dl[0]>=0) break;
 			let startZ = sl[1];
 			let endZ = sr[1];
 			scan_ShadowHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ);				
@@ -676,6 +681,9 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 			//Y座標ごとの切片
 			let startX = top_int(sl[0]);
 			let endX = top_int(sr[0]);
+			//endX,startXが画面外でも増分では画面内に入ってくる。
+			if(endX<0 && dr[0]<=0) break;
+			if(startX>screen_size_w && dl[0]>=0) break;
 			let startZ = sl[1];
 			let endZ = sr[1];
 			scan_horizontalNoSunCosin(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData);					
@@ -705,6 +713,9 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 			//Y座標ごとの切片
 			let startX = top_int(sl[0]);
 			let endX = top_int(sr[0]);
+			//endX,startXが画面外でも増分では画面内に入ってくる。
+			if(endX<0 && dr[0]<=0) break;
+			if(startX>screen_size_w && dl[0]>=0) break;
 			let startZ = sl[1];
 			let endZ = sr[1];
 			scan_horizontalNoSunCosin(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData);								
@@ -894,6 +905,9 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 			//Y座標ごとの切片
 			let startX = top_int(sl[0]);
 			let endX = top_int(sr[0]);
+			//endX,startXが画面外でも増分では画面内に入ってくる。
+			if(endX<0 && dr[0]<=0) break;
+			if(startX>screen_size_w && dl[0]>=0) break;
 			let startZ = sl[1];
 			let endZ = sr[1];
 			scan_horizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin);				
@@ -923,6 +937,9 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 			//Y座標ごとの切片
 			let startX = top_int(sl[0]);
 			let endX = top_int(sr[0]);
+			//endX,startXが画面外でも増分では画面内に入ってくる。
+			if(endX<0 && dr[0]<=0) break;
+			if(startX>screen_size_w && dl[0]>=0) break;
 			let startZ = sl[1];
 			let endZ = sr[1];
 			scan_horizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin);				

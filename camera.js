@@ -1608,9 +1608,6 @@ const screen_size_w = SCREEN_SIZE_W;
 const invScreen_size_h = 1/screen_size_h;
 const invScreen_size_w = 1/screen_size_w;
 
-const screen_size_h_Harf = 0.5*screen_size_h;
-const screen_size_w_Harf = 0.5*screen_size_w;
-
 const RED = 0;
 const GREEN = 1;
 const BLUE = 2;
@@ -1650,7 +1647,7 @@ let myImageDataDataImage = myImageData.data;
 let sands = [];
 let steves = [];
 
-let mainLoopId = setInterval(function(){
+setInterval(function(){
 //dataLoad
 if(dataLoad == false){
   if(skyPixelImage.length != 0 && skyPixelImageLoad == false){
