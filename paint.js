@@ -677,24 +677,26 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 			sr[1] += (offset * dr[1]);
 			triangleTop = 0;
 		}
-		let tmpOrgy = triangleTop * iA[3] + tmpOrgyef;
-		let tmpOrgx = triangleTop * iA[1] + tmpOrgxef;
-		let iA_0 = iA[0];
-		let iA_2 = iA[2];
-        for(;triangleTop<mid;triangleTop++){
-			//endX,startXが画面外でも増分では画面内に入ってくる。
-			if(sr[0]<0 && dr[0]<=0) break;
-			if(sl[0]>screen_size_w && dl[0]>=0) break;
-			//Y座標ごとの切片
-			let startX = top_int(sl[0]);
-			let endX = top_int(sr[0]);
-			let startZ = sl[1];
-			let endZ = sr[1];
-			scan_horizontalNoSunCosin(zBuffering,screen_size_w,triangleTop,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,iA_0,iA_2,imageData);
-			tmpOrgy += iA[3];
-			tmpOrgx += iA[1];				
-            vec2Plus(sl,dl);//
-            vec2Plus(sr,dr);//			
+		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
+			let tmpOrgy = triangleTop * iA[3] + tmpOrgyef;
+			let tmpOrgx = triangleTop * iA[1] + tmpOrgxef;
+			let iA_0 = iA[0];
+			let iA_2 = iA[2];
+			for(;triangleTop<mid;triangleTop++){
+				//Y座標ごとの切片
+				let startX = top_int(sl[0]);
+				let endX = top_int(sr[0]);
+				let startZ = sl[1];
+				let endZ = sr[1];
+				scan_horizontalNoSunCosin(zBuffering,screen_size_w,triangleTop,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,iA_0,iA_2,imageData);
+				tmpOrgy += iA[3];
+				tmpOrgx += iA[1];				
+				vec2Plus(sl,dl);//
+				vec2Plus(sr,dr);//
+				//endX,startXが画面外でも増分では画面内に入ってくる。
+				if(sr[0]<0 && dr[0]<=0) break;
+				if(sl[0]>screen_size_w && dl[0]>=0) break;
+			}
 		}
     }
     if(mid<screen_size_h){//lower
@@ -715,24 +717,26 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 			sr[1] += (offset * dr[1]);
 			mid = 0;
 		}
-		let tmpOrgy = mid * iA[3] + tmpOrgyef;
-		let tmpOrgx = mid * iA[1] + tmpOrgxef;
-		let iA_0 = iA[0];
-		let iA_2 = iA[2];
-        for(;mid<triangleBtm;mid++){
-			//endX,startXが画面外でも増分では画面内に入ってくる。
-			if(sr[0]<0 && dr[0]<=0) break;
-			if(sl[0]>screen_size_w && dl[0]>=0) break;
-			//Y座標ごとの切片
-			let startX = top_int(sl[0]);
-			let endX = top_int(sr[0]);
-			let startZ = sl[1];
-			let endZ = sr[1];
-			scan_horizontalNoSunCosin(zBuffering,screen_size_w,mid,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,iA_0,iA_2,imageData);
-			tmpOrgy += iA[3];
-			tmpOrgx += iA[1];							
-            vec2Plus(sl,dl);//
-            vec2Plus(sr,dr);//
+		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
+			let tmpOrgy = mid * iA[3] + tmpOrgyef;
+			let tmpOrgx = mid * iA[1] + tmpOrgxef;
+			let iA_0 = iA[0];
+			let iA_2 = iA[2];
+			for(;mid<triangleBtm;mid++){
+				//Y座標ごとの切片
+				let startX = top_int(sl[0]);
+				let endX = top_int(sr[0]);
+				let startZ = sl[1];
+				let endZ = sr[1];
+				scan_horizontalNoSunCosin(zBuffering,screen_size_w,mid,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,iA_0,iA_2,imageData);
+				tmpOrgy += iA[3];
+				tmpOrgx += iA[1];							
+				vec2Plus(sl,dl);//
+				vec2Plus(sr,dr);//
+				//endX,startXが画面外でも増分では画面内に入ってくる。
+				if(sr[0]<0 && dr[0]<=0) break;
+				if(sl[0]>screen_size_w && dl[0]>=0) break;
+			}	
 		}
     }
 }
@@ -807,61 +811,8 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 			}
 		startZ+=dz;	
 	}
-	// do{
-	// 	if(startX>=0){
-	// 		let z = zBufferingY[startX][0];
-	// 		if(z>startZ){
-	// 			/* 元画像における縦方向座標を計算 */
-	// 			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-	// 			let selectOrgy = tmpOrgy + startX * iA[2];
-				
-	// 			//let selectOrgy = startX * iA[2] + y * iA[3]/* アフィン後の座標に対応した元画像の座標 */
-	// 			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-	// 			selectOrgy |= 0;/* 最近傍補間した元画像の座標 */
-	// 			if(selectOrgy > imageData[Image_Height]-1){
-	// 				selectOrgy = imageData[Image_Height]-1;
-	// 			}
-	// 			if(selectOrgy < 0){
-	// 				selectOrgy = 0
-	// 			}
-	// 			/* 元画像をはみ出る画素の場合ははみ出る前のピクセルを詰める */
-	// 			/*
-	// 			if(selectOrgy >=  textureVMax){
-	// 				//画像配列は０から始まってるからheight,widthともに-1
-	// 				selectOrgy =  textureVMax - 1;
-	// 			}if(selectOrgy <= textureVMin){
-	// 				selectOrgy = textureVMin;
-	// 			}*/
-	// 			/* 元画像における横方向座標を計算 */
-	// 			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-	// 			let selectOrgx = tmpOrgx + startX * iA[0];
-	// 			//let selectOrgx = startX * iA[0] + y * iA[1]/* アフィン後の座標に対応した元画像の座標 */
-	// 			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-	// 			selectOrgx |= 0; /* 最近傍補間した元画像の座標 */
-	// 			/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
-	// 			if(selectOrgx > imageData[Image_Width]-1){
-	// 				selectOrgx = imageData[Image_Width]-1;
-	// 			}
-	// 			if(selectOrgx < 0){
-	// 				selectOrgx = 0
-	// 			}
-	// 			/*
-	// 			if(selectOrgx >= textureUMax){
-	// 				//画像配列は０から始まってるからheight,widthともに-1
-	// 				selectOrgx = textureUMax -1;
-	// 			}if(selectOrgx <= textureUMin){
-	// 				selectOrgx = textureUMin
-	// 			}*/
-	// 			//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
-	// 			let imageDataRGBA = imageData[TwoDimensionsimageData][selectOrgy][selectOrgx];
-	// 			zBufferingY[startX] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA.r,imageDataRGBA.g,
-	// 				imageDataRGBA.b,imageDataRGBA.a,false,false);
-	// 		}
-	// 	}
-	// 	startZ+=dz;
-	// 	startX++;
-	// }while(startX<endX);
 }
+
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
 function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin){
 
@@ -895,24 +846,26 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 			sr[1] += (offset * dr[1]);
 			triangleTop = 0;
 		}
-		let tmpOrgy = triangleTop * iA[3] + tmpOrgyef;
-		let tmpOrgx = triangleTop * iA[1] + tmpOrgxef;
-		let iA_0 = iA[0];
-		let iA_2 = iA[2];
-        for(;triangleTop<mid;triangleTop++){
-			//endX,startXが画面外でも増分では画面内に入ってくる。
-			if(sr[0]<0 && dr[0]<=0) break;
-			if(sl[0]>screen_size_w && dl[0]>=0) break;
-			//Y座標ごとの切片
-			let startX = top_int(sl[0]);
-			let endX = top_int(sr[0]);
-			let startZ = sl[1];
-			let endZ = sr[1];
-			scan_horizontal(zBuffering,screen_size_w,triangleTop,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,iA_0,iA_2,imageData,shadowFlag,lightShadowFlag,sunCosin);
-			tmpOrgy += iA[3];
-			tmpOrgx += iA[1];			
-            vec2Plus(sl,dl);//
-            vec2Plus(sr,dr);//			
+		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
+			let tmpOrgy = triangleTop * iA[3] + tmpOrgyef;
+			let tmpOrgx = triangleTop * iA[1] + tmpOrgxef;
+			let iA_0 = iA[0];
+			let iA_2 = iA[2];
+			for(;triangleTop<mid;triangleTop++){
+				//Y座標ごとの切片
+				let startX = top_int(sl[0]);
+				let endX = top_int(sr[0]);
+				let startZ = sl[1];
+				let endZ = sr[1];
+				scan_horizontal(zBuffering,screen_size_w,triangleTop,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,iA_0,iA_2,imageData,shadowFlag,lightShadowFlag,sunCosin);
+				tmpOrgy += iA[3];
+				tmpOrgx += iA[1];			
+				vec2Plus(sl,dl);//
+				vec2Plus(sr,dr);//
+				//endX,startXが画面外でも増分では画面内に入ってくる。
+				if(sr[0]<0 && dr[0]<=0) break;
+				if(sl[0]>screen_size_w && dl[0]>=0) break;	
+			}			
 		}
     }
     if(mid<screen_size_h){//lower
@@ -933,24 +886,26 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,iA,tmpOrg
 			sr[1] += (offset * dr[1]);
 			mid = 0;
 		}
-		let tmpOrgy = mid * iA[3] + tmpOrgyef;
-		let tmpOrgx = mid * iA[1] + tmpOrgxef;
-		let iA_0 = iA[0];
-		let iA_2 = iA[2];
-        for(;mid<triangleBtm;mid++){
-			//endX,startXが画面外でも増分では画面内に入ってくる。
-			if(sr[0]<0 && dr[0]<=0) break;
-			if(sl[0]>screen_size_w && dl[0]>=0) break;
-			//Y座標ごとの切片
-			let startX = top_int(sl[0]);
-			let endX = top_int(sr[0]);
-			let startZ = sl[1];
-			let endZ = sr[1];
-			scan_horizontal(zBuffering,screen_size_w,mid,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,iA_0,iA_2,imageData,shadowFlag,lightShadowFlag,sunCosin);
-			tmpOrgy += iA[3];
-			tmpOrgx += iA[1];			
-            vec2Plus(sl,dl);//
-            vec2Plus(sr,dr);//
+		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
+			let tmpOrgy = mid * iA[3] + tmpOrgyef;
+			let tmpOrgx = mid * iA[1] + tmpOrgxef;
+			let iA_0 = iA[0];
+			let iA_2 = iA[2];
+			for(;mid<triangleBtm;mid++){
+				//Y座標ごとの切片
+				let startX = top_int(sl[0]);
+				let endX = top_int(sr[0]);
+				let startZ = sl[1];
+				let endZ = sr[1];
+				scan_horizontal(zBuffering,screen_size_w,mid,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,iA_0,iA_2,imageData,shadowFlag,lightShadowFlag,sunCosin);
+				tmpOrgy += iA[3];
+				tmpOrgx += iA[1];			
+				vec2Plus(sl,dl);//
+				vec2Plus(sr,dr);//
+				//endX,startXが画面外でも増分では画面内に入ってくる。
+				if(sr[0]<0 && dr[0]<=0) break;
+				if(sl[0]>screen_size_w && dl[0]>=0) break;
+			}	
 		}
     }
 }
@@ -1026,62 +981,6 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 		}
 		startZ+=dz;	
 	}
-	// // do{
-	// // 	if(startX>=0){
-
-	// 		let z = zBufferingY[startX][0];
-	// 		if(z>startZ){
-	// 			/* 元画像における縦方向座標を計算 */
-	// 			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-	// 			let selectOrgy = tmpOrgy + startX * iA[2];
-				
-	// 			//let selectOrgy = startX * iA[2] + y * iA[3]/* アフィン後の座標に対応した元画像の座標 */
-	// 			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-	// 			selectOrgy |= 0;/* 最近傍補間した元画像の座標 */
-	// 			if(selectOrgy > imageData[Image_Height]-1){
-	// 				selectOrgy = imageData[Image_Height]-1;
-	// 			}
-	// 			if(selectOrgy < 0){
-	// 				selectOrgy = 0
-	// 			}
-	// 			/* 元画像をはみ出る画素の場合ははみ出る前のピクセルを詰める */
-	// 			/*
-	// 			if(selectOrgy >=  textureVMax){
-	// 				//画像配列は０から始まってるからheight,widthともに-1
-	// 				selectOrgy =  textureVMax - 1;
-	// 			}if(selectOrgy <= textureVMin){
-	// 				selectOrgy = textureVMin;
-	// 			}*/
-	// 			/* 元画像における横方向座標を計算 */
-	// 			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-	// 			let selectOrgx = tmpOrgx + startX * iA[0];
-	// 			//let selectOrgx = startX * iA[0] + y * iA[1]/* アフィン後の座標に対応した元画像の座標 */
-	// 			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-	// 			selectOrgx |= 0; /* 最近傍補間した元画像の座標 */
-	// 			/* 元画像をはみ出る画素の場合ははみ出る前の前のピクセルを詰める */
-	// 			if(selectOrgx > imageData[Image_Width]-1){
-	// 				selectOrgx = imageData[Image_Width]-1;
-	// 			}
-	// 			if(selectOrgx < 0){
-	// 				selectOrgx = 0
-	// 			}
-	// 			/*
-	// 			if(selectOrgx >= textureUMax){
-	// 				//画像配列は０から始まってるからheight,widthともに-1
-	// 				selectOrgx = textureUMax -1;
-	// 			}if(selectOrgx <= textureUMin){
-	// 				selectOrgx = textureUMin
-	// 			}*/
-	// 			//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
-	// 			let imageDataRGBA = imageData[TwoDimensionsimageData][selectOrgy][selectOrgx];
-	// 			zBufferingY[startX] = setPixel(startZ,imageDataRGBA.r,imageDataRGBA.g,
-	// 				imageDataRGBA.b,imageDataRGBA.a,shadowFlag,lightShadowFlag,sunCosin);
-
-	// 		}
-	// 	}
-	// 	startZ+=dz;
-	// 	startX++;
-	// }while(startX<endX);
 }
 
 export function textureTransform(a,b,c,d,h,w,alpha,imageData,vertex_list,screen_size_h,screen_size_w,clipMinY,clipMaxY,bufferFrame,
