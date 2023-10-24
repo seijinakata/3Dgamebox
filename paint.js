@@ -570,19 +570,20 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 			sr[1] += (offset * dr[1]);
 			triangleTop = 0;
 		}
-        for(;triangleTop<mid;triangleTop++){
-			//endX,startXが画面外でも増分では画面内に入ってくる。
-			if(sr[0]<0 && dr[0]<=0) break;
-			if(sl[0]>screen_size_w && dl[0]>=0) break;
-			//Y座標ごとの切片
-			let startX = top_int(sl[0]);
-			let endX = top_int(sr[0]);
-			let startZ = sl[1];
-			let endZ = sr[1];
-			scan_ShadowHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ);					
-            vec2Plus(sl,dl);//
-            vec2Plus(sr,dr);//
-			
+		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
+			for(;triangleTop<mid;triangleTop++){
+				//Y座標ごとの切片
+				let startX = top_int(sl[0]);
+				let endX = top_int(sr[0]);
+				let startZ = sl[1];
+				let endZ = sr[1];
+				scan_ShadowHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ);					
+				vec2Plus(sl,dl);//
+				vec2Plus(sr,dr);//
+				//endX,startXが画面外でも増分では画面内に入ってくる。
+				if(sr[0]<0 && dr[0]<=0) break;
+				if(sl[0]>screen_size_w && dl[0]>=0) break;
+			}			
 		}
     }
     if(mid<screen_size_h){//lower
@@ -603,18 +604,20 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 			sr[1] += (offset * dr[1]);
 			mid = 0;
 		}
-        for(;mid<triangleBtm;mid++){
-			//endX,startXが画面外でも増分では画面内に入ってくる。
-			if(sr[0]<0 && dr[0]<=0) break;
-			if(sl[0]>screen_size_w && dl[0]>=0) break;		
-			//Y座標ごとの切片
-			let startX = top_int(sl[0]);
-			let endX = top_int(sr[0]);
-			let startZ = sl[1];
-			let endZ = sr[1];
-			scan_ShadowHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ);				
-            vec2Plus(sl,dl);//
-            vec2Plus(sr,dr);//
+		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
+			for(;mid<triangleBtm;mid++){
+				//Y座標ごとの切片
+				let startX = top_int(sl[0]);
+				let endX = top_int(sr[0]);
+				let startZ = sl[1];
+				let endZ = sr[1];
+				scan_ShadowHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ);				
+				vec2Plus(sl,dl);//
+				vec2Plus(sr,dr);//
+				//endX,startXが画面外でも増分では画面内に入ってくる。
+				if(sr[0]<0 && dr[0]<=0) break;
+				if(sl[0]>screen_size_w && dl[0]>=0) break;	
+			}			
 		}
     }
 }

@@ -1959,12 +1959,15 @@ for(let j=0;j<projectedObjectsLength;j++){
 	for(let projectedPolyNum=0;projectedPolyNum<projectedObjects_j_polygonNum;projectedPolyNum++){
     let currentVerts = currentProjectedObject[poly_List][projectedPolyNum][projected_Verts];
     //各点のZ座標がこれより下なら作画しない。x,yが画面外なら作画しない。
-    if (currentVerts[0][2] <= 0.0 || currentVerts[1][2] <= 0.0 || currentVerts[2][2] <= 0.0 ) continue;
+    if (!(currentVerts[0][2] > 0.0 && currentVerts[1][2] >0.0 && currentVerts[2][2] > 0.0)) continue;
     let triangleXMin = minCul(currentVerts,0);
     let triangleXMax = maxCul(currentVerts,0);
+    if(triangleXMax<0 || triangleXMin >= screen_size_w) continue;
+
     let triangleYMin = minCul(currentVerts,1);
     let triangleYMax = maxCul(currentVerts,1);
-    if (triangleYMax<0 || triangleYMin >= screen_size_h || triangleXMax<0 || triangleXMin >= screen_size_w) continue;
+    if(triangleYMax<0 || triangleYMin >= screen_size_h) continue;
+
 	  //-の方がこちらに近くなる座標軸だから
 	  if(currentProjectedObject[obj_BackCulling_Flag] == true){
       if(currentProjectedObject[poly_List][projectedPolyNum][cross_Z]<0){
@@ -1990,12 +1993,15 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
 	for(let projectedPolyNum=0;projectedPolyNum<shadowProjectedObjects_j_polygonNum;projectedPolyNum++){
     let currentVerts = currentshadowProjectedObject[poly_List][projectedPolyNum][projected_Verts];
     //各点のZ座標がこれより下なら作画しない。x,yが画面外なら作画しない。
-    if (currentVerts[0][2] <= 0.0 || currentVerts[1][2] <= 0.0 || currentVerts[2][2] <= 0.0 ) continue;
+    if (!(currentVerts[0][2] > 0.0 && currentVerts[1][2] >0.0 && currentVerts[2][2] > 0.0)) continue;
     let triangleXMin = minCul(currentVerts,0);
     let triangleXMax = maxCul(currentVerts,0);
+    if (triangleXMax<0 || triangleXMin >= screen_size_w) continue;
+
     let triangleYMin = minCul(currentVerts,1);
     let triangleYMax = maxCul(currentVerts,1);
-    if (triangleYMax<0 || triangleYMin >= screen_size_h || triangleXMax<0 || triangleXMin >= screen_size_w) continue;
+    if (triangleYMax<0 || triangleYMin >= screen_size_h) continue;
+
 	  //-の方がこちらに近くなる座標軸だから
 	  if(currentshadowProjectedObject[obj_BackCulling_Flag] == true){
 	    if(currentshadowProjectedObject[poly_List][projectedPolyNum][cross_Z]<0){
