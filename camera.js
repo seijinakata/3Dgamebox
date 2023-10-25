@@ -867,7 +867,6 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
   for (let i = 0; i < meshVets_Length; i++) {
     let mixMatrix = [0,0,0,0,
                     0,0,0,0,
-                    0,0,0,0,
                     0,0,0,0];
     let blendBoneIndex_Length = object.blendBoneIndex[i].length;
     for(let j=0;j<blendBoneIndex_Length;j++){
