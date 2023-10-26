@@ -11,6 +11,9 @@ export function minCul(t,i){
 export function round(orgValue){
     return ((orgValue * 1000)|0) / 1000;
 }
+export function round100(orgValue){
+    return ((orgValue * 100)|0) / 100;
+}
 export function XRound(X){
     X[0] = ((X[0] * 1000)|0) / 1000;
 }
