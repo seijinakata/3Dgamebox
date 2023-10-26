@@ -1,6 +1,6 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
-import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul} from './vector.js';
+import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,round100,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul} from './vector.js';
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
@@ -834,8 +834,8 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector){
 
   polygonElement[poly_Cross_World_Vector3] = culVecCross(Va,Vb);
   culVecNormalize(polygonElement[poly_Cross_World_Vector3]);
-  polygonElement[poly_Cross_World_Vector3][0] = ((polygonElement[poly_Cross_World_Vector3][0] * 100)|0) / 100;
-  polygonElement[poly_Cross_World_Vector3][1] = ((polygonElement[poly_Cross_World_Vector3][1] * 100)|0) / 100;
+  round100(polygonElement[poly_Cross_World_Vector3][0]);
+  round100(polygonElement[poly_Cross_World_Vector3][1]);
 
   return polygonElement;
 }
@@ -1409,9 +1409,9 @@ function culUVvector(daeLoadPack){
     let By = (daeLoadPack.faceIndexMeshUV[i][5] - daeLoadPack.faceIndexMeshUV[i][1]) * daeLoadPack.textureImage[Image_Height];
     let mi = getInvert2(Ax,Ay,Bx,By);
     if (!mi) return;
-    let preUV_List0 = daeLoadPack.faceIndexMeshUV[i][0] * daeLoadPack.textureImage[Image_Width];
+    let preUV_List0 = round100(daeLoadPack.faceIndexMeshUV[i][0] * daeLoadPack.textureImage[Image_Width]);
     mi.push(preUV_List0);
-    let preUV_List1 = daeLoadPack.faceIndexMeshUV[i][1] * daeLoadPack.textureImage[Image_Height];
+    let preUV_List1 = round100(daeLoadPack.faceIndexMeshUV[i][1] * daeLoadPack.textureImage[Image_Height]);
     mi.push(preUV_List1);
     UVVector.push(mi);
   }
@@ -1948,8 +1948,8 @@ setZmaxShdowBufferInit(shadowMap,screen_size_h,screen_size_w);
 setZmaxRenderBuffer(zBuffering,screen_size_h,screen_size_w);
 let sunVec = vecMinus(sunPos,sunLookat);
 culVecNormalize(sunVec);
-sunVec[0] = ((sunVec[0] * 100)|0) / 100;
-sunVec[1] = ((sunVec[1] * 100)|0) / 100;
+round100(sunVec[0]);
+round100(sunVec[1]);
 //camera
 let projectedObjectsLength  = projectedObjects.length;
 for(let j=0;j<projectedObjectsLength;j++){
