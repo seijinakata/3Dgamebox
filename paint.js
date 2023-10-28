@@ -676,8 +676,288 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 		startZ+=dz;
 	}
 }
+//x,yの最初の初期値を０にするのはダメ差分を取るため。shadowMap用
+function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi,shadowFlag,lightShadowFlag,sunCosin){
+
+	let mid = pm[position_Y];
+
+    let tmp = branch(pt,pb,mid);//pt->mid
+
+  	//tmp[0]がpm[0]より大きい時の初期値
+	let pl = tmp;
+	let pr = pm;
+	if(tmp[position_X]>pm[position_X]){
+		pl = pm;
+		pr = tmp;
+	}
+	//mid=0はlowerで対応
+    if(mid>0){//upper
+		let triangleTop = pt[position_Y];
+        let el = vecMinus(pl,pt);//pt->pl
+        let er = vecMinus(pr,pt);//pt->pr
+        let dl = delta_xz(el);
+        let dr = delta_xz(er);
+        //start position
+        let sl = setVector2(pt[position_X],pt[position_Z]);
+        let sr = setVector2(pt[position_X],pt[position_Z]);
+		if(triangleTop<0){
+			let offset = -triangleTop;
+			sl[0] += (offset * dl[0]);
+			sl[1] += (offset * dl[1]);
+			sr[0] += (offset * dr[0]);
+			sr[1] += (offset * dr[1]);
+			triangleTop = 0;
+		}
+		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
+			if(screen_size_h<mid)mid=screen_size_h;
+			for(;triangleTop<mid;triangleTop++){
+				if(sr[0]<0){
+					//endX,startXが画面外でも増分では画面内に入ってくる。
+					if(dr[0]<=0) break;					
+					vec2Plus(sl,dl);//
+					vec2Plus(sr,dr);//
+					continue;
+				}
+				if(sl[0]>screen_size_w){
+					//endX,startXが画面外でも増分では画面内に入ってくる。
+					if(dl[0]>=0) break;				
+					vec2Plus(sl,dl);//
+					vec2Plus(sr,dr);//
+					continue;
+				}
+				//Y座標ごとの切片
+				let startX = top_int(sl[0]);
+				let endX = top_int(sr[0]);
+				let startZ = sl[1];
+				let endZ = sr[1];
+				scan_NoTextureMappingHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,imageData,mi,shadowFlag,lightShadowFlag,sunCosin);					
+				vec2Plus(sl,dl);//
+				//endX,startXが画面外でも増分では画面内に入ってくる。
+				if(sr[0]<0 && dr[0]<=0) break;
+				vec2Plus(sr,dr);//
+				if(sl[0]>screen_size_w && dl[0]>=0) break;
+			}			
+		}
+    }
+    if(mid<screen_size_h){//lower
+		let el = vecMinus(pb,pl);//pl->pb
+		let er = vecMinus(pb,pr);//pr->pb
+        let dl = delta_xz(el);
+        let dr = delta_xz(er);
+        //start position
+        let sl = setVector2(pl[0],pl[2]);
+        let sr = setVector2(pr[0],pr[2]);
+		if(mid<0){
+			let offset = -mid;
+			sl[0] += (offset * dl[0]);
+			sl[1] += (offset * dl[1]);
+			sr[0] += (offset * dr[0]);
+			sr[1] += (offset * dr[1]);
+			mid = 0;
+		}
+		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
+			let triangleBtm = pb[position_Y];
+			if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;	
+			for(;mid<triangleBtm;mid++){
+				if(sr[0]<0){
+					//endX,startXが画面外でも増分では画面内に入ってくる。
+					if(dr[0]<=0) break;					
+					vec2Plus(sl,dl);//
+					vec2Plus(sr,dr);//
+					continue;
+				}
+				if(sl[0]>screen_size_w){
+					//endX,startXが画面外でも増分では画面内に入ってくる。
+					if(dl[0]>=0) break;				
+					vec2Plus(sl,dl);//
+					vec2Plus(sr,dr);//
+					continue;
+				}
+				//Y座標ごとの切片
+				let startX = top_int(sl[0]);
+				let endX = top_int(sr[0]);
+				let startZ = sl[1];
+				let endZ = sr[1];
+				scan_NoTextureMappingHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,imageData,mi,shadowFlag,lightShadowFlag,sunCosin);
+				//endX,startXが画面外でも増分では画面内に入ってくる。
+				vec2Plus(sl,dl);//
+				if(sl[0]>screen_size_w && dl[0]>=0) break;	
+				vec2Plus(sr,dr);//
+				if(sr[0]<0 && dr[0]<=0) break;
+				
+			}			
+		}
+    }
+}
+function scan_NoTextureMappingHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,imageData,mi,shadowFlag,lightShadowFlag,sunCosin){
+
+
+	let zStep = endZ - startZ;
+	let xStep = endX - startX;
+
+	if(screen_size_w<=endX)endX=screen_size_w-1;
+
+	let dz = zStep/xStep;
+	let zBufferingY = zBuffering[y];
+	//Xが０未満でのｚ値の加算
+	let i = startX;
+	if(startX<0){
+		let offset = -1 * startX;
+		startZ += (offset * dz);
+		i = 0;
+	}
+	for(;i<endX;i++){
+		let z = zBufferingY[i][0];
+		if(z>startZ){
+			let imageDataRGBA = imageData[TwoDimensionsimageData][mi[5]][mi[4]];
+			zBufferingY[i] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+				imageDataRGBA[BLUE],imageDataRGBA[ALPHA],shadowFlag,lightShadowFlag,sunCosin);
+		}
+		startZ+=dz;
+	}
+}
+//x,yの最初の初期値を０にするのはダメ差分を取るため。shadowMap用
+function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi){
+
+	let mid = pm[position_Y];
+
+    let tmp = branch(pt,pb,mid);//pt->mid
+
+  	//tmp[0]がpm[0]より大きい時の初期値
+	let pl = tmp;
+	let pr = pm;
+	if(tmp[position_X]>pm[position_X]){
+		pl = pm;
+		pr = tmp;
+	}
+	//mid=0はlowerで対応
+    if(mid>0){//upper
+		let triangleTop = pt[position_Y];
+        let el = vecMinus(pl,pt);//pt->pl
+        let er = vecMinus(pr,pt);//pt->pr
+        let dl = delta_xz(el);
+        let dr = delta_xz(er);
+        //start position
+        let sl = setVector2(pt[position_X],pt[position_Z]);
+        let sr = setVector2(pt[position_X],pt[position_Z]);
+		if(triangleTop<0){
+			let offset = -triangleTop;
+			sl[0] += (offset * dl[0]);
+			sl[1] += (offset * dl[1]);
+			sr[0] += (offset * dr[0]);
+			sr[1] += (offset * dr[1]);
+			triangleTop = 0;
+		}
+		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
+			if(screen_size_h<mid)mid=screen_size_h;
+			for(;triangleTop<mid;triangleTop++){
+				if(sr[0]<0){
+					//endX,startXが画面外でも増分では画面内に入ってくる。
+					if(dr[0]<=0) break;					
+					vec2Plus(sl,dl);//
+					vec2Plus(sr,dr);//
+					continue;
+				}
+				if(sl[0]>screen_size_w){
+					//endX,startXが画面外でも増分では画面内に入ってくる。
+					if(dl[0]>=0) break;				
+					vec2Plus(sl,dl);//
+					vec2Plus(sr,dr);//
+					continue;
+				}
+				//Y座標ごとの切片
+				let startX = top_int(sl[0]);
+				let endX = top_int(sr[0]);
+				let startZ = sl[1];
+				let endZ = sr[1];
+				scan_NoTextureMappingSunCosinHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,imageData,mi);					
+				vec2Plus(sl,dl);//
+				//endX,startXが画面外でも増分では画面内に入ってくる。
+				if(sr[0]<0 && dr[0]<=0) break;
+				vec2Plus(sr,dr);//
+				if(sl[0]>screen_size_w && dl[0]>=0) break;
+			}			
+		}
+    }
+    if(mid<screen_size_h){//lower
+		let el = vecMinus(pb,pl);//pl->pb
+		let er = vecMinus(pb,pr);//pr->pb
+        let dl = delta_xz(el);
+        let dr = delta_xz(er);
+        //start position
+        let sl = setVector2(pl[0],pl[2]);
+        let sr = setVector2(pr[0],pr[2]);
+		if(mid<0){
+			let offset = -mid;
+			sl[0] += (offset * dl[0]);
+			sl[1] += (offset * dl[1]);
+			sr[0] += (offset * dr[0]);
+			sr[1] += (offset * dr[1]);
+			mid = 0;
+		}
+		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
+			let triangleBtm = pb[position_Y];
+			if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;	
+			for(;mid<triangleBtm;mid++){
+				if(sr[0]<0){
+					//endX,startXが画面外でも増分では画面内に入ってくる。
+					if(dr[0]<=0) break;					
+					vec2Plus(sl,dl);//
+					vec2Plus(sr,dr);//
+					continue;
+				}
+				if(sl[0]>screen_size_w){
+					//endX,startXが画面外でも増分では画面内に入ってくる。
+					if(dl[0]>=0) break;				
+					vec2Plus(sl,dl);//
+					vec2Plus(sr,dr);//
+					continue;
+				}
+				//Y座標ごとの切片
+				let startX = top_int(sl[0]);
+				let endX = top_int(sr[0]);
+				let startZ = sl[1];
+				let endZ = sr[1];
+				scan_NoTextureMappingSunCosinHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,imageData,mi);
+				//endX,startXが画面外でも増分では画面内に入ってくる。
+				vec2Plus(sl,dl);//
+				if(sl[0]>screen_size_w && dl[0]>=0) break;	
+				vec2Plus(sr,dr);//
+				if(sr[0]<0 && dr[0]<=0) break;
+				
+			}			
+		}
+    }
+}
+function scan_NoTextureMappingSunCosinHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,imageData,mi){
+
+
+	let zStep = endZ - startZ;
+	let xStep = endX - startX;
+
+	if(screen_size_w<=endX)endX=screen_size_w-1;
+
+	let dz = zStep/xStep;
+	let zBufferingY = zBuffering[y];
+	//Xが０未満でのｚ値の加算
+	let i = startX;
+	if(startX<0){
+		let offset = -1 * startX;
+		startZ += (offset * dz);
+		i = 0;
+	}
+	for(;i<endX;i++){
+		let z = zBufferingY[i][0];
+		if(z>startZ){
+			let imageDataRGBA = imageData[TwoDimensionsimageData][mi[5]][mi[4]];
+			zBufferingY[i] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+				imageDataRGBA[BLUE],imageDataRGBA[ALPHA],false,false);
+		}
+		startZ+=dz;
+	}
+}
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
-function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData,mi,det0){
+function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData){
 
 	let mid = pm[1];
 
@@ -737,7 +1017,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 				let endX = top_int(sr[0]);
 				let startZ = sl[1];
 				let endZ = sr[1];
-				scan_horizontalNoSunCosin(zBuffering,screen_size_w,triangleTop,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,inv_a,inv_b,imageData,mi,det0);
+				scan_horizontalNoSunCosin(zBuffering,screen_size_w,triangleTop,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,inv_a,inv_b,imageData);
 				vec2Plus(sl,dl);//
 				//endX,startXが画面外でも増分では画面内に入ってくる。
 				if(sl[0]>screen_size_w && dl[0]>=0) break;
@@ -793,7 +1073,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 				let endX = top_int(sr[0]);
 				let startZ = sl[1];
 				let endZ = sr[1];
-				scan_horizontalNoSunCosin(zBuffering,screen_size_w,mid,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,inv_a,inv_b,imageData,mi,det0);
+				scan_horizontalNoSunCosin(zBuffering,screen_size_w,mid,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,inv_a,inv_b,imageData);
 				vec2Plus(sl,dl);//
 				//endX,startXが画面外でも増分では画面内に入ってくる。
 				if(sl[0]>screen_size_w && dl[0]>=0) break;
@@ -805,7 +1085,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 		}
     }
 }
-function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,iA_0,iA_2,imageData,mi,det0){
+function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,iA_0,iA_2,imageData){
 
 	//アフィン変換の平行移動ベクトル
 	//縦移動、transform関数のf
@@ -828,13 +1108,6 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 	for(;i<=endX;i++){
 		let z = zBufferingY[i][0];
 			if(z>startZ){
-				if(det0 == true){
-					let imageDataRGBA = imageData[TwoDimensionsimageData][mi[5]][mi[4]];
-					zBufferingY[i] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-						imageDataRGBA[BLUE],imageDataRGBA[ALPHA],false,false);
-					startZ += dz;
-					continue;
-				}
 				// if(tmpOrgy == null){
 				// 	tmpOrgy = y * iA[3] + tmpOrgyef;
 				// 	tmpOrgx = y * iA[1] + tmpOrgxef;
@@ -885,7 +1158,7 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 }
 
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
-function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData,mi,shadowFlag,lightShadowFlag,sunCosin,det0){
+function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin){
 
 	let mid = pm[1];
 	
@@ -946,7 +1219,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 				let endX = top_int(sr[0]);
 				let startZ = sl[1];
 				let endZ = sr[1];
-				scan_horizontal(zBuffering,screen_size_w,triangleTop,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,inv_a,inv_b,imageData,mi,shadowFlag,lightShadowFlag,sunCosin,det0);
+				scan_horizontal(zBuffering,screen_size_w,triangleTop,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,inv_a,inv_b,imageData,shadowFlag,lightShadowFlag,sunCosin);
 				vec2Plus(sl,dl);//
 				//endX,startXが画面外でも増分では画面内に入ってくる。
 				if(sl[0]>screen_size_w && dl[0]>=0) break;
@@ -1004,7 +1277,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 				let endX = top_int(sr[0]);
 				let startZ = sl[1];
 				let endZ = sr[1];
-				scan_horizontal(zBuffering,screen_size_w,mid,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,inv_a,inv_b,imageData,mi,shadowFlag,lightShadowFlag,sunCosin,det0);
+				scan_horizontal(zBuffering,screen_size_w,mid,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,inv_a,inv_b,imageData,shadowFlag,lightShadowFlag,sunCosin);
 				vec2Plus(sl,dl);//
 				//endX,startXが画面外でも増分では画面内に入ってくる。
 				if(sl[0]>screen_size_w && dl[0]>=0) break;
@@ -1017,7 +1290,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
     }
 }
 
-function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,iA_0,iA_2,imageData,mi,shadowFlag,lightShadowFlag,sunCosin,det0){
+function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,iA_0,iA_2,imageData,shadowFlag,lightShadowFlag,sunCosin){
 
 	//アフィン変換の平行移動ベクトル
 	//縦移動、transform関数のf
@@ -1041,13 +1314,6 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 	for(;i<=endX;i++){
 		let z = zBufferingY[i][0];
 		if(z>startZ){
-			if(det0 == true){
-				let imageDataRGBA = imageData[TwoDimensionsimageData][mi[5]][mi[4]];
-				zBufferingY[i] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-					imageDataRGBA[BLUE],imageDataRGBA[ALPHA],shadowFlag,lightShadowFlag,sunCosin);
-				startZ += dz;
-				continue;
-			}
 			// if(tmpOrgy == null){
 			// 	tmpOrgy = y * iA[3] + tmpOrgyef;
 			// 	tmpOrgx = y * iA[1] + tmpOrgxef;
@@ -1246,10 +1512,19 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 
 	//逆行列のad-bc
 	let det = a * d - c * b;
-	
-	let det0 = false;
+
 	if(det == 0) {
-		det0 = true;
+		//sortするのはY座標のみ
+		sort_Yindex(vertex_list);
+		let pt = vertex_list[0];
+		let pm = vertex_list[1];
+		let pb = vertex_list[2];
+		if(shadowFlag == true){
+			let sunCosin = culVecDot(sunVec, crossWorldVector3)*1.5;//1.5掛けるのは明るさの調節
+			scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi,true,lightShadowFlag,sunCosin)
+		}else{
+			scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi);
+		} 
 	}else{
 		let  inv_det = 1.0/det;
 		//acbdの逆行列
@@ -1268,25 +1543,11 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 		let pt = vertex_list[0];
 		let pm = vertex_list[1];
 		let pb = vertex_list[2];
-
 		if(shadowFlag == true){
 			let sunCosin = culVecDot(sunVec, crossWorldVector3)*1.5;//1.5掛けるのは明るさの調節
-			scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData,mi,true,lightShadowFlag,sunCosin,det0);
+			scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData,true,lightShadowFlag,sunCosin);
 		}else{
-			scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData,mi,det0);
+			scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData);
 		}
 	}
-	
-	//sortするのはY座標のみ
-	sort_Yindex(vertex_list);
-	let pt = vertex_list[0];
-	let pm = vertex_list[1];
-	let pb = vertex_list[2];
-
-	if(shadowFlag == true){
-		let sunCosin = culVecDot(sunVec, crossWorldVector3)*1.5;//1.5掛けるのは明るさの調節
-		scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,0,0,0,0,0,0,imageData,mi,true,lightShadowFlag,sunCosin,det0);
-	}else{
-		scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,0,0,0,0,0,0,imageData,mi,det0);
-	} 
 }

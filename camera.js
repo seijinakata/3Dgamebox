@@ -3,7 +3,7 @@
 import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,round100,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul} from './vector.js';
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
-import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,dotLineBufferRegister,triangleRasterize,textureTransform,triangleToBuffer,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
+import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,triangleToBuffer,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
 import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, UV_Vector, pixel_A, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, pixel_LightShadow_Flag } from './enum.js';
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
