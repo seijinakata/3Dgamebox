@@ -653,7 +653,6 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 
 function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ){
 
-
 	let zStep = endZ - startZ;
 	let xStep = endX - startX;
 
@@ -676,7 +675,7 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 		startZ+=dz;
 	}
 }
-//x,yの最初の初期値を０にするのはダメ差分を取るため。shadowMap用
+//x,yの最初の初期値を０にするのはダメ差分を取るため。基本ピクセルで処理が終わる思われるためif文は外してある。
 function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi,shadowFlag,lightShadowFlag,sunCosin){
 
 	let mid = pm[position_Y];
@@ -708,36 +707,27 @@ function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt
 			sr[1] += (offset * dr[1]);
 			triangleTop = 0;
 		}
-		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
 			if(screen_size_h<mid)mid=screen_size_h;
-			for(;triangleTop<mid;triangleTop++){
-				if(sr[0]<0){
-					//endX,startXが画面外でも増分では画面内に入ってくる。
-					if(dr[0]<=0) break;					
-					vec2Plus(sl,dl);//
-					vec2Plus(sr,dr);//
-					continue;
-				}
-				if(sl[0]>screen_size_w){
-					//endX,startXが画面外でも増分では画面内に入ってくる。
-					if(dl[0]>=0) break;				
-					vec2Plus(sl,dl);//
-					vec2Plus(sr,dr);//
-					continue;
-				}
-				//Y座標ごとの切片
-				let startX = top_int(sl[0]);
-				let endX = top_int(sr[0]);
-				let startZ = sl[1];
-				let endZ = sr[1];
-				scan_NoTextureMappingHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,imageData,mi,shadowFlag,lightShadowFlag,sunCosin);					
+		for(;triangleTop<mid;triangleTop++){
+			if(sr[0]<0){				
 				vec2Plus(sl,dl);//
-				//endX,startXが画面外でも増分では画面内に入ってくる。
-				if(sr[0]<0 && dr[0]<=0) break;
 				vec2Plus(sr,dr);//
-				if(sl[0]>screen_size_w && dl[0]>=0) break;
-			}			
-		}
+				continue;
+			}
+			if(sl[0]>screen_size_w){	
+				vec2Plus(sl,dl);//
+				vec2Plus(sr,dr);//
+				continue;
+			}
+			//Y座標ごとの切片
+			let startX = top_int(sl[0]);
+			let endX = top_int(sr[0]);
+			let startZ = sl[1];
+			let endZ = sr[1];
+			scan_NoTextureMappingHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,imageData,mi,shadowFlag,lightShadowFlag,sunCosin);					
+			vec2Plus(sl,dl);//
+			vec2Plus(sr,dr);//
+		}			
     }
     if(mid<screen_size_h){//lower
 		let el = vecMinus(pb,pl);//pl->pb
@@ -755,42 +745,32 @@ function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt
 			sr[1] += (offset * dr[1]);
 			mid = 0;
 		}
-		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
-			let triangleBtm = pb[position_Y];
-			if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;	
-			for(;mid<triangleBtm;mid++){
-				if(sr[0]<0){
-					//endX,startXが画面外でも増分では画面内に入ってくる。
-					if(dr[0]<=0) break;					
-					vec2Plus(sl,dl);//
-					vec2Plus(sr,dr);//
-					continue;
-				}
-				if(sl[0]>screen_size_w){
-					//endX,startXが画面外でも増分では画面内に入ってくる。
-					if(dl[0]>=0) break;				
-					vec2Plus(sl,dl);//
-					vec2Plus(sr,dr);//
-					continue;
-				}
-				//Y座標ごとの切片
-				let startX = top_int(sl[0]);
-				let endX = top_int(sr[0]);
-				let startZ = sl[1];
-				let endZ = sr[1];
-				scan_NoTextureMappingHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,imageData,mi,shadowFlag,lightShadowFlag,sunCosin);
-				//endX,startXが画面外でも増分では画面内に入ってくる。
+		let triangleBtm = pb[position_Y];
+		if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;	
+		for(;mid<triangleBtm;mid++){
+			if(sr[0]<0){				
 				vec2Plus(sl,dl);//
-				if(sl[0]>screen_size_w && dl[0]>=0) break;	
 				vec2Plus(sr,dr);//
-				if(sr[0]<0 && dr[0]<=0) break;
-				
-			}			
-		}
+				continue;
+			}
+			if(sl[0]>screen_size_w){			
+				vec2Plus(sl,dl);//
+				vec2Plus(sr,dr);//
+				continue;
+			}
+			//Y座標ごとの切片
+			let startX = top_int(sl[0]);
+			let endX = top_int(sr[0]);
+			let startZ = sl[1];
+			let endZ = sr[1];
+			scan_NoTextureMappingHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,imageData,mi,shadowFlag,lightShadowFlag,sunCosin);
+			//endX,startXが画面外でも増分では画面内に入ってくる。
+			vec2Plus(sl,dl);//
+			vec2Plus(sr,dr);//		
+		}			
     }
 }
 function scan_NoTextureMappingHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,imageData,mi,shadowFlag,lightShadowFlag,sunCosin){
-
 
 	let zStep = endZ - startZ;
 	let xStep = endX - startX;
@@ -816,7 +796,7 @@ function scan_NoTextureMappingHorizontal(zBuffering,screen_size_w,y,startX,endX,
 		startZ+=dz;
 	}
 }
-//x,yの最初の初期値を０にするのはダメ差分を取るため。shadowMap用
+//x,yの最初の初期値を０にするのはダメ差分を取るため。基本ピクセルで処理が終わる思われるためif文は外してある。
 function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi){
 
 	let mid = pm[position_Y];
@@ -848,36 +828,27 @@ function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_s
 			sr[1] += (offset * dr[1]);
 			triangleTop = 0;
 		}
-		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
-			if(screen_size_h<mid)mid=screen_size_h;
-			for(;triangleTop<mid;triangleTop++){
-				if(sr[0]<0){
-					//endX,startXが画面外でも増分では画面内に入ってくる。
-					if(dr[0]<=0) break;					
-					vec2Plus(sl,dl);//
-					vec2Plus(sr,dr);//
-					continue;
-				}
-				if(sl[0]>screen_size_w){
-					//endX,startXが画面外でも増分では画面内に入ってくる。
-					if(dl[0]>=0) break;				
-					vec2Plus(sl,dl);//
-					vec2Plus(sr,dr);//
-					continue;
-				}
-				//Y座標ごとの切片
-				let startX = top_int(sl[0]);
-				let endX = top_int(sr[0]);
-				let startZ = sl[1];
-				let endZ = sr[1];
-				scan_NoTextureMappingSunCosinHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,imageData,mi);					
+		if(screen_size_h<mid)mid=screen_size_h;
+		for(;triangleTop<mid;triangleTop++){
+			if(sr[0]<0){				
 				vec2Plus(sl,dl);//
-				//endX,startXが画面外でも増分では画面内に入ってくる。
-				if(sr[0]<0 && dr[0]<=0) break;
 				vec2Plus(sr,dr);//
-				if(sl[0]>screen_size_w && dl[0]>=0) break;
-			}			
-		}
+				continue;
+			}
+			if(sl[0]>screen_size_w){			
+				vec2Plus(sl,dl);//
+				vec2Plus(sr,dr);//
+				continue;
+			}
+			//Y座標ごとの切片
+			let startX = top_int(sl[0]);
+			let endX = top_int(sr[0]);
+			let startZ = sl[1];
+			let endZ = sr[1];
+			scan_NoTextureMappingSunCosinHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ,imageData,mi);					
+			vec2Plus(sl,dl);//
+			vec2Plus(sr,dr);//
+		}			
     }
     if(mid<screen_size_h){//lower
 		let el = vecMinus(pb,pl);//pl->pb
@@ -895,42 +866,31 @@ function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_s
 			sr[1] += (offset * dr[1]);
 			mid = 0;
 		}
-		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
-			let triangleBtm = pb[position_Y];
-			if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;	
-			for(;mid<triangleBtm;mid++){
-				if(sr[0]<0){
-					//endX,startXが画面外でも増分では画面内に入ってくる。
-					if(dr[0]<=0) break;					
-					vec2Plus(sl,dl);//
-					vec2Plus(sr,dr);//
-					continue;
-				}
-				if(sl[0]>screen_size_w){
-					//endX,startXが画面外でも増分では画面内に入ってくる。
-					if(dl[0]>=0) break;				
-					vec2Plus(sl,dl);//
-					vec2Plus(sr,dr);//
-					continue;
-				}
-				//Y座標ごとの切片
-				let startX = top_int(sl[0]);
-				let endX = top_int(sr[0]);
-				let startZ = sl[1];
-				let endZ = sr[1];
-				scan_NoTextureMappingSunCosinHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,imageData,mi);
-				//endX,startXが画面外でも増分では画面内に入ってくる。
+		let triangleBtm = pb[position_Y];
+		if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;	
+		for(;mid<triangleBtm;mid++){
+			if(sr[0]<0){			
 				vec2Plus(sl,dl);//
-				if(sl[0]>screen_size_w && dl[0]>=0) break;	
 				vec2Plus(sr,dr);//
-				if(sr[0]<0 && dr[0]<=0) break;
-				
-			}			
-		}
+				continue;
+			}
+			if(sl[0]>screen_size_w){		
+				vec2Plus(sl,dl);//
+				vec2Plus(sr,dr);//
+				continue;
+			}
+			//Y座標ごとの切片
+			let startX = top_int(sl[0]);
+			let endX = top_int(sr[0]);
+			let startZ = sl[1];
+			let endZ = sr[1];
+			scan_NoTextureMappingSunCosinHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ,imageData,mi);
+			vec2Plus(sl,dl);//
+			vec2Plus(sr,dr);//
+		}			
     }
 }
 function scan_NoTextureMappingSunCosinHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,imageData,mi){
-
 
 	let zStep = endZ - startZ;
 	let xStep = endX - startX;
@@ -992,7 +952,6 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 			if(screen_size_h<mid)mid=screen_size_h;
 			let tmpOrgy = triangleTop * inv_d + tmpOrgyef;
 			let tmpOrgx = triangleTop * inv_c + tmpOrgxef;
-
 			for(;triangleTop<mid;triangleTop++){
 				if(sr[0]<0){
 					//endX,startXが画面外でも増分では画面内に入ってくる。
@@ -1526,7 +1485,7 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 			scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi);
 		} 
 	}else{
-		let  inv_det = 1.0/det;
+		let inv_det = 1.0/det;
 		//acbdの逆行列
 		let inv_a = d * inv_det;
 		let inv_c = - c * inv_det;
