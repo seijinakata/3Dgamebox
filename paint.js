@@ -542,14 +542,41 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 
 	let mid = pm[position_Y];
 
-    let tmp = branch(pt,pb,mid);//pt->mid
-
-  	//tmp[0]がpm[0]より大きい時の初期値
-	let pl = tmp;
-	let pr = pm;
-	if(tmp[position_X]>pm[position_X]){
-		pl = pm;
-		pr = tmp;
+	//tmp[0]がpm[0]より大きい時の初期値
+	let pl;
+	let pr;
+	//この関数だけこの中に入りやすい
+	if(pt[1] == pm[1] == pb[1]){
+		let minX = pt[0];
+		let minZ = pt[2];
+		if(minX>pm[0]){
+			minX = pm[0];
+			minZ = pm[2];
+		}
+		if(minX>pb[0]){
+			minX = pb[0];
+			minZ = pb[2];
+		}
+		let maxX = pt[0];
+		let maxZ = pt[2];
+		if(maxX<pm[0]){
+			maxX = pm[0];
+			maxZ = pm[2];
+		}
+		if(minX>pb[0]){
+			maxX = pb[0];
+			maxZ = pb[2];
+		}
+		pl = setVector3(minX,pt[1],minZ);
+		pr = setVector3(maxX,pt[1],maxZ);
+	}else{
+		//tmp[0]がpm[0]より大きい時の初期値
+		pl = branch(pt,pb,mid);//pt->mid	
+		pr = pm;
+		if(pl[0]>pm[0]){
+			pr = pl;
+			pl = pm;
+		}
 	}
 	//mid=0はlowerで対応
     if(mid>0){//upper
@@ -680,14 +707,41 @@ function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt
 
 	let mid = pm[position_Y];
 
-    let tmp = branch(pt,pb,mid);//pt->mid
-
-  	//tmp[0]がpm[0]より大きい時の初期値
-	let pl = tmp;
-	let pr = pm;
-	if(tmp[position_X]>pm[position_X]){
-		pl = pm;
-		pr = tmp;
+	//tmp[0]がpm[0]より大きい時の初期値
+	let pl;
+	let pr;
+	//この関数だけこの中に入りやすい
+	if(pt[1] == pm[1] == pb[1]){
+		let minX = pt[0];
+		let minZ = pt[2];
+		if(minX>pm[0]){
+			minX = pm[0];
+			minZ = pm[2];
+		}
+		if(minX>pb[0]){
+			minX = pb[0];
+			minZ = pb[2];
+		}
+		let maxX = pt[0];
+		let maxZ = pt[2];
+		if(maxX<pm[0]){
+			maxX = pm[0];
+			maxZ = pm[2];
+		}
+		if(minX>pb[0]){
+			maxX = pb[0];
+			maxZ = pb[2];
+		}
+		pl = setVector3(minX,pt[1],minZ);
+		pr = setVector3(maxX,pt[1],maxZ);
+	}else{
+		//tmp[0]がpm[0]より大きい時の初期値
+		pl = branch(pt,pb,mid);//pt->mid	
+		pr = pm;
+		if(pl[0]>pm[0]){
+			pr = pl;
+			pl = pm;
+		}
 	}
 	//mid=0はlowerで対応
     if(mid>0){//upper
@@ -801,14 +855,41 @@ function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_s
 
 	let mid = pm[position_Y];
 
-    let tmp = branch(pt,pb,mid);//pt->mid
-
-  	//tmp[0]がpm[0]より大きい時の初期値
-	let pl = tmp;
-	let pr = pm;
-	if(tmp[position_X]>pm[position_X]){
-		pl = pm;
-		pr = tmp;
+	//tmp[0]がpm[0]より大きい時の初期値
+	let pl;
+	let pr;
+	//この関数だけこの中に入りやすい
+	if(pt[1] == pm[1] == pb[1]){
+		let minX = pt[0];
+		let minZ = pt[2];
+		if(minX>pm[0]){
+			minX = pm[0];
+			minZ = pm[2];
+		}
+		if(minX>pb[0]){
+			minX = pb[0];
+			minZ = pb[2];
+		}
+		let maxX = pt[0];
+		let maxZ = pt[2];
+		if(maxX<pm[0]){
+			maxX = pm[0];
+			maxZ = pm[2];
+		}
+		if(minX>pb[0]){
+			maxX = pb[0];
+			maxZ = pb[2];
+		}
+		pl = setVector3(minX,pt[1],minZ);
+		pr = setVector3(maxX,pt[1],maxZ);
+	}else{
+		//tmp[0]がpm[0]より大きい時の初期値
+		pl = branch(pt,pb,mid);//pt->mid	
+		pr = pm;
+		if(pl[0]>pm[0]){
+			pr = pl;
+			pl = pm;
+		}
 	}
 	//mid=0はlowerで対応
     if(mid>0){//upper
@@ -921,15 +1002,42 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 
 	let mid = pm[1];
 
-    let tmp = branch(pt,pb,mid);//pt->mid
-
 	//tmp[0]がpm[0]より大きい時の初期値
-    let pl = tmp;
-	let pr = pm;
-	if(tmp[0]>pm[0]){
-        pl = pm;
-        pr = tmp;
-    }
+	let pl;
+	let pr;
+	//この関数だけこの中に入りやすい
+	if(pt[1] == pm[1] == pb[1]){
+		let minX = pt[0];
+		let minZ = pt[2];
+		if(minX>pm[0]){
+			minX = pm[0];
+			minZ = pm[2];
+		}
+		if(minX>pb[0]){
+			minX = pb[0];
+			minZ = pb[2];
+		}
+		let maxX = pt[0];
+		let maxZ = pt[2];
+		if(maxX<pm[0]){
+			maxX = pm[0];
+			maxZ = pm[2];
+		}
+		if(minX>pb[0]){
+			maxX = pb[0];
+			maxZ = pb[2];
+		}
+		pl = setVector3(minX,pt[1],minZ);
+		pr = setVector3(maxX,pt[1],maxZ);
+	}else{
+		//tmp[0]がpm[0]より大きい時の初期値
+		pl = branch(pt,pb,mid);//pt->mid	
+		pr = pm;
+		if(pl[0]>pm[0]){
+			pr = pl;
+			pl = pm;
+		}
+	}
 	//mid=0はlowerで対応
     if(mid>0){//upper
 		let triangleTop = pt[1];
@@ -1121,15 +1229,42 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 
 	let mid = pm[1];
 	
-    let tmp = branch(pt,pb,mid);//pt->mid
-
 	//tmp[0]がpm[0]より大きい時の初期値
-    let pl = tmp;
-	let pr = pm;
-	if(tmp[0]>pm[0]){
-        pl = pm;
-        pr = tmp;
-    }
+	let pl;
+	let pr;
+	//この関数だけこの中に入りやすい
+	if(pt[1] == pm[1] == pb[1]){
+		let minX = pt[0];
+		let minZ = pt[2];
+		if(minX>pm[0]){
+			minX = pm[0];
+			minZ = pm[2];
+		}
+		if(minX>pb[0]){
+			minX = pb[0];
+			minZ = pb[2];
+		}
+		let maxX = pt[0];
+		let maxZ = pt[2];
+		if(maxX<pm[0]){
+			maxX = pm[0];
+			maxZ = pm[2];
+		}
+		if(minX>pb[0]){
+			maxX = pb[0];
+			maxZ = pb[2];
+		}
+		pl = setVector3(minX,pt[1],minZ);
+		pr = setVector3(maxX,pt[1],maxZ);
+	}else{
+		//tmp[0]がpm[0]より大きい時の初期値
+		pl = branch(pt,pb,mid);//pt->mid	
+		pr = pm;
+		if(pl[0]>pm[0]){
+			pr = pl;
+			pl = pm;
+		}
+	}
 	//mid=0はlowerで対応
     if(mid>0){//upper
 		let triangleTop = pt[1];
