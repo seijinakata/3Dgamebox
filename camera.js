@@ -4,7 +4,7 @@ import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVec
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,triangleToBuffer,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
-import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, UV_Vector, pixel_A, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, pixel_LightShadow_Flag } from './enum.js';
+import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, UV_Vector, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, pixel_LightShadow_Flag } from './enum.js';
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
 
@@ -1655,9 +1655,16 @@ renderBufferInit(zBuffering,screen_size_h,screen_size_w);
 let myImageData = ctx.createImageData(screen_size_w, screen_size_h);
 //アクセス用
 let myImageDataDataImage = myImageData.data;
+for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
+  let basearrayY = basearray[pixelY];
+  let zBufferingY = zBuffering[pixelY];
+  for (let pixelX=0;pixelX<screen_size_w;pixelX++) {
+    let base = basearrayY[pixelX];
+    myImageDataDataImage[base[ALPHA]] = 255; // Alpha
+  }
+}
 let sands = [];
 let steves = [];
-
 setInterval(function(){
 //dataLoad
 if(dataLoad == false){
@@ -2105,13 +2112,13 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         myImageDataDataImage[base[RED]] = pixelR;  // Red
         myImageDataDataImage[base[GREEN]] = pixelG;  // Green
         myImageDataDataImage[base[BLUE]] = pixelB;  // Blue
-        myImageDataDataImage[base[ALPHA]] = 255; // Alpha  
+        //myImageDataDataImage[base[ALPHA]] = 255; // Alpha  
       }else{
         myImageDataDataImage[base[RED]] = pixel[pixel_R];  // Red
         myImageDataDataImage[base[GREEN]] = pixel[pixel_G];  // Green
         myImageDataDataImage[base[BLUE]] = pixel[pixel_B]; // Blue
         //let pixela = pixel[4];
-        myImageDataDataImage[base[ALPHA]] = 255; // Alpha         
+        //myImageDataDataImage[base[ALPHA]] = 255; // Alpha         
       }
     //dotPaint(j,i,getPixel.r,getPixel.g,getPixel.b,getPixel.a,ctx);    
     }else{
@@ -2120,7 +2127,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       myImageDataDataImage[base[RED]] = 0;  // Red
       myImageDataDataImage[base[GREEN]] = 0;  // Green
       myImageDataDataImage[base[BLUE]] = 0;  // Blue
-      myImageDataDataImage[base[ALPHA]] = 255; // Alpha
+      //myImageDataDataImage[base[ALPHA]] = 255; // Alpha
     }
   }
 }

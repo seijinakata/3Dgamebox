@@ -34,12 +34,12 @@ export class renderBuffer{
 		return this.pixelBuffer[0];
 	}
 }
-export function setPixel(z,r,g,b,a,shadowFlag,lightShadowFlag,crossWorldVector3){
-	let pixel = [z,r,g,b,a,shadowFlag,lightShadowFlag,crossWorldVector3];
+export function setPixel(z,r,g,b,shadowFlag,lightShadowFlag,crossWorldVector3){
+	let pixel = [z,r,g,b,shadowFlag,lightShadowFlag,crossWorldVector3];
 	return pixel;
 }
-export function setPixelNoCrossWorldVector3(z,r,g,b,a,shadowFlag,lightShadowFlag){
-	let pixel = [z,r,g,b,a,shadowFlag,lightShadowFlag];
+export function setPixelNoCrossWorldVector3(z,r,g,b,shadowFlag,lightShadowFlag){
+	let pixel = [z,r,g,b,shadowFlag,lightShadowFlag];
 	return pixel;
 }
 //minZはminXのZ値、maxZはmaxXのZ値,Y列で管理
@@ -543,41 +543,13 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 	let mid = pm[position_Y];
 
 	//tmp[0]がpm[0]より大きい時の初期値
-	let pl;
-	let pr;
-	//この関数だけこの中に入りやすい
-	if(pt[1] == pm[1] == pb[1]){
-		let minX = pt[0];
-		let minZ = pt[2];
-		if(minX>pm[0]){
-			minX = pm[0];
-			minZ = pm[2];
-		}
-		if(minX>pb[0]){
-			minX = pb[0];
-			minZ = pb[2];
-		}
-		let maxX = pt[0];
-		let maxZ = pt[2];
-		if(maxX<pm[0]){
-			maxX = pm[0];
-			maxZ = pm[2];
-		}
-		if(minX>pb[0]){
-			maxX = pb[0];
-			maxZ = pb[2];
-		}
-		pl = setVector3(minX,pt[1],minZ);
-		pr = setVector3(maxX,pt[1],maxZ);
-	}else{
-		//tmp[0]がpm[0]より大きい時の初期値
-		pl = branch(pt,pb,mid);//pt->mid	
-		pr = pm;
-		if(pl[0]>pm[0]){
-			pr = pl;
-			pl = pm;
-		}
+	let pl = branch(pt,pb,mid);//pt->mid	
+	let pr = pm;
+	if(pl[0]>pm[0]){
+		pr = pl;
+		pl = pm;
 	}
+
 	//mid=0はlowerで対応
     if(mid>0){//upper
 		let triangleTop = pt[position_Y];
@@ -708,41 +680,13 @@ function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt
 	let mid = pm[position_Y];
 
 	//tmp[0]がpm[0]より大きい時の初期値
-	let pl;
-	let pr;
-	//この関数だけこの中に入りやすい
-	if(pt[1] == pm[1] == pb[1]){
-		let minX = pt[0];
-		let minZ = pt[2];
-		if(minX>pm[0]){
-			minX = pm[0];
-			minZ = pm[2];
-		}
-		if(minX>pb[0]){
-			minX = pb[0];
-			minZ = pb[2];
-		}
-		let maxX = pt[0];
-		let maxZ = pt[2];
-		if(maxX<pm[0]){
-			maxX = pm[0];
-			maxZ = pm[2];
-		}
-		if(minX>pb[0]){
-			maxX = pb[0];
-			maxZ = pb[2];
-		}
-		pl = setVector3(minX,pt[1],minZ);
-		pr = setVector3(maxX,pt[1],maxZ);
-	}else{
-		//tmp[0]がpm[0]より大きい時の初期値
-		pl = branch(pt,pb,mid);//pt->mid	
-		pr = pm;
-		if(pl[0]>pm[0]){
-			pr = pl;
-			pl = pm;
-		}
+	let pl = branch(pt,pb,mid);//pt->mid	
+	let pr = pm;
+	if(pl[0]>pm[0]){
+		pr = pl;
+		pl = pm;
 	}
+
 	//mid=0はlowerで対応
     if(mid>0){//upper
 		let triangleTop = pt[position_Y];
@@ -761,7 +705,7 @@ function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt
 			sr[1] += (offset * dr[1]);
 			triangleTop = 0;
 		}
-			if(screen_size_h<mid)mid=screen_size_h;
+		if(screen_size_h<mid)mid=screen_size_h;
 		for(;triangleTop<mid;triangleTop++){
 			if(sr[0]<0){				
 				vec2Plus(sl,dl);//
@@ -845,7 +789,7 @@ function scan_NoTextureMappingHorizontal(zBuffering,screen_size_w,y,startX,endX,
 		if(z>startZ){
 			let imageDataRGBA = imageData[TwoDimensionsimageData][mi[5]][mi[4]];
 			zBufferingY[i] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-				imageDataRGBA[BLUE],imageDataRGBA[ALPHA],shadowFlag,lightShadowFlag,sunCosin);
+				imageDataRGBA[BLUE],shadowFlag,lightShadowFlag,sunCosin);
 		}
 		startZ+=dz;
 	}
@@ -856,41 +800,13 @@ function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_s
 	let mid = pm[position_Y];
 
 	//tmp[0]がpm[0]より大きい時の初期値
-	let pl;
-	let pr;
-	//この関数だけこの中に入りやすい
-	if(pt[1] == pm[1] == pb[1]){
-		let minX = pt[0];
-		let minZ = pt[2];
-		if(minX>pm[0]){
-			minX = pm[0];
-			minZ = pm[2];
-		}
-		if(minX>pb[0]){
-			minX = pb[0];
-			minZ = pb[2];
-		}
-		let maxX = pt[0];
-		let maxZ = pt[2];
-		if(maxX<pm[0]){
-			maxX = pm[0];
-			maxZ = pm[2];
-		}
-		if(minX>pb[0]){
-			maxX = pb[0];
-			maxZ = pb[2];
-		}
-		pl = setVector3(minX,pt[1],minZ);
-		pr = setVector3(maxX,pt[1],maxZ);
-	}else{
-		//tmp[0]がpm[0]より大きい時の初期値
-		pl = branch(pt,pb,mid);//pt->mid	
-		pr = pm;
-		if(pl[0]>pm[0]){
-			pr = pl;
-			pl = pm;
-		}
+	let pl = branch(pt,pb,mid);//pt->mid	
+	let pr = pm;
+	if(pl[0]>pm[0]){
+		pr = pl;
+		pl = pm;
 	}
+
 	//mid=0はlowerで対応
     if(mid>0){//upper
 		let triangleTop = pt[position_Y];
@@ -992,7 +908,7 @@ function scan_NoTextureMappingSunCosinHorizontal(zBuffering,screen_size_w,y,star
 		if(z>startZ){
 			let imageDataRGBA = imageData[TwoDimensionsimageData][mi[5]][mi[4]];
 			zBufferingY[i] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-				imageDataRGBA[BLUE],imageDataRGBA[ALPHA],false,false);
+				imageDataRGBA[BLUE],false,false);
 		}
 		startZ+=dz;
 	}
@@ -1003,41 +919,13 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 	let mid = pm[1];
 
 	//tmp[0]がpm[0]より大きい時の初期値
-	let pl;
-	let pr;
-	//この関数だけこの中に入りやすい
-	if(pt[1] == pm[1] == pb[1]){
-		let minX = pt[0];
-		let minZ = pt[2];
-		if(minX>pm[0]){
-			minX = pm[0];
-			minZ = pm[2];
-		}
-		if(minX>pb[0]){
-			minX = pb[0];
-			minZ = pb[2];
-		}
-		let maxX = pt[0];
-		let maxZ = pt[2];
-		if(maxX<pm[0]){
-			maxX = pm[0];
-			maxZ = pm[2];
-		}
-		if(minX>pb[0]){
-			maxX = pb[0];
-			maxZ = pb[2];
-		}
-		pl = setVector3(minX,pt[1],minZ);
-		pr = setVector3(maxX,pt[1],maxZ);
-	}else{
-		//tmp[0]がpm[0]より大きい時の初期値
-		pl = branch(pt,pb,mid);//pt->mid	
-		pr = pm;
-		if(pl[0]>pm[0]){
-			pr = pl;
-			pl = pm;
-		}
+	let pl = branch(pt,pb,mid);//pt->mid	
+	let pr = pm;
+	if(pl[0]>pm[0]){
+		pr = pl;
+		pl = pm;
 	}
+
 	//mid=0はlowerで対応
     if(mid>0){//upper
 		let triangleTop = pt[1];
@@ -1217,7 +1105,7 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 				//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
 				let imageDataRGBA = imageData[TwoDimensionsimageData][selectOrgy][selectOrgx];
 				zBufferingY[i] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-					imageDataRGBA[BLUE],imageDataRGBA[ALPHA],false,false);
+					imageDataRGBA[BLUE],false,false);
 
 			}
 		startZ+=dz;	
@@ -1230,41 +1118,13 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 	let mid = pm[1];
 	
 	//tmp[0]がpm[0]より大きい時の初期値
-	let pl;
-	let pr;
-	//この関数だけこの中に入りやすい
-	if(pt[1] == pm[1] == pb[1]){
-		let minX = pt[0];
-		let minZ = pt[2];
-		if(minX>pm[0]){
-			minX = pm[0];
-			minZ = pm[2];
-		}
-		if(minX>pb[0]){
-			minX = pb[0];
-			minZ = pb[2];
-		}
-		let maxX = pt[0];
-		let maxZ = pt[2];
-		if(maxX<pm[0]){
-			maxX = pm[0];
-			maxZ = pm[2];
-		}
-		if(minX>pb[0]){
-			maxX = pb[0];
-			maxZ = pb[2];
-		}
-		pl = setVector3(minX,pt[1],minZ);
-		pr = setVector3(maxX,pt[1],maxZ);
-	}else{
-		//tmp[0]がpm[0]より大きい時の初期値
-		pl = branch(pt,pb,mid);//pt->mid	
-		pr = pm;
-		if(pl[0]>pm[0]){
-			pr = pl;
-			pl = pm;
-		}
+	let pl = branch(pt,pb,mid);//pt->mid	
+	let pr = pm;
+	if(pl[0]>pm[0]){
+		pr = pl;
+		pl = pm;
 	}
+	
 	//mid=0はlowerで対応
     if(mid>0){//upper
 		let triangleTop = pt[1];
@@ -1450,7 +1310,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 			//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
 			let imageDataRGBA = imageData[TwoDimensionsimageData][selectOrgy][selectOrgx];
 			zBufferingY[i] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-				imageDataRGBA[BLUE],imageDataRGBA[ALPHA],shadowFlag,lightShadowFlag,sunCosin);
+				imageDataRGBA[BLUE],shadowFlag,lightShadowFlag,sunCosin);
 
 		}
 		startZ+=dz;	
