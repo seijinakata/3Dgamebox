@@ -1657,7 +1657,6 @@ let myImageData = ctx.createImageData(screen_size_w, screen_size_h);
 let myImageDataDataImage = myImageData.data;
 for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   let basearrayY = basearray[pixelY];
-  let zBufferingY = zBuffering[pixelY];
   for (let pixelX=0;pixelX<screen_size_w;pixelX++) {
     let base = basearrayY[pixelX];
     myImageDataDataImage[base[ALPHA]] = 255; // Alpha
@@ -2185,16 +2184,3 @@ document.addEventListener('keydown',e => {
       break;
   }
 });
-
-function drawPolygon(Polygon) {
-    if (Polygon.moveVertices[0][2] > 0.5 && Polygon.moveVertices[1][2] > 0.5 && Polygon.moveVertices[2][2] > 0.5) {
-      ctx.fillStyle = 'blue';
-      ctx.beginPath();
-      ctx.moveTo(Polygon.moveVertices[0][0],(Polygon.moveVertices[0][1]));
-      ctx.lineTo(Polygon.moveVertices[1][0],(Polygon.moveVertices[1][1]));
-      ctx.lineTo(Polygon.moveVertices[2][0],(Polygon.moveVertices[2][1]));
-      ctx.closePath();
-
-      ctx.fill();
-    }
-}
