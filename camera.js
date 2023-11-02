@@ -1979,12 +1979,13 @@ for(let j=0;j<projectedObjectsLength;j++){
     //各点のZ座標がこれより下なら作画しない。x,yが画面外なら作画しない。
     if (!(currentVerts[0][2] > 0.0 && currentVerts[1][2] >0.0 && currentVerts[2][2] > 0.0)) continue;
     let triangleXMin = minCul(currentVerts,0);
+      if(triangleXMin >= screen_size_w) continue;
     let triangleXMax = maxCul(currentVerts,0);
-    if(triangleXMax<0 || triangleXMin >= screen_size_w) continue;
-
+      if(triangleXMax < 0) continue;
     let triangleYMin = minCul(currentVerts,1);
+      if(triangleYMin >= screen_size_h) continue;
     let triangleYMax = maxCul(currentVerts,1);
-    if(triangleYMax<0 || triangleYMin >= screen_size_h) continue;
+      if(triangleYMax < 0) continue;
 
 	  //-の方がこちらに近くなる座標軸だから
 	  if(currentProjectedObject[obj_BackCulling_Flag] == true){
@@ -2013,12 +2014,13 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
     //各点のZ座標がこれより下なら作画しない。x,yが画面外なら作画しない。
     if (!(currentVerts[0][2] > 0.0 && currentVerts[1][2] >0.0 && currentVerts[2][2] > 0.0)) continue;
     let triangleXMin = minCul(currentVerts,0);
+      if(triangleXMin >= screen_size_w) continue;
     let triangleXMax = maxCul(currentVerts,0);
-    if (triangleXMax<0 || triangleXMin >= screen_size_w) continue;
-
+      if(triangleXMax < 0) continue;
     let triangleYMin = minCul(currentVerts,1);
+      if(triangleYMin >= screen_size_h) continue;
     let triangleYMax = maxCul(currentVerts,1);
-    if (triangleYMax<0 || triangleYMin >= screen_size_h) continue;
+      if(triangleYMax < 0) continue;
 
 	  //-の方がこちらに近くなる座標軸だから
 	  if(currentshadowProjectedObject[obj_BackCulling_Flag] == true){

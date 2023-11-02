@@ -175,10 +175,9 @@ export function sort_Yindex(t){
     if(t[1][1]>t[2][1])swap(t[1],t[2]);
     if(t[0][1]>t[1][1])swap(t[0],t[1]);
 }
-
 export function branch(a,b,Y){
-    let  t = (Y-a[1])/(b[1]-a[1]);
-    return setVector3(a[0]*(1-t)+b[0]*t,Y,a[2]*(1-t)+b[2]*t);
+	let  t = (Y-a[1])/(b[1]-a[1]);
+	return setVector3(a[0]*(1-t)+b[0]*t,Y,a[2]*(1-t)+b[2]*t);
 }
 export function pictureToPixelMap(ctx,image){
 
@@ -540,15 +539,61 @@ export function triangleToShadowBuffer(zBuffering,vertex_list,screen_size_h,scre
 //x,yの最初の初期値を０にするのはダメ差分を取るため。shadowMap用
 function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 
-	let mid = pm[position_Y];
+	if(pt[1] == pb[1]){
+		let startX = pt[0];
+		let startZ = pt[2];
+		if(startX>pm[0]){
+			startX = pm[0];
+			startZ = pm[2];
+		}
+		if(startX>pb[0]){
+			startX = pb[0];
+			startZ = pb[2];
+		}
+		let endX = pt[0];
+		let endZ = pt[2];
+		if(endX<pm[0]){
+			endX = pm[0];
+			endZ = pm[2];
+		}
+		if(endX<pb[0]){
+			endX = pb[0];
+			endZ = pb[2];
+		}
+		let zStep = endZ - startZ;
+		let xStep = endX - startX;
+	
+		if(screen_size_w<=endX)endX=screen_size_w-1;
+	
+		let dz = zStep/xStep;
+		let zBufferingY = zBuffering[pt[1]];
+		//Xが０未満でのｚ値の加算
+		let i = startX;
+		if(startX<0){
+			let offset = -1 * startX;
+			startZ += (offset * dz);
+			i = 0;
+		}
+		for(;i<endX;i++){
+			let z = zBufferingY[i];
+			if(z>startZ){
+				zBufferingY[i] = startZ;
+			}
+			startZ+=dz;
+		}
+		return;
+	}
 
+	let mid = pm[position_Y];
 	//tmp[0]がpm[0]より大きい時の初期値
-	let pl = branch(pt,pb,mid);//pt->mid	
+	let pl = branch(pt,pb,mid);//pt->mid
+
 	let pr = pm;
 	if(pl[0]>pm[0]){
 		pr = pl;
 		pl = pm;
 	}
+
 
 	//mid=0はlowerで対応
     if(mid>0){//upper
@@ -677,6 +722,53 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 //x,yの最初の初期値を０にするのはダメ差分を取るため。基本ピクセルで処理が終わる思われるためif文は外してある。
 function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi,shadowFlag,lightShadowFlag,sunCosin){
 
+	if(pt[1] == pb[1]){
+		let startX = pt[0];
+		let startZ = pt[2];
+		if(startX>pm[0]){
+			startX = pm[0];
+			startZ = pm[2];
+		}
+		if(startX>pb[0]){
+			startX = pb[0];
+			startZ = pb[2];
+		}
+		let endX = pt[0];
+		let endZ = pt[2];
+		if(endX<pm[0]){
+			endX = pm[0];
+			endZ = pm[2];
+		}
+		if(endX<pb[0]){
+			endX = pb[0];
+			endZ = pb[2];
+		}
+		let zStep = endZ - startZ;
+		let xStep = endX - startX;
+	
+		if(screen_size_w<=endX)endX=screen_size_w-1;
+	
+		let dz = zStep/xStep;
+		let zBufferingY = zBuffering[pt[1]];
+		//Xが０未満でのｚ値の加算
+		let i = startX;
+		if(startX<0){
+			let offset = -1 * startX;
+			startZ += (offset * dz);
+			i = 0;
+		}
+		for(;i<endX;i++){
+			let z = zBufferingY[i][0];
+			if(z>startZ){
+				let imageDataRGBA = imageData[TwoDimensionsimageData][mi[5]][mi[4]];
+				zBufferingY[i] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+					imageDataRGBA[BLUE],shadowFlag,lightShadowFlag,sunCosin);
+			}
+			startZ+=dz;
+		}
+		return;
+	}
+	
 	let mid = pm[position_Y];
 
 	//tmp[0]がpm[0]より大きい時の初期値
@@ -797,6 +889,53 @@ function scan_NoTextureMappingHorizontal(zBuffering,screen_size_w,y,startX,endX,
 //x,yの最初の初期値を０にするのはダメ差分を取るため。基本ピクセルで処理が終わる思われるためif文は外してある。
 function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi){
 
+	if(pt[1] == pb[1]){
+		let startX = pt[0];
+		let startZ = pt[2];
+		if(startX>pm[0]){
+			startX = pm[0];
+			startZ = pm[2];
+		}
+		if(startX>pb[0]){
+			startX = pb[0];
+			startZ = pb[2];
+		}
+		let endX = pt[0];
+		let endZ = pt[2];
+		if(endX<pm[0]){
+			endX = pm[0];
+			endZ = pm[2];
+		}
+		if(endX<pb[0]){
+			endX = pb[0];
+			endZ = pb[2];
+		}
+		let zStep = endZ - startZ;
+		let xStep = endX - startX;
+	
+		if(screen_size_w<=endX)endX=screen_size_w-1;
+	
+		let dz = zStep/xStep;
+		let zBufferingY = zBuffering[pt[1]];
+		//Xが０未満でのｚ値の加算
+		let i = startX;
+		if(startX<0){
+			let offset = -1 * startX;
+			startZ += (offset * dz);
+			i = 0;
+		}
+		for(;i<endX;i++){
+			let z = zBufferingY[i][0];
+			if(z>startZ){
+				let imageDataRGBA = imageData[TwoDimensionsimageData][mi[5]][mi[4]];
+				zBufferingY[i] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+					imageDataRGBA[BLUE],false,false);
+			}
+			startZ+=dz;
+		}
+		return;
+	}
+
 	let mid = pm[position_Y];
 
 	//tmp[0]がpm[0]より大きい時の初期値
@@ -915,6 +1054,97 @@ function scan_NoTextureMappingSunCosinHorizontal(zBuffering,screen_size_w,y,star
 }
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
 function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData){
+
+	if(pt[1] == pb[1]){
+		let startX = pt[0];
+		let startZ = pt[2];
+		if(startX>pm[0]){
+			startX = pm[0];
+			startZ = pm[2];
+		}
+		if(startX>pb[0]){
+			startX = pb[0];
+			startZ = pb[2];
+		}
+		let endX = pt[0];
+		let endZ = pt[2];
+		if(endX<pm[0]){
+			endX = pm[0];
+			endZ = pm[2];
+		}
+		if(endX<pb[0]){
+			endX = pb[0];
+			endZ = pb[2];
+		}
+		let ptY = pt[1];
+		let tmpOrgy = ptY * inv_d + tmpOrgyef;
+		let tmpOrgx = ptY * inv_c + tmpOrgxef;
+
+		let zStep = endZ - startZ;
+		let xStep = endX - startX;
+	
+		if(screen_size_w<=endX)endX=screen_size_w-1;
+	
+		let dz = zStep/xStep;
+		let zBufferingY = zBuffering[ptY];
+		//Xが０未満でのｚ値の加算
+		let i = startX;
+		if(startX<0){
+			let offset = -1 * startX;
+			startZ += (offset * dz);
+			i = 0;
+		}
+		for(;i<endX;i++){
+			let z = zBufferingY[i][0];
+			if(z>startZ){
+						// if(tmpOrgy == null){
+				// 	tmpOrgy = y * iA[3] + tmpOrgyef;
+				// 	tmpOrgx = y * iA[1] + tmpOrgxef;
+				// }
+
+				/* 元画像における縦方向座標を計算 */
+				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
+				let selectOrgy = tmpOrgy + i * inv_b;
+				/* アフィン後の座標に対応した元画像の座標 超重要な式 */
+				//let selectOrgy = startX * iA[2] + y * iA[3]
+				//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
+
+				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
+				if(selectOrgy > imageData[Image_Height]-1){
+					selectOrgy = imageData[Image_Height]-1;
+				}else if(selectOrgy < 0){
+					selectOrgy = 0;
+				}else{
+					/* 最近傍補間した元画像の座標 */
+					selectOrgy |= 0;
+				}			
+				
+				/* 元画像における横方向座標を計算 */
+				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
+				let selectOrgx = tmpOrgx + i * inv_a;
+				/* アフィン後の座標に対応した元画像の座標 超重要な式*/
+				//let selectOrgx = startX * iA[0] + y * iA[1]
+				//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
+
+				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
+				if(selectOrgx > imageData[Image_Width]-1){
+					selectOrgx = imageData[Image_Width]-1;
+				}else if(selectOrgx < 0){
+					selectOrgx = 0;
+				}else{
+					/* 最近傍補間した元画像の座標 */
+					selectOrgx |= 0;
+				}				
+				
+				//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
+				let imageDataRGBA = imageData[TwoDimensionsimageData][selectOrgy][selectOrgx];
+				zBufferingY[i] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+					imageDataRGBA[BLUE],false,false);
+			}
+			startZ+=dz;
+		}
+		return;
+	}
 
 	let mid = pm[1];
 
@@ -1114,6 +1344,97 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
 function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData,shadowFlag,lightShadowFlag,sunCosin){
+
+	if(pt[1] == pb[1]){
+		let startX = pt[0];
+		let startZ = pt[2];
+		if(startX>pm[0]){
+			startX = pm[0];
+			startZ = pm[2];
+		}
+		if(startX>pb[0]){
+			startX = pb[0];
+			startZ = pb[2];
+		}
+		let endX = pt[0];
+		let endZ = pt[2];
+		if(endX<pm[0]){
+			endX = pm[0];
+			endZ = pm[2];
+		}
+		if(endX<pb[0]){
+			endX = pb[0];
+			endZ = pb[2];
+		}
+		let ptY = pt[1];
+		let tmpOrgy = ptY * inv_d + tmpOrgyef;
+		let tmpOrgx = ptY * inv_c + tmpOrgxef;
+
+		let zStep = endZ - startZ;
+		let xStep = endX - startX;
+	
+		if(screen_size_w<=endX)endX=screen_size_w-1;
+	
+		let dz = zStep/xStep;
+		let zBufferingY = zBuffering[ptY];
+		//Xが０未満でのｚ値の加算
+		let i = startX;
+		if(startX<0){
+			let offset = -1 * startX;
+			startZ += (offset * dz);
+			i = 0;
+		}
+		for(;i<endX;i++){
+			let z = zBufferingY[i][0];
+			if(z>startZ){
+						// if(tmpOrgy == null){
+				// 	tmpOrgy = y * iA[3] + tmpOrgyef;
+				// 	tmpOrgx = y * iA[1] + tmpOrgxef;
+				// }
+
+				/* 元画像における縦方向座標を計算 */
+				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
+				let selectOrgy = tmpOrgy + i * inv_b;
+				/* アフィン後の座標に対応した元画像の座標 超重要な式 */
+				//let selectOrgy = startX * iA[2] + y * iA[3]
+				//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
+
+				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
+				if(selectOrgy > imageData[Image_Height]-1){
+					selectOrgy = imageData[Image_Height]-1;
+				}else if(selectOrgy < 0){
+					selectOrgy = 0;
+				}else{
+					/* 最近傍補間した元画像の座標 */
+					selectOrgy |= 0;
+				}			
+				
+				/* 元画像における横方向座標を計算 */
+				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
+				let selectOrgx = tmpOrgx + i * inv_a;
+				/* アフィン後の座標に対応した元画像の座標 超重要な式*/
+				//let selectOrgx = startX * iA[0] + y * iA[1]
+				//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
+
+				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
+				if(selectOrgx > imageData[Image_Width]-1){
+					selectOrgx = imageData[Image_Width]-1;
+				}else if(selectOrgx < 0){
+					selectOrgx = 0;
+				}else{
+					/* 最近傍補間した元画像の座標 */
+					selectOrgx |= 0;
+				}				
+				
+				//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
+				let imageDataRGBA = imageData[TwoDimensionsimageData][selectOrgy][selectOrgx];
+				zBufferingY[i] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+					imageDataRGBA[BLUE],shadowFlag,lightShadowFlag,sunCosin);
+			}
+			startZ+=dz;
+		}
+		return;
+	}
 
 	let mid = pm[1];
 	
