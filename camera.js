@@ -1,6 +1,6 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
-import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,round100,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul} from './vector.js';
+import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,round100,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul, minXCul, maxXCul, minYCul, maxYCul} from './vector.js';
 import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,triangleToBuffer,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
@@ -1977,13 +1977,13 @@ for(let j=0;j<projectedObjectsLength;j++){
     let currentVerts = currentProjectedObject[poly_List][projectedPolyNum][projected_Verts];
     //各点のZ座標がこれより下なら作画しない。x,yが画面外なら作画しない。
     if (!(currentVerts[0][2] > 0.0 && currentVerts[1][2] >0.0 && currentVerts[2][2] > 0.0)) continue;
-    let triangleXMin = minCul(currentVerts,0);
+    let triangleXMin = minXCul(currentVerts);
       if(triangleXMin >= screen_size_w) continue;
-    let triangleXMax = maxCul(currentVerts,0);
+    let triangleXMax = maxXCul(currentVerts);
       if(triangleXMax < 0) continue;
-    let triangleYMin = minCul(currentVerts,1);
+    let triangleYMin = minYCul(currentVerts);
       if(triangleYMin >= screen_size_h) continue;
-    let triangleYMax = maxCul(currentVerts,1);
+    let triangleYMax = maxYCul(currentVerts);
       if(triangleYMax < 0) continue;
 
 	  //-の方がこちらに近くなる座標軸だから
@@ -2012,13 +2012,13 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
     let currentVerts = currentshadowProjectedObject[poly_List][projectedPolyNum][projected_Verts];
     //各点のZ座標がこれより下なら作画しない。x,yが画面外なら作画しない。
     if (!(currentVerts[0][2] > 0.0 && currentVerts[1][2] >0.0 && currentVerts[2][2] > 0.0)) continue;
-    let triangleXMin = minCul(currentVerts,0);
+    let triangleXMin = minXCul(currentVerts);
       if(triangleXMin >= screen_size_w) continue;
-    let triangleXMax = maxCul(currentVerts,0);
+    let triangleXMax = maxXCul(currentVerts);
       if(triangleXMax < 0) continue;
-    let triangleYMin = minCul(currentVerts,1);
+    let triangleYMin = minYCul(currentVerts);
       if(triangleYMin >= screen_size_h) continue;
-    let triangleYMax = maxCul(currentVerts,1);
+    let triangleYMax = maxYCul(currentVerts);
       if(triangleYMax < 0) continue;
 
 	  //-の方がこちらに近くなる座標軸だから

@@ -10,6 +10,42 @@ export function minCul(t,i){
     if(t[2][i]<tmpMin)tmpMin = t[2][i];
     return tmpMin;
 }
+export function maxXCul(t){
+	let tmpMax = t[0][0]
+    if(t[1][0]>tmpMax)tmpMax = t[1][0];
+    if(t[2][0]>tmpMax)tmpMax = t[2][0];
+    return tmpMax;
+}
+export function minXCul(t){
+	let tmpMin = t[0][0]
+    if(t[1][0]<tmpMin)tmpMin = t[1][0];
+    if(t[2][0]<tmpMin)tmpMin = t[2][0];
+    return tmpMin;
+}
+export function maxYCul(t){
+	let tmpMax = t[0][1]
+    if(t[1][1]>tmpMax)tmpMax = t[1][1];
+    if(t[2][1]>tmpMax)tmpMax = t[2][1];
+    return tmpMax;
+}
+export function minYCul(t){
+	let tmpMin = t[0][1]
+    if(t[1][1]<tmpMin)tmpMin = t[1][1];
+    if(t[2][1]<tmpMin)tmpMin = t[2][1];
+    return tmpMin;
+}
+export function maxZCul(t){
+	let tmpMax = t[0][2]
+    if(t[1][2]>tmpMax)tmpMax = t[1][2];
+    if(t[2][2]>tmpMax)tmpMax = t[2][2];
+    return tmpMax;
+}
+export function minZCul(t){
+	let tmpMin = t[0][2]
+    if(t[1][2]<tmpMin)tmpMin = t[1][2];
+    if(t[2][2]<tmpMin)tmpMin = t[2][2];
+    return tmpMin;
+}
 export function round(orgValue){
     return ((orgValue * 1000)|0) / 1000;
 }
