@@ -133,8 +133,8 @@ class scan_entry{
 		this.min = [];
 		this.max = [];	
 	}
-
 };
+
 //vertsCopy
 export function vertsCopy(verts){
     let copyVerts = [verts[0],verts[1],verts[2]];
@@ -177,7 +177,8 @@ export function sort_Yindex(t){
 }
 export function branch(a,b,Y){
 	let  t = (Y-a[1])/(b[1]-a[1]);
-	return setVector3(a[0]*(1-t)+b[0]*t,Y,a[2]*(1-t)+b[2]*t);
+	let invt = (1-t);
+	return setVector3(a[0]*invt+b[0]*t,Y,a[2]*invt+b[2]*t);
 }
 export function pictureToPixelMap(ctx,image){
 

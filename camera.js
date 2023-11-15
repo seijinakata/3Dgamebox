@@ -875,13 +875,12 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       let waightMatrix = matWaight(bonesMatrix,matrixWaight);
       matPlus(mixMatrix,waightMatrix); 
     }
+
     let boneWeightVerts = matVecMul(mixMatrix,object.meshVerts[i]);
     let normalBoneWeightVerts = vertsCopy(boneWeightVerts); 
-    let boneShadowWeightVerts = vertsCopy(boneWeightVerts);
-
+   
     worldVerts[i] = boneWeightVerts;
     let viewZ = matMulVertsZCamera(viewMatrix,normalBoneWeightVerts);
-    let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,boneShadowWeightVerts);
     if(viewZ > 0){
       let projectionMatrix =  matPers(viewZ);
       normalBoneWeightVerts = matMulVertsXYZCamera(viewMatrix,normalBoneWeightVerts,viewZ);
@@ -893,15 +892,19 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       //ラスタライズしないのでx,y,zは適当な値
       normalBoneWeightVerts = setVector3(0,0,0);
     }
-    if(shadowViewZ > 0){
+    //shadowはテクスチャ貼らないのでＵＶ値のポリゴンを合わせる必要なし
+    if(object.shadowFlag != false){
+      let boneShadowWeightVerts = vertsCopy(boneWeightVerts);
+      let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,boneShadowWeightVerts);
+      if(shadowViewZ <= 0){
+        continue;
+      }
       let shadowProjectionMatrix =  matPers(shadowViewZ);
       boneShadowWeightVerts = matMulVertsXYZCamera(shadowViewMatrix,boneShadowWeightVerts,shadowViewZ);
       protMatVecMul(shadowProjectionMatrix,boneShadowWeightVerts);
       boneShadowWeightVerts[0] = ((boneShadowWeightVerts[0] + 0.5)*screen_size_w)|0;
       boneShadowWeightVerts[1] = ((boneShadowWeightVerts[1] + 0.5)*screen_size_h)|0;
-    }else{
-      //ラスタライズしないのでx,y,zは適当な値
-      boneShadowWeightVerts = setVector3(0,0,0);
+      shadowProjectedVerts[i] = boneShadowWeightVerts;
     }
 
     // protMatVecMul(shadowViewMatrix,shadowVerts);
@@ -927,7 +930,6 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
     //   shadowVerts = setVector3(0,0,0);
     // }
     projectedVerts[i] = normalBoneWeightVerts;
-    shadowProjectedVerts[i] = boneShadowWeightVerts;
   }
  
   let poly = [];
@@ -937,13 +939,16 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
       worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i]);
-    shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);
+      if(object.shadowFlag != false){
+       shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);        
+      }
   }
 
   //ｚソート
   objectZsort(projectedObjects,object,poly);
-  objectShadowZsort(shadowPprojectedObjects,object,shadowPoly);
-
+  if(object.shadowFlag != false){
+   objectShadowZsort(shadowPprojectedObjects,object,shadowPoly);   
+  }
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
     if(moveCubeInfo.backGroundFlag == true){
@@ -1014,11 +1019,11 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
     verts = Vector3QuaternionMul(worldTranslation.quaternion,verts);
     vecPlus(verts,worldTranslation.position);
     //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
+
     let normalVerts = vertsCopy(verts);
-    let shadowVerts = vertsCopy(verts);
     worldVerts.push(verts);
+
     let viewZ = matMulVertsZCamera(viewMatrix,normalVerts);
-    let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,shadowVerts);
     if(viewZ > 0){
       let projectionMatrix =  matPers(viewZ);
       normalVerts = matMulVertsXYZCamera(viewMatrix,normalVerts,viewZ);
@@ -1030,18 +1035,21 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
       //ラスタライズしないのでx,y,zは適当な値
       normalVerts = setVector3(0,0,0);
     }
-    if(shadowViewZ > 0){
+    //shadowはテクスチャ貼らないのでＵＶ値のポリゴンを合わせる必要なし
+    if(object.shadowFlag != false){
+      let shadowVerts = vertsCopy(verts);
+      let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,shadowVerts);
+      if(shadowViewZ <= 0){
+        continue;
+      }
       let shadowProjectionMatrix =  matPers(shadowViewZ);
       shadowVerts = matMulVertsXYZCamera(shadowViewMatrix,shadowVerts,shadowViewZ);
       protMatVecMul(shadowProjectionMatrix,shadowVerts); 
       shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
       shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;   
-    }else{
-      //ラスタライズしないのでx,y,zは適当な値
-      shadowVerts = setVector3(0,0,0);
+     shadowProjectedVerts.push(shadowVerts);  
     }
     projectedVerts.push(normalVerts);
-    shadowProjectedVerts.push(shadowVerts);  
   }
   let poly = [];
   let shadowPoly = [];
@@ -1050,12 +1058,16 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
       worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i]));
-    shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));
+      if(object.shadowFlag != false){
+        shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));  
+      }
   } 
 
   //ｚソート
   objectZsort(projectedObjects,object,poly);
-  objectShadowZsort(shadowPprojectedObjects,object,shadowPoly);
+  if(object.shadowFlag != false){
+    objectShadowZsort(shadowPprojectedObjects,object,shadowPoly);   
+   }
   //moveCubeInfo.backGroundFlag = object.backGroundFlag;
     /*
     if(moveCubeInfo.backGroundFlag == true){
@@ -2004,14 +2016,10 @@ for(let j=0;j<projectedObjectsLength;j++){
 let shadowProjectedObjectsLength  = shadowProjectedObjects.length;
 for(let j=0;j<shadowProjectedObjectsLength;j++){
   let currentshadowProjectedObject = shadowProjectedObjects[j];
-  if(currentshadowProjectedObject[obj_Shadow_Flag] == false){
-    continue;
-  }
   let shadowProjectedObjects_j_polygonNum = currentshadowProjectedObject[poly_List].length;
 	for(let projectedPolyNum=0;projectedPolyNum<shadowProjectedObjects_j_polygonNum;projectedPolyNum++){
     let currentVerts = currentshadowProjectedObject[poly_List][projectedPolyNum][projected_Verts];
-    //各点のZ座標がこれより下なら作画しない。x,yが画面外なら作画しない。
-    if (!(currentVerts[0][2] > 0.0 && currentVerts[1][2] >0.0 && currentVerts[2][2] > 0.0)) continue;
+    ///x,yが画面外なら作画しない。
     let triangleXMin = minXCul(currentVerts);
       if(triangleXMin >= screen_size_w) continue;
     let triangleXMax = maxXCul(currentVerts);
