@@ -163,10 +163,8 @@ let  beforeX = x;
 /* Newton's Method. */
 while(true){
     let nextX = beforeX - fx(beforeX,param)/dfx(beforeX);
-    //f(x)=限りなく0に近づきましたか？
     let nextBeforeX = nextX - beforeX;
-    let absNextBeforeX = (nextBeforeX)>0 ? (nextBeforeX) : -(nextBeforeX);
-        if (absNextBeforeX < TOLERANCE) {
+        if (0 <= nextBeforeX && nextBeforeX < TOLERANCE) {
             return nextX;
         }else{
             beforeX = nextX;
@@ -175,14 +173,15 @@ while(true){
 }
 export function cul3dVecLength(vector3){
     let distance = vector3[0] * vector3[0] + vector3[1] * vector3[1] + vector3[2] * vector3[2];
-    let absDistance = (distance)>0 ? (distance) : -(distance);
+    //２乗計算は必ず＋になる。
+    //let absDistance = (distance)>0 ? (distance) : -(distance);
     //let length = NewtonMethod(1,absDistance);
-    return absDistance;
+    return distance;
 }
  export function culVecNormalize(vector3){
     let distance = vector3[0] * vector3[0] + vector3[1] * vector3[1] + vector3[2] * vector3[2];
-    let absDistance = (distance)>0 ? (distance) : -(distance);
-    let invLength = 1/NewtonMethod(1,absDistance);
+    //let absDistance = (distance)>0 ? (distance) : -(distance);
+    let invLength = 1/NewtonMethod(1,distance);
     vector3[0] = vector3[0] * invLength;
     vector3[1] = vector3[1] * invLength;
     vector3[2] = vector3[2] * invLength;
