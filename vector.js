@@ -159,12 +159,13 @@ function dfx(x){
 }
 export function NewtonMethod(x,param){
 const TOLERANCE =  0.00001
+const MINUSTOLERANCE =  -0.00001
 let  beforeX = x;
 /* Newton's Method. */
 while(true){
     let nextX = beforeX - fx(beforeX,param)/dfx(beforeX);
     let nextBeforeX = nextX - beforeX;
-        if (0 <= nextBeforeX && nextBeforeX < TOLERANCE) {
+        if (MINUSTOLERANCE < nextBeforeX && nextBeforeX < TOLERANCE) {
             return nextX;
         }else{
             beforeX = nextX;
