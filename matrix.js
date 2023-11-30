@@ -89,29 +89,26 @@ export function matPlus(m1,m2) {
 ;
 }
 export function matWaight(m,w) {
-    let tmp = matCopy(m);
 
-    tmp[0] *= w;
-    tmp[1] *= w;
-    tmp[2] *= w;
-    tmp[3] *= w;
+    m[0] *= w;
+    m[1] *= w;
+    m[2] *= w;
+    m[3] *= w;
 
-    tmp[4] *= w;
-    tmp[5] *= w;
-    tmp[6] *= w;
-    tmp[7] *= w;
+    m[4] *= w;
+    m[5] *= w;
+    m[6] *= w;
+    m[7] *= w;
 
-    tmp[8] *= w;
-    tmp[9] *= w;
-    tmp[10] *= w;
-    tmp[11] *= w;
+    m[8] *= w;
+    m[9] *= w;
+    m[10] *= w;
+    m[11] *= w;
 
     //tmp[12] = m[12] * w;
     //tmp[13] = m[13] * w;
     //tmp[14] = m[14] * w;
     //tmp[15] = m[15] * w;
-
-    return tmp;
 }
 //４行目は0,0,0,1なので出力3,7,11は最後そのまま足す。
 export function matMul(m1,m2) {

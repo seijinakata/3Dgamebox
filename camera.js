@@ -865,15 +865,14 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
 
   let meshVets_Length = object.meshVerts.length;
   for (let i = 0; i < meshVets_Length; i++) {
-    let mixMatrix =  object.bones[object.blendBoneIndex[i][0]].skinmeshBone;
-    let matrixWaight = object.bonesWeight[i][0];
-    mixMatrix = matWaight(mixMatrix,matrixWaight);
+    let mixMatrix =  matCopy(object.bones[object.blendBoneIndex[i][0]].skinmeshBone);
+    matWaight(mixMatrix,object.bonesWeight[i][0]);
     let blendBoneIndex_Length = object.blendBoneIndex[i].length;
+    //頂点のboneの影響度
     for(let j=1;j<blendBoneIndex_Length;j++){
-      let bonesMatrix = object.bones[object.blendBoneIndex[i][j]].skinmeshBone;
-      matrixWaight = object.bonesWeight[i][j];
-      let waightMatrix = matWaight(bonesMatrix,matrixWaight);
-      matPlus(mixMatrix,waightMatrix); 
+      let bonesMatrix = matCopy(object.bones[object.blendBoneIndex[i][j]].skinmeshBone);
+      matWaight(bonesMatrix,object.bonesWeight[i][j]);
+      matPlus(mixMatrix,bonesMatrix); 
     }
 
     let boneWeightVerts = matVecMul(mixMatrix,object.meshVerts[i]);
