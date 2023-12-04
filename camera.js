@@ -1416,6 +1416,25 @@ function Quaternion(x,y, z, w){
 function Conjugated(x,y,z,w){
   return Quaternion(-x, -y, -z, w);
 }
+function vector3QuaternionMul(a,b)
+{
+  // Quaternion同士の積の計算vertsの[3]=0
+  return Quaternion(
+      a[3] * b[0] - a[2] * b[1] + a[1] * b[2],
+      a[2] * b[0] + a[3] * b[1] - a[0] * b[2],
+    - a[1] * b[0] + a[0] * b[1] + a[3] * b[2],
+    - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
+  );
+}
+function outputVector3QuaternionMul(a,b)
+{
+  // Quaternion同士の積の計算
+  return setVector3(
+      a[0] * b[3] + a[3] * b[0] - a[2] * b[1] + a[1] * b[2],
+      a[1] * b[3] + a[2] * b[0] + a[3] * b[1] - a[0] * b[2],
+      a[2] * b[3] - a[1] * b[0] + a[0] * b[1] + a[3] * b[2],
+  );
+}
 function QuaternionMul(a,b)
 {
   // Quaternion同士の積の計算
@@ -1428,12 +1447,12 @@ function QuaternionMul(a,b)
 }
 function Vector3QuaternionMul(a,b){
   // ベクトルをQuaternionに変換 q * p * q^-1 でベクトルを回転。w=0とおいて、最後wを無視する。
-  let bQuaternion = Quaternion(b[0], b[1], b[2],0);
+  //let bQuaternion = Quaternion(b[0], b[1], b[2],0);
   //同じクォータニオンでもp(b)が元の頂点、q(a)が回転させたい軸、出力が回転させた結果
   let aConjugated = Conjugated(a[0],a[1],a[2],a[3]);
-  let abQuaternion = QuaternionMul(a,bQuaternion);
-  var pos = QuaternionMul(abQuaternion,aConjugated);
-  return setVector3(pos[0], pos[1], pos[2]);
+  let abQuaternion = vector3QuaternionMul(a,b);
+  let pos = outputVector3QuaternionMul(abQuaternion,aConjugated);
+  return pos;
 }
 
 /// 回転角度と回転軸からQuaternionを作成する
