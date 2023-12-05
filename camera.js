@@ -2043,11 +2043,8 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         let pixelB = pixel[pixel_B];
         //let pixela = pixel[4];
         //シャドウマップに照らし合わせる。
-        //camera
-        //let pixelVector3 = setVector3(pixelX,pixelY,pixelZ);
+        //camera=>world
         //inverseViewPort and inverseProjection
-        let shadowPixelY = round(shadowViewPortY[pixelY] * pixelZ);
-        let shadowPixelX = round(shadowViewPortX[pixelX] * pixelZ);
         /*
         //inverseViewPort
         shadowPixelX /= screen_size_w;
@@ -2062,36 +2059,17 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         shadowPixelX *= pixelZ;
         shadowPixelY *= pixelZ;
         */
-        //view
-        //shadowMatrixmul
-
-        let shadowMatrixPixelY = shadowMat[4]*shadowPixelX + shadowMat[5]*shadowPixelY + shadowMat[6]*pixelZ + shadowMat[7];
-        let shadowMatrixPixelX = shadowMat[0]*shadowPixelX + shadowMat[1]*shadowPixelY + shadowMat[2]*pixelZ + shadowMat[3];
-        pixelZ = shadowMat[8]*shadowPixelX + shadowMat[9]*shadowPixelY + shadowMat[10]*pixelZ + shadowMat[11];
-        //let invPixelZ = 1/pixelZ;
-        //projectionMatrix = matPers(pixelVector3[2]);
-        //pixelVector3 = matVecMul(projectionMatrix,pixelVector3);
-    
-        //projection
-        shadowMatrixPixelY /= pixelZ;
-        shadowMatrixPixelX /= pixelZ;
+        let shadowPixelY = round(shadowViewPortY[pixelY] * pixelZ);
+        let shadowPixelX = round(shadowViewPortX[pixelX] * pixelZ);
+        //world=>shadowView
+        //shadowMatrixmul and projection(/shadowPixelZ) and viewPort (+ 0.5)*screen_size_wh)|0;
+        let shadowPixelZ = shadowMat[8]*shadowPixelX + shadowMat[9]*shadowPixelY + shadowMat[10]*pixelZ + shadowMat[11];
+        let shadowMatrixPixelY = ((((shadowMat[4]*shadowPixelX + shadowMat[5]*shadowPixelY + shadowMat[6]*pixelZ + shadowMat[7])/shadowPixelZ) + 0.5) * screen_size_h)|0;
+        let shadowMatrixPixelX = (((shadowMat[0]*shadowPixelX + shadowMat[1]*shadowPixelY + shadowMat[2]*pixelZ + shadowMat[3])/shadowPixelZ + 0.5) * screen_size_w)|0;
         
-        //viewPort
-        shadowMatrixPixelY += 0.5;
-        shadowMatrixPixelX += 0.5;
-        shadowMatrixPixelY *= screen_size_h;
-        shadowMatrixPixelX *= screen_size_w;
-        shadowMatrixPixelY |= 0;
-        shadowMatrixPixelX |= 0;  
-        /*代入あり
-
-        /*代入あり
-        shadowMatrixPixelY = ((shadowMatrixPixelY  + 0.5)*screen_size_h)|0;
-        shadowMatrixPixelX = ((shadowMatrixPixelX  + 0.5)*screen_size_w)|0;
-        */
         if(shadowMatrixPixelY>0 && shadowMatrixPixelY<screen_size_h){
           if(shadowMatrixPixelX>0 && shadowMatrixPixelX<screen_size_w){ 
-            if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.5<pixelZ){
+            if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.5<shadowPixelZ){
               pixelR *= 0.5;
               pixelG *= 0.5;
               pixelB *= 0.5;	
