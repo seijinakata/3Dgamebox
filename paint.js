@@ -1852,9 +1852,10 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 	let d = mi[1][0] * _Ay + mi[1][1] * _By;
 
 	//逆行列のad-bc
-	let det = a * d - c * b;
-
-	if(det == 0) {
+	let ad = a*d;
+	let cb = c*b;
+	
+	if(ad == cb) {
 		//sortするのはY座標のみ
 		sort_Yindex(vertex_list);
 		let pt = vertex_list[0];
@@ -1867,7 +1868,7 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 			scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi);
 		} 
 	}else{
-		let inv_det = 1.0/det;
+		let inv_det = 1.0/(ad - cb);
 		//acbdの逆行列
 		let inv_a = d * inv_det;
 		let inv_c = - c * inv_det;
