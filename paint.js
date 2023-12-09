@@ -154,26 +154,49 @@ export function delta_xz(edge){
 
     return setVector2(dx,dz);
 }
-//ソート関数
-function swap(a,b){
-	let tmpX = a[0];
-	let tmpY = a[1];
-	let tmpZ = a[2];
+// //ソート関数
+// function swap(a,b){
+// 	let tmpX = a[0];
+// 	let tmpY = a[1];
+// 	let tmpZ = a[2];
 	
-	a[0] = b[0];
-	b[0] = tmpX;
+// 	a[0] = b[0];
+// 	b[0] = tmpX;
 
-	a[1] = b[1];
-	b[1] = tmpY;
+// 	a[1] = b[1];
+// 	b[1] = tmpY;
 
-	a[2] = b[2];
-	b[2] = tmpZ;
-}
-//sortするのはY座標のみ
+// 	a[2] = b[2];
+// 	b[2] = tmpZ;
+// }
+// //sortするのはY座標のみ
+// export function sort_Yindex(t){
+//     if(t[0][1]>t[1][1])swap(t[0],t[1]);
+//     if(t[1][1]>t[2][1])swap(t[1],t[2]);
+//     if(t[0][1]>t[1][1])swap(t[0],t[1]);
+// }
+//sortするのはY座標のみポインタ交換
 export function sort_Yindex(t){
-    if(t[0][1]>t[1][1])swap(t[0],t[1]);
-    if(t[1][1]>t[2][1])swap(t[1],t[2]);
-    if(t[0][1]>t[1][1])swap(t[0],t[1]);
+	let sortY = [];
+	sortY[0] = t[0];
+    if(sortY[0][1]>t[1][1]){
+		sortY[1] = t[0];
+		sortY[0] = t[1];
+	}else{
+		sortY[1] = t[1];	
+	}
+	if(sortY[0][1]>t[2][1]){
+		sortY[2] = sortY[1];
+		sortY[1] = sortY[0];
+		sortY[0] = t[2]
+	}else if(sortY[1][1]>t[2][1]){
+		sortY[2] = sortY[1];
+		sortY[1] = t[2];		
+	}else{
+		sortY[2] = t[2];
+	}
+
+    return sortY;
 }
 export function branch(a,b,Y){
 	let  t = (Y-a[1])/(b[1]-a[1]);
@@ -529,10 +552,10 @@ export function triangleRasterize(buffer,bufferFrame,z,r,g,b,a,screen_size_h,scr
 export function triangleToShadowBuffer(zBuffering,vertex_list,screen_size_h,screen_size_w)
 {
 	//sortするのはY座標のみ
-	sort_Yindex(vertex_list);//ys
-	let pt = vertex_list[0];
-	let pm = vertex_list[1];
-	let pb = vertex_list[2];
+	let sortVerts = sort_Yindex(vertex_list);//ys
+	let pt = sortVerts[0];
+	let pm = sortVerts[1];
+	let pb = sortVerts[2];
 
 	scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb);		
 }
@@ -1857,10 +1880,10 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 	
 	if(ad == cb) {
 		//sortするのはY座標のみ
-		sort_Yindex(vertex_list);
-		let pt = vertex_list[0];
-		let pm = vertex_list[1];
-		let pb = vertex_list[2];
+		let sortVerts = sort_Yindex(vertex_list);
+		let pt = sortVerts[0];
+		let pm = sortVerts[1];
+		let pb = sortVerts[2];
 		if(shadowFlag == true){
 			let sunCosin = culVecDot(sunVec, crossWorldVector3)*1.5;//1.5掛けるのは明るさの調節
 			scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi,true,lightShadowFlag,sunCosin)
@@ -1881,10 +1904,10 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 		let tmpOrgyef =  - (e * inv_b) - f * inv_d;
 		let tmpOrgxef =  - (e * inv_a) - f * inv_c;
 		//sortするのはY座標のみ
-		sort_Yindex(vertex_list);
-		let pt = vertex_list[0];
-		let pm = vertex_list[1];
-		let pb = vertex_list[2];
+		let sortVerts = sort_Yindex(vertex_list);
+		let pt = sortVerts[0];
+		let pm = sortVerts[1];
+		let pb = sortVerts[2];
 		if(shadowFlag == true){
 			let sunCosin = culVecDot(sunVec, crossWorldVector3)*1.5;//1.5掛けるのは明るさの調節
 			scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData,true,lightShadowFlag,sunCosin);
