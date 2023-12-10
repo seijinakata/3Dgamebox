@@ -175,27 +175,26 @@ export function delta_xz(edge){
 //     if(t[1][1]>t[2][1])swap(t[1],t[2]);
 //     if(t[0][1]>t[1][1])swap(t[0],t[1]);
 // }
-//sortするのはY座標のみポインタ交換
+//sortするのはY座標のみ
 export function sort_Yindex(t){
 	let sortY = [];
-	sortY[0] = t[0];
-    if(sortY[0][1]>t[1][1]){
-		sortY[1] = t[0];
-		sortY[0] = t[1];
+	let sortList;
+	//挿入法リストを作る
+    if(t[0][1]>t[1][1]){
+		sortList = [1,0];
 	}else{
-		sortY[1] = t[1];	
+		sortList = [0,1]
 	}
-	if(sortY[0][1]>t[2][1]){
-		sortY[2] = sortY[1];
-		sortY[1] = sortY[0];
-		sortY[0] = t[2]
-	}else if(sortY[1][1]>t[2][1]){
-		sortY[2] = sortY[1];
-		sortY[1] = t[2];		
+	if(t[sortList[0]][1]>t[2][1]){
+		sortList = [2,sortList[0],sortList[1]];
+	}else if(t[sortList[1]][1]>t[2][1]){
+		sortList = [sortList[0],2,sortList[1]];
 	}else{
-		sortY[2] = t[2];
+		sortList[2] = 2;
 	}
-
+	sortY[0] = t[sortList[0]];
+	sortY[1] = t[sortList[1]];
+	sortY[2] = t[sortList[2]];
     return sortY;
 }
 export function branch(a,b,Y){
