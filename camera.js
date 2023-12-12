@@ -1,7 +1,7 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
 import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,round100,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul, minXCul, maxXCul, minYCul, maxYCul} from './vector.js';
-import {matIdentity,mulMatTranslate,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera} from './matrix.js';
+import {matIdentity,matDirectMul,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,triangleToBuffer,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
 import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, UV_Vector, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, pixel_LightShadow_Flag } from './enum.js';
@@ -949,7 +949,7 @@ function daeMekeSkinMeshBone(daeLoadPack){
           let quaternionMatrix = makeQuaternionMatrix(quaternionOut);
           quaternionMatrixTranstation(quaternionMatrix,daeLoadPack.bones[boneParentRelation].position[0],daeLoadPack.bones[boneParentRelation].position[1],daeLoadPack.bones[boneParentRelation].position[2]);
           quaternionMatrixScaling(quaternionMatrix,daeLoadPack.bones[boneParentRelation].scaleXYZ[0],daeLoadPack.bones[boneParentRelation].scaleXYZ[1],daeLoadPack.bones[boneParentRelation].scaleXYZ[2]);
-          copyInverseBindPose = matMul(copyInverseBindPose,quaternionMatrix);
+          matDirectMul(copyInverseBindPose,quaternionMatrix);
           //オイラー角
           // mulMatTranslate(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].position[0],
           // daeLoadPack.bones[boneParentRelation].position[1],daeLoadPack.bones[boneParentRelation].position[2]);
@@ -958,7 +958,8 @@ function daeMekeSkinMeshBone(daeLoadPack){
           // mulMatRotateZ(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
           // mulMatScaling(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].scaleXYZ[0],
           // daeLoadPack.bones[boneParentRelation].scaleXYZ[1],daeLoadPack.bones[boneParentRelation].scaleXYZ[2]);  
-          daeLoadPack.bones[boneParentRelation].skinmeshBone = matMul(copyInverseBindPose,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
+          matDirectMul(copyInverseBindPose,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
+          daeLoadPack.bones[boneParentRelation].skinmeshBone = copyInverseBindPose;
         }
       }else{
       if(daeLoadPack.bones[boneParentRelation].skinmeshBone  == null){
@@ -968,12 +969,13 @@ function daeMekeSkinMeshBone(daeLoadPack){
           slerpQuaternionArray(quaternionOut,daeLoadPack.bones[boneParentRelation].quaternionTime,daeLoadPack.bones[boneParentRelation].quaternion,daeLoadPack.bones[boneParentRelation].quaternionTime.length,daeLoadPack.bones[boneParentRelation].currentTime);
           //slerpQuaternion(quaternionOut,daeLoadPack.bones[boneParentRelation].preQuaternion,daeLoadPack.bones[boneParentRelation].afterQuaternion,daeLoadPack.bones[boneParentRelation].currentTime);
           let QuaternionMatrix = makeQuaternionMatrix(quaternionOut);
-          let QuaternionParentCrossBone = matMul(parentCrossBone,QuaternionMatrix);
+          matDirectMul(parentCrossBone,QuaternionMatrix);
           //オイラー角
           // mulMatRotateX(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
           // mulMatRotateY(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
           // mulMatRotateZ(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
-          daeLoadPack.bones[boneParentRelation].skinmeshBone = matMul(QuaternionParentCrossBone,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
+          matDirectMul(parentCrossBone,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
+          daeLoadPack.bones[boneParentRelation].skinmeshBone = parentCrossBone;
         }
       }
     }
@@ -2027,8 +2029,9 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
   }  
 }
 //作画
-let shadowMat = matMul(sunViewMatrix,inverseViewMatrix);
-matRound4X4(shadowMat);
+//cameraView => sunView 合成関数
+matDirectMul(sunViewMatrix,inverseViewMatrix);
+matRound4X4(sunViewMatrix);
 for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   let basearrayY = basearray[pixelY];
   let zBufferingY = zBuffering[pixelY];
@@ -2062,10 +2065,10 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         let shadowPixelY = round(shadowViewPortY[pixelY] * pixelZ);
         let shadowPixelX = round(shadowViewPortX[pixelX] * pixelZ);
         //world=>shadowView
-        //shadowMatrixmul and projection(/shadowPixelZ) and viewPort (+ 0.5)*screen_size_wh)|0;
-        let shadowPixelZ = shadowMat[8]*shadowPixelX + shadowMat[9]*shadowPixelY + shadowMat[10]*pixelZ + shadowMat[11];
-        let shadowMatrixPixelY = ((((shadowMat[4]*shadowPixelX + shadowMat[5]*shadowPixelY + shadowMat[6]*pixelZ + shadowMat[7])/shadowPixelZ) + 0.5) * screen_size_h)|0;
-        let shadowMatrixPixelX = (((shadowMat[0]*shadowPixelX + shadowMat[1]*shadowPixelY + shadowMat[2]*pixelZ + shadowMat[3])/shadowPixelZ + 0.5) * screen_size_w)|0;
+        //sunViewMatrixrixmul and projection(/shadowPixelZ) and viewPort (+ 0.5)*screen_size_wh)|0;
+        let shadowPixelZ = sunViewMatrix[8]*shadowPixelX + sunViewMatrix[9]*shadowPixelY + sunViewMatrix[10]*pixelZ + sunViewMatrix[11];
+        let shadowMatrixPixelY = ((((sunViewMatrix[4]*shadowPixelX + sunViewMatrix[5]*shadowPixelY + sunViewMatrix[6]*pixelZ + sunViewMatrix[7])/shadowPixelZ) + 0.5) * screen_size_h)|0;
+        let shadowMatrixPixelX = (((sunViewMatrix[0]*shadowPixelX + sunViewMatrix[1]*shadowPixelY + sunViewMatrix[2]*pixelZ + sunViewMatrix[3])/shadowPixelZ + 0.5) * screen_size_w)|0;
         
         if(shadowMatrixPixelY>0 && shadowMatrixPixelY<screen_size_h){
           if(shadowMatrixPixelX>0 && shadowMatrixPixelX<screen_size_w){ 

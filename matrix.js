@@ -132,6 +132,30 @@ export function matMul(m1,m2) {
 
         return [m_0,m_1,m_2,m_3,m_4,m_5,m_6,m_7,m_8,m_9,m_10,m_11];
 }
+export function matDirectMul(m1,m2) {
+    
+    m1[11]  = m1[8] * m2[3] + m1[9] * m2[7] + m1[10] * m2[11] + m1[11];
+    let tempMat_1 = m1[10];
+    m1[10]  = m1[8] * m2[2] + m1[9] * m2[6] + tempMat_1 * m2[10];
+    let tempMat_2 = m1[9];
+    m1[9]  = m1[8] * m2[1] + tempMat_2 * m2[5] + tempMat_1 * m2[9];
+    m1[8]  = m1[8] * m2[0] + tempMat_2 * m2[4] + tempMat_1 * m2[8];
+
+    m1[7]  = m1[4] * m2[3] + m1[5] * m2[7] + m1[6] * m2[11] + m1[7];
+    tempMat_1 = m1[6];
+    m1[6]  = m1[4] * m2[2] + m1[5] * m2[6] + tempMat_1 * m2[10];
+    tempMat_2 = m1[5];
+    m1[5]  = m1[4] * m2[1] + tempMat_2 * m2[5] + tempMat_1 * m2[9];
+    m1[4]  = m1[4] * m2[0] + tempMat_2 * m2[4] + tempMat_1 * m2[8];
+
+    m1[3]  = m1[0] * m2[3] + m1[1] * m2[7] + m1[2] * m2[11] + m1[3];
+    tempMat_1 = m1[2];
+    m1[2]  = m1[0] * m2[2] + m1[1] * m2[6] + tempMat_1 * m2[10];
+    tempMat_2 = m1[1];
+    m1[1]  = m1[0] * m2[1] + tempMat_2 * m2[5] + tempMat_1 * m2[9];
+    m1[0]  = m1[0] * m2[0] + tempMat_2 * m2[4] + tempMat_1 * m2[8];
+
+}
 //計算後新しく生成する
 export function matVecMul(m,v){
     let tmp0 = m[0]*v[0] + m[1]*v[1] + m[2]*v[2] + m[3];
