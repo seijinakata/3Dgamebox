@@ -1,7 +1,7 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
 import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,round100,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul, minXCul, maxXCul, minYCul, maxYCul} from './vector.js';
-import {matIdentity,matDirectMul,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera} from './matrix.js';
+import {matIdentity,matDirectMul,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera, makeScalingMatrix} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,triangleToBuffer,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
 import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, UV_Vector, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, pixel_LightShadow_Flag } from './enum.js';
@@ -452,7 +452,10 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
                   if(tempBind.length >= 4*4){
                     let boneContents = {};
                     boneContents.bindPose = tempBind;
+                    boneContents.quaternionBindPose = matrixMakeQuaternion(tempBind);
                     boneContents.inverseBindPose = CalInvMat4x4(tempBind);
+                    boneContents.inverseQuaternionBindPose = Conjugated(boneContents.quaternionBindPose[0],boneContents.quaternionBindPose[1],
+                      boneContents.quaternionBindPose[2],boneContents.quaternionBindPose[3]);
                     tempBindPosePack.push(boneContents);
                     tempBind = [];  
             
@@ -1361,50 +1364,30 @@ groundImage.addEventListener("load", function() {
 
 function culUVVector(daeLoadPack){
   let UVVector = [];
-  for(let j=0;j<daeLoadPack.objectNumber;j++){
-    let faceIndexMeshUV_Length = daeLoadPack.faceIndexMeshUV[j].length;
-    let tempUVVector = [];
-    for(let i=0;i<faceIndexMeshUV_Length;i++){
-      let Ax = (daeLoadPack.faceIndexMeshUV[j][i][2] - daeLoadPack.faceIndexMeshUV[j][i][0]) * daeLoadPack.textureImage[Image_Width];
-      let Ay = (daeLoadPack.faceIndexMeshUV[j][i][3] - daeLoadPack.faceIndexMeshUV[j][i][1]) * daeLoadPack.textureImage[Image_Height];
-      let Bx = (daeLoadPack.faceIndexMeshUV[j][i][4] - daeLoadPack.faceIndexMeshUV[j][i][0]) * daeLoadPack.textureImage[Image_Width];
-      let By = (daeLoadPack.faceIndexMeshUV[j][i][5] - daeLoadPack.faceIndexMeshUV[j][i][1]) * daeLoadPack.textureImage[Image_Height];
-      let mi = getInvert2(Ax,Ay,Bx,By);
-      if (!mi) return;
-      let preUV_List0 = daeLoadPack.faceIndexMeshUV[j][i][0] * daeLoadPack.textureImage[Image_Width];
-      mi.push(preUV_List0);
-      let preUV_List1 = daeLoadPack.faceIndexMeshUV[j][i][1] * daeLoadPack.textureImage[Image_Height];
-      mi.push(preUV_List1);
-      tempUVVector.push(mi);
-    }
-    UVVector.push(tempUVVector);
-  }
-  daeLoadPack.UVVector = UVVector;
-}
-function culUVvector(daeLoadPack){
-  let UVVector = [];
   let faceIndexMeshUV_Length = daeLoadPack.faceIndexMeshUV.length;
+  let imageHeight = daeLoadPack.textureImage.length;
+  let imageWidth = daeLoadPack.textureImage[1].length;
   for(let i=0;i<faceIndexMeshUV_Length;i++){
-    let Ax = (daeLoadPack.faceIndexMeshUV[i][2] - daeLoadPack.faceIndexMeshUV[i][0]) * daeLoadPack.textureImage[Image_Width];
-    let Ay = (daeLoadPack.faceIndexMeshUV[i][3] - daeLoadPack.faceIndexMeshUV[i][1]) * daeLoadPack.textureImage[Image_Height];
-    let Bx = (daeLoadPack.faceIndexMeshUV[i][4] - daeLoadPack.faceIndexMeshUV[i][0]) * daeLoadPack.textureImage[Image_Width];
-    let By = (daeLoadPack.faceIndexMeshUV[i][5] - daeLoadPack.faceIndexMeshUV[i][1]) * daeLoadPack.textureImage[Image_Height];
+    let Ax = (daeLoadPack.faceIndexMeshUV[i][2] - daeLoadPack.faceIndexMeshUV[i][0]) * imageWidth;
+    let Ay = (daeLoadPack.faceIndexMeshUV[i][3] - daeLoadPack.faceIndexMeshUV[i][1]) * imageHeight;
+    let Bx = (daeLoadPack.faceIndexMeshUV[i][4] - daeLoadPack.faceIndexMeshUV[i][0]) * imageWidth;
+    let By = (daeLoadPack.faceIndexMeshUV[i][5] - daeLoadPack.faceIndexMeshUV[i][1]) * imageHeight;
     let mi = getInvert2(Ax,Ay,Bx,By);
     round100(mi[0][0]);
     round100(mi[0][1]);
     round100(mi[1][0]);
     round100(mi[1][1]);
     if (!mi) return;
-    let preUV_List0 = round100(daeLoadPack.faceIndexMeshUV[i][0] * daeLoadPack.textureImage[Image_Width]);
+    let preUV_List0 = round100(daeLoadPack.faceIndexMeshUV[i][0] * imageWidth);
     mi.push(preUV_List0);
-    let preUV_List1 = round100(daeLoadPack.faceIndexMeshUV[i][1] * daeLoadPack.textureImage[Image_Height]);
+    let preUV_List1 = round100(daeLoadPack.faceIndexMeshUV[i][1] * imageHeight);
     mi.push(preUV_List1);
-    let uMin = top_int(daeLoadPack.faceIndexMeshUV[i][0] * daeLoadPack.textureImage[Image_Width]);
+    let uMin = top_int(daeLoadPack.faceIndexMeshUV[i][0] * imageWidth);
     if(uMin<0) uMin = 0;
-    if(uMin>daeLoadPack.textureImage[Image_Width]-1) uMin = daeLoadPack.textureImage[Image_Width]-1;
-    let vMin = top_int(daeLoadPack.faceIndexMeshUV[i][1] * daeLoadPack.textureImage[Image_Height]);
+    if(uMin>imageWidth-1) uMin = imageWidth-1;
+    let vMin = top_int(daeLoadPack.faceIndexMeshUV[i][1] * imageHeight);
     if(vMin<0) vMin = 0;
-    if(vMin>daeLoadPack.textureImage[Image_Height]-1) vMin = daeLoadPack.textureImage[Image_Height]-1;
+    if(vMin>imageHeight-1) vMin = imageHeight-1;
     mi.push(uMin);
     mi.push(vMin);
     UVVector.push(mi);
@@ -1532,7 +1515,51 @@ function quaternionMatrixScaling(quaternionMatrix,x,y,z){
   quaternionMatrix[5] *= y;
   quaternionMatrix[10] *= z;
 }
-
+function SIGN(x) {return (x >= 0.0) ? 1.0 : -1.0;}
+function NORM(a,b,c,d) {return Math.sqrt(a * a + b * b + c * c + d * d);}
+function matrixMakeQuaternion(m){
+let q0 = ( m[0] + m[4] + m[8] + 1.0) / 4.0;
+let q1 = ( m[0] - m[4] - m[8] + 1.0) / 4.0;
+let q2 = (-m[0] + m[4] - m[8] + 1.0) / 4.0;
+let q3 = (-m[0] - m[4] + m[8] + 1.0) / 4.0;
+if(q0 < 0.0) q0 = 0.0;
+if(q1 < 0.0) q1 = 0.0;
+if(q2 < 0.0) q2 = 0.0;
+if(q3 < 0.0) q3 = 0.0;
+q0 = Math.sqrt(q0);
+q1 = Math.sqrt(q1);
+q2 = Math.sqrt(q2);
+q3 = Math.sqrt(q3);
+if(q0 >= q1 && q0 >= q2 && q0 >= q3) {
+    q0 *= 1.0;
+    q1 *= SIGN(m[7] - m[5]);
+    q2 *= SIGN(m[2] - m[6]);
+    q3 *= SIGN(m[3] - m[1]);
+} else if(q1 >= q0 && q1 >= q2 && q1 >= q3) {
+    q0 *= SIGN(m[7] - m[5]);
+    q1 *= 1.0;
+    q2 *= SIGN(m[3] + m[1]);
+    q3 *= SIGN(m[2] + m[6]);
+} else if(q2 >= q0 && q2 >= q1 && q2 >= q3) {
+    q0 *= SIGN(m[2] - m[6]);
+    q1 *= SIGN(m[3] + m[1]);
+    q2 *= 1.0;
+    q3 *= SIGN(m[7] + m[5]);
+} else if(q3 >= q0 && q3 >= q1 && q3 >= q2) {
+    q0 *= SIGN(m[3] - m[1]);
+    q1 *= SIGN(m[6] + m[2]);
+    q2 *= SIGN(m[7] + m[5]);
+    q3 *= 1.0;
+} else {
+    return;
+}
+let r = NORM(q0, q1, q2, q3);
+q0 /= r;
+q1 /= r;
+q2 /= r;
+q3 /= r;
+return Quaternion(q1,q2,q3,q0);
+}
 //回転行列を元に作られたQuaternion行列
 function makeQuaternionMatrix(q){
   let pow2qx = 2*q[0]*q[0];
@@ -1694,7 +1721,7 @@ if(dataLoad == false){
       //sandLoadpack[i].bones[0].scaleXYZ = setVector3(0.1,0.1,0.1)
       // sandLoadpack[i].bones[0].rotXYZ[position_X] = 180;
       // sandLoadpack[i].bones[0].rotXYZ[position_Y] = 180;
-      culUVvector(sandLoadpack[i]); 
+      culUVVector(sandLoadpack[i]); 
     }
     let sand1 = daeLoadcopy(sandLoadpack);
     sand1[0].bones[0].position[position_Z] += 0.75;
@@ -1737,7 +1764,7 @@ if(dataLoad == false){
       cube1Loadpack[i].bones[0].scaleXYZ = setVector3(0.1,0.1,0.1)
       cube1Loadpack[i].bones[0].rotXYZ[position_X] = 180;
       cube1Loadpack[i].bones[0].rotXYZ[position_Y] = 180;
-      culUVvector(cube1Loadpack[i]); 
+      culUVVector(cube1Loadpack[i]); 
     }
     let cube2 = daeLoadcopy(cube1Loadpack);
     cube2[0].bones[0].position[position_Y] = 1;
@@ -1758,7 +1785,7 @@ if(dataLoad == false){
       //sphere1Loadpack[i].bones[0].rotXYZ[position_Y] = 90;
       // sphere1Loadpack.bones[0].scaleXYZ[scale_Y] = 10;
       // sphere1Loadpack.bones[0].scaleXYZ[scale_Z] = 10;
-      culUVvector(sphere1Loadpack[i]); 
+      culUVVector(sphere1Loadpack[i]); 
     }
     dices.push(sphere1Loadpack);
     sphere1Load = true;
@@ -1776,7 +1803,7 @@ if(dataLoad == false){
       //steve1Loadpack[i].bones[0].rotXYZ[position_Y] = 90;
       // steve1Loadpack.bones[0].scaleXYZ[scale_Y] = 10;
       // steve1Loadpack.bones[0].scaleXYZ[scale_Z] = 10;
-      culUVvector(steve1Loadpack[i]); 
+      culUVVector(steve1Loadpack[i]); 
     }
     let steve1 = daeLoadcopy(steve1Loadpack);
     for(let i=0;i<steve1.length;i++){
