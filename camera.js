@@ -879,32 +879,30 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
     }
 
     let boneWeightVerts = matVecMul(mixMatrix,object.meshVerts[i]);
-    let normalBoneWeightVerts = vertsCopy(boneWeightVerts); 
    
     worldVerts[i] = boneWeightVerts;
-    let viewZ = matMulVertsZCamera(viewMatrix,normalBoneWeightVerts);
+    let viewZ = matMulVertsZCamera(viewMatrix,boneWeightVerts);
     if(viewZ > 0){
       let projectionMatrix =  matPers(viewZ);
-      normalBoneWeightVerts = matMulVertsXYZCamera(viewMatrix,normalBoneWeightVerts,viewZ);
-      protMatVecMul(projectionMatrix,normalBoneWeightVerts);
+      let cameraBoneWeightVerts = matMulVertsXYZCamera(viewMatrix,boneWeightVerts,viewZ);
+      protMatVecMul(projectionMatrix,cameraBoneWeightVerts);
       //boneWeightVerts = matVecMul(viewPortMatrix,boneWeightVerts);
-      normalBoneWeightVerts[0] = ((normalBoneWeightVerts[0] + 0.5)*screen_size_w)|0;
-      normalBoneWeightVerts[1] = ((normalBoneWeightVerts[1] + 0.5)*screen_size_h)|0; 
+      cameraBoneWeightVerts[0] = ((cameraBoneWeightVerts[0] + 0.5)*screen_size_w)|0;
+      cameraBoneWeightVerts[1] = ((cameraBoneWeightVerts[1] + 0.5)*screen_size_h)|0;
+      projectedVerts[i] = cameraBoneWeightVerts;
     }else{
       //ラスタライズしないのでx,y,zは適当な値
-      normalBoneWeightVerts = setVector3(0,0,0);
+      projectedVerts[i] = setVector3(0,0,0);
     }
-    projectedVerts[i] = normalBoneWeightVerts;
-
+    
     //shadowはテクスチャ貼らないのでＵＶ値のポリゴンを合わせる必要なし
     if(object.shadowFlag == true){
-      let boneShadowWeightVerts = vertsCopy(boneWeightVerts);
-      let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,boneShadowWeightVerts);
+      let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,boneWeightVerts);
       if(shadowViewZ <= 0){
         continue;
       }
       let shadowProjectionMatrix =  matPers(shadowViewZ);
-      boneShadowWeightVerts = matMulVertsXYZCamera(shadowViewMatrix,boneShadowWeightVerts,shadowViewZ);
+      let boneShadowWeightVerts = matMulVertsXYZCamera(shadowViewMatrix,boneWeightVerts,shadowViewZ);
       protMatVecMul(shadowProjectionMatrix,boneShadowWeightVerts);
       boneShadowWeightVerts[0] = ((boneShadowWeightVerts[0] + 0.5)*screen_size_w)|0;
       boneShadowWeightVerts[1] = ((boneShadowWeightVerts[1] + 0.5)*screen_size_h)|0;
@@ -998,32 +996,30 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
     vecPlus(verts,worldTranslation.position);
     //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
 
-    let normalVerts = vertsCopy(verts);
     worldVerts.push(verts);
 
-    let viewZ = matMulVertsZCamera(viewMatrix,normalVerts);
+    let viewZ = matMulVertsZCamera(viewMatrix,verts);
     if(viewZ > 0){
       let projectionMatrix =  matPers(viewZ);
-      normalVerts = matMulVertsXYZCamera(viewMatrix,normalVerts,viewZ);
-      protMatVecMul(projectionMatrix,normalVerts);
+      let cameraVerts = matMulVertsXYZCamera(viewMatrix,verts,viewZ);
+      protMatVecMul(projectionMatrix,cameraVerts);
       //normalVerts = matVecMul(viewPortMatrix,normalVerts);
-      normalVerts[0] = ((normalVerts[0] + 0.5)*screen_size_w)|0;
-      normalVerts[1] = ((normalVerts[1] + 0.5)*screen_size_h)|0;      
+      cameraVerts[0] = ((cameraVerts[0] + 0.5)*screen_size_w)|0;
+      cameraVerts[1] = ((cameraVerts[1] + 0.5)*screen_size_h)|0;
+      projectedVerts[i] = cameraVerts;    
     }else{
       //ラスタライズしないのでx,y,zは適当な値
-      normalVerts = setVector3(0,0,0);
+      projectedVerts[i] = setVector3(0,0,0);
     }
-    projectedVerts.push(normalVerts);
 
     //shadowはテクスチャ貼らないのでＵＶ値のポリゴンを合わせる必要なし
     if(object.shadowFlag == true){
-      let shadowVerts = vertsCopy(verts);
-      let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,shadowVerts);
+      let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,verts);
       if(shadowViewZ <= 0){
         continue;
       }
       let shadowProjectionMatrix =  matPers(shadowViewZ);
-      shadowVerts = matMulVertsXYZCamera(shadowViewMatrix,shadowVerts,shadowViewZ);
+      let shadowVerts = matMulVertsXYZCamera(shadowViewMatrix,verts,shadowViewZ);
       protMatVecMul(shadowProjectionMatrix,shadowVerts); 
       shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
       shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;   
@@ -2095,10 +2091,9 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         //sunViewMatrixrixmul and projection(/shadowPixelZ) and viewPort (+ 0.5)*screen_size_wh)|0;
         let shadowPixelZ = sunViewMatrix[8]*shadowPixelX + sunViewMatrix[9]*shadowPixelY + sunViewMatrix[10]*pixelZ + sunViewMatrix[11];
         let shadowMatrixPixelY = ((((sunViewMatrix[4]*shadowPixelX + sunViewMatrix[5]*shadowPixelY + sunViewMatrix[6]*pixelZ + sunViewMatrix[7])/shadowPixelZ) + 0.5) * screen_size_h)|0;
-        let shadowMatrixPixelX = (((sunViewMatrix[0]*shadowPixelX + sunViewMatrix[1]*shadowPixelY + sunViewMatrix[2]*pixelZ + sunViewMatrix[3])/shadowPixelZ + 0.5) * screen_size_w)|0;
-        
-        if(shadowMatrixPixelY>0 && shadowMatrixPixelY<screen_size_h){
-          if(shadowMatrixPixelX>0 && shadowMatrixPixelX<screen_size_w){ 
+        if(shadowMatrixPixelY>=0 && shadowMatrixPixelY<screen_size_h){
+          let shadowMatrixPixelX = (((sunViewMatrix[0]*shadowPixelX + sunViewMatrix[1]*shadowPixelY + sunViewMatrix[2]*pixelZ + sunViewMatrix[3])/shadowPixelZ + 0.5) * screen_size_w)|0;
+          if(shadowMatrixPixelX>=0 && shadowMatrixPixelX<screen_size_w){ 
             if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.5<shadowPixelZ){
               pixelR *= 0.5;
               pixelG *= 0.5;
