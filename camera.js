@@ -1,7 +1,7 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
 import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,round100,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul, minXCul, maxXCul, minYCul, maxYCul} from './vector.js';
-import {matIdentity,matDirectMul,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera, makeScalingMatrix} from './matrix.js';
+import {matIdentity,matDirectMul,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera, makeScalingMatrix, matWaightAndPlus} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,triangleToBuffer,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
 import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, UV_Vector, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, pixel_LightShadow_Flag } from './enum.js';
@@ -873,9 +873,7 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
     let blendBoneIndex_Length = object.blendBoneIndex[i].length;
     //頂点のboneの影響度
     for(let j=1;j<blendBoneIndex_Length;j++){
-      let bonesMatrix = matCopy(object.bones[object.blendBoneIndex[i][j]].skinmeshBone);
-      matWaight(bonesMatrix,object.bonesWeight[i][j]);
-      matPlus(mixMatrix,bonesMatrix); 
+      matWaightAndPlus(mixMatrix,object.bones[object.blendBoneIndex[i][j]].skinmeshBone,object.bonesWeight[i][j])
     }
 
     let boneWeightVerts = matVecMul(mixMatrix,object.meshVerts[i]);
@@ -991,8 +989,9 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
 
   let meshVerts_Length = object.meshVerts.length;
   for (let i = 0; i < meshVerts_Length; i++) {
-    let verts = setVector3(object.meshVerts[i][0]*worldTranslation.scaleXYZ[position_X],object.meshVerts[i][1]*worldTranslation.scaleXYZ[position_Y],object.meshVerts[i][2]*worldTranslation.scaleXYZ[position_Z]);
-    verts = Vector3QuaternionMul(worldTranslation.quaternion,verts);
+    //w=0は意味なしクォータニオンの計算するため
+    let verts = Quaternion(object.meshVerts[i][0]*worldTranslation.scaleXYZ[position_X],object.meshVerts[i][1]*worldTranslation.scaleXYZ[position_Y],object.meshVerts[i][2]*worldTranslation.scaleXYZ[position_Z],0);
+    Vector3QuaternionMul(worldTranslation.quaternion,verts);
     vecPlus(verts,worldTranslation.position);
     //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
 
@@ -1011,7 +1010,6 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
       //ラスタライズしないのでx,y,zは適当な値
       projectedVerts[i] = setVector3(0,0,0);
     }
-
     //shadowはテクスチャ貼らないのでＵＶ値のポリゴンを合わせる必要なし
     if(object.shadowFlag == true){
       let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,verts);
@@ -1026,7 +1024,6 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
      shadowProjectedVerts.push(shadowVerts);  
     }
   }
-  
   let poly = [];
   let shadowPoly = [];
   let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
@@ -1399,22 +1396,14 @@ function Conjugated(x,y,z,w){
 }
 function vector3QuaternionMul(a,b)
 {
-  // Quaternion同士の積の計算vertsの[3]=0
-  return Quaternion(
-      a[3] * b[0] - a[2] * b[1] + a[1] * b[2],
-      a[2] * b[0] + a[3] * b[1] - a[0] * b[2],
-    - a[1] * b[0] + a[0] * b[1] + a[3] * b[2],
-    - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
-  );
-}
-function outputVector3QuaternionMul(a,b)
-{
-  // Quaternion同士の積の計算
-  return setVector3(
-      a[0] * b[3] + a[3] * b[0] - a[2] * b[1] + a[1] * b[2],
-      a[1] * b[3] + a[2] * b[0] + a[3] * b[1] - a[0] * b[2],
-      a[2] * b[3] - a[1] * b[0] + a[0] * b[1] + a[3] * b[2],
-  );
+  // Quaternion同士の積の計算verts(b)の[3]=0
+  let b0 = b[0];
+  let b1 = b[1];
+  let b2 = b[2];
+    b[0] =  a[3] * b0 - a[2] * b1 + a[1] * b2,
+    b[1] =  a[2] * b0 + a[3] * b1 - a[0] * b2,
+    b[2] = - a[1] * b0 + a[0] * b1 + a[3] * b2,
+    b[3] = - a[0] * b0 - a[1] * b1 - a[2] * b2
 }
 function QuaternionMul(a,b)
 {
@@ -1426,14 +1415,22 @@ function QuaternionMul(a,b)
       a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
   );
 }
+function outputVector3QuaternionMul(a,b)
+{
+  // Quaternion同士の積の計算w=a[3]は無視
+  let a0 = a[0];
+  let a1 = a[1];
+    a[0] =  a0 * b[3] + a[3] * b[0] - a[2] * b[1] + a1 * b[2];
+    a[1] =  a1 * b[3] + a[2] * b[0] + a[3] * b[1] - a0 * b[2];
+    a[2] =  a[2] * b[3] - a1 * b[0] + a0 * b[1] + a[3] * b[2];
+}
 function Vector3QuaternionMul(a,b){
   // ベクトルをQuaternionに変換 q * p * q^-1 でベクトルを回転。w=0とおいて、最後wを無視する。
   //let bQuaternion = Quaternion(b[0], b[1], b[2],0);
   //同じクォータニオンでもp(b)が元の頂点、q(a)が回転させたい軸、出力が回転させた結果
   let aConjugated = Conjugated(a[0],a[1],a[2],a[3]);
-  let abQuaternion = vector3QuaternionMul(a,b);
-  let pos = outputVector3QuaternionMul(abQuaternion,aConjugated);
-  return pos;
+  vector3QuaternionMul(a,b);
+  outputVector3QuaternionMul(b,aConjugated);
 }
 
 /// 回転角度と回転軸からQuaternionを作成する

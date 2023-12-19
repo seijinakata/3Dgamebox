@@ -65,6 +65,28 @@ export function mulMatScaling(m,x,y,z){
         m[4] *= x;    m[5] *= y;    m[6] *= z;
         m[8] *= x;    m[9] *= y;    m[10] *= z;
     }
+export function matWaightAndPlus(m1,m2,w) {
+
+    m1[0] += m2[0] * w;
+    m1[1] += m2[1] * w;
+    m1[2] += m2[2] * w;
+    m1[3] += m2[3] * w;
+
+    m1[4] += m2[4] * w;
+    m1[5] += m2[5] * w;
+    m1[6] += m2[6] * w;
+    m1[7] += m2[7] * w;
+
+    m1[8] += m2[8] * w;
+    m1[9] += m2[9] * w;
+    m1[10] += m2[10] * w;
+    m1[11] += m2[11] * w;
+
+    //m1[12] += m2[12] * w;
+    //m1[13] += m2[13] * w;
+    //m1[14] += m2[14] * w;
+    //m1[15] += m2[15] * w;
+}
 export function matPlus(m1,m2) {
 
     m1[0] += m2[0];
@@ -86,7 +108,6 @@ export function matPlus(m1,m2) {
     //m1[13] += m2[13];
     //m1[14] += m2[14];
     //m1[15] += m2[15];
-;
 }
 export function matWaight(m,w) {
 
