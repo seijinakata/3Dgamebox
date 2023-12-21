@@ -933,50 +933,48 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
     */
 }
 function daeMekeSkinMeshBone(daeLoadPack){
+  //rootBone
+  let copyInverseBindPose = matCopy(daeLoadPack.bindPosePack[0].inverseBindPose);
+  //クォータニオン
+  let quaternionOut = [];
+  slerpQuaternionArray(quaternionOut,daeLoadPack.bones[0].quaternionTime,daeLoadPack.bones[0].quaternion,daeLoadPack.bones[0].quaternionTime.length,daeLoadPack.bones[0].currentTime);
+  //slerpQuaternion(quaternionOut,daeLoadPack.bones[boneParentRelation].preQuaternion,daeLoadPack.bones[boneParentRelation].afterQuaternion,daeLoadPack.bones[boneParentRelation].currentTime);
+  let quaternionMatrix = makeQuaternionMatrix(quaternionOut);
+  quaternionMatrixTranstation(quaternionMatrix,daeLoadPack.bones[0].position[0],daeLoadPack.bones[0].position[1],daeLoadPack.bones[0].position[2]);
+  quaternionMatrixScaling(quaternionMatrix,daeLoadPack.bones[0].scaleXYZ[0],daeLoadPack.bones[0].scaleXYZ[1],daeLoadPack.bones[0].scaleXYZ[2]);
+  matDirectMul(copyInverseBindPose,quaternionMatrix);
+  //オイラー角
+  // mulMatTranslate(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].position[0],
+  // daeLoadPack.bones[boneParentRelation].position[1],daeLoadPack.bones[boneParentRelation].position[2]);
+  // mulMatRotateX(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
+  // mulMatRotateY(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
+  // mulMatRotateZ(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
+  // mulMatScaling(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].scaleXYZ[0],
+  // daeLoadPack.bones[boneParentRelation].scaleXYZ[1],daeLoadPack.bones[boneParentRelation].scaleXYZ[2]);  
+  matDirectMul(copyInverseBindPose,daeLoadPack.bindPosePack[0].bindPose);
+  daeLoadPack.bones[0].skinmeshBone = copyInverseBindPose;
+
   let boneParentRelationRow = daeLoadPack.boneParentRelation.length;
   for(let j=0;j<boneParentRelationRow;j++){
     let boneParentRelationCol = daeLoadPack.boneParentRelation[j].length;
-    for(let i=0;i<boneParentRelationCol;i++){
-       let boneParentRelation = daeLoadPack.boneParentRelation[j][i];
-      if(i == 0){
-        if(daeLoadPack.bones[boneParentRelation].skinmeshBone == null){
-          let copyInverseBindPose = matCopy(daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
-          //クォータニオン
-          let quaternionOut = [];
-          slerpQuaternionArray(quaternionOut,daeLoadPack.bones[boneParentRelation].quaternionTime,daeLoadPack.bones[boneParentRelation].quaternion,daeLoadPack.bones[boneParentRelation].quaternionTime.length,daeLoadPack.bones[boneParentRelation].currentTime);
-          //slerpQuaternion(quaternionOut,daeLoadPack.bones[boneParentRelation].preQuaternion,daeLoadPack.bones[boneParentRelation].afterQuaternion,daeLoadPack.bones[boneParentRelation].currentTime);
-          let quaternionMatrix = makeQuaternionMatrix(quaternionOut);
-          quaternionMatrixTranstation(quaternionMatrix,daeLoadPack.bones[boneParentRelation].position[0],daeLoadPack.bones[boneParentRelation].position[1],daeLoadPack.bones[boneParentRelation].position[2]);
-          quaternionMatrixScaling(quaternionMatrix,daeLoadPack.bones[boneParentRelation].scaleXYZ[0],daeLoadPack.bones[boneParentRelation].scaleXYZ[1],daeLoadPack.bones[boneParentRelation].scaleXYZ[2]);
-          matDirectMul(copyInverseBindPose,quaternionMatrix);
-          //オイラー角
-          // mulMatTranslate(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].position[0],
-          // daeLoadPack.bones[boneParentRelation].position[1],daeLoadPack.bones[boneParentRelation].position[2]);
-          // mulMatRotateX(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
-          // mulMatRotateY(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
-          // mulMatRotateZ(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
-          // mulMatScaling(copyInverseBindPose,daeLoadPack.bones[boneParentRelation].scaleXYZ[0],
-          // daeLoadPack.bones[boneParentRelation].scaleXYZ[1],daeLoadPack.bones[boneParentRelation].scaleXYZ[2]);  
-          matDirectMul(copyInverseBindPose,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
-          daeLoadPack.bones[boneParentRelation].skinmeshBone = copyInverseBindPose;
-        }
-      }else{
+    //i=0,rootBone
+    for(let i=1;i<boneParentRelationCol;i++){
+      let boneParentRelation = daeLoadPack.boneParentRelation[j][i];
       if(daeLoadPack.bones[boneParentRelation].skinmeshBone  == null){
-          let parentCrossBone = matMul(daeLoadPack.bones[daeLoadPack.boneParentRelation[j][i-1]].skinmeshBone,daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
-          //クォータニオン
-          let quaternionOut = [];
-          slerpQuaternionArray(quaternionOut,daeLoadPack.bones[boneParentRelation].quaternionTime,daeLoadPack.bones[boneParentRelation].quaternion,daeLoadPack.bones[boneParentRelation].quaternionTime.length,daeLoadPack.bones[boneParentRelation].currentTime);
-          //slerpQuaternion(quaternionOut,daeLoadPack.bones[boneParentRelation].preQuaternion,daeLoadPack.bones[boneParentRelation].afterQuaternion,daeLoadPack.bones[boneParentRelation].currentTime);
-          let QuaternionMatrix = makeQuaternionMatrix(quaternionOut);
-          matDirectMul(parentCrossBone,QuaternionMatrix);
-          //オイラー角
-          // mulMatRotateX(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
-          // mulMatRotateY(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
-          // mulMatRotateZ(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
-          matDirectMul(parentCrossBone,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
-          daeLoadPack.bones[boneParentRelation].skinmeshBone = parentCrossBone;
-        }
-      }
+        let parentCrossBone = matMul(daeLoadPack.bones[daeLoadPack.boneParentRelation[j][i-1]].skinmeshBone,daeLoadPack.bindPosePack[boneParentRelation].inverseBindPose);
+        //クォータニオン
+        let quaternionOut = [];
+        slerpQuaternionArray(quaternionOut,daeLoadPack.bones[boneParentRelation].quaternionTime,daeLoadPack.bones[boneParentRelation].quaternion,daeLoadPack.bones[boneParentRelation].quaternionTime.length,daeLoadPack.bones[boneParentRelation].currentTime);
+        //slerpQuaternion(quaternionOut,daeLoadPack.bones[boneParentRelation].preQuaternion,daeLoadPack.bones[boneParentRelation].afterQuaternion,daeLoadPack.bones[boneParentRelation].currentTime);
+        let QuaternionMatrix = makeQuaternionMatrix(quaternionOut);
+        matDirectMul(parentCrossBone,QuaternionMatrix);
+        //オイラー角
+        // mulMatRotateX(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[0]);
+        // mulMatRotateY(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[1]);
+        // mulMatRotateZ(parentCrossBone,daeLoadPack.bones[boneParentRelation].rotXYZ[2]);
+        matDirectMul(parentCrossBone,daeLoadPack.bindPosePack[boneParentRelation].bindPose);
+        daeLoadPack.bones[boneParentRelation].skinmeshBone = parentCrossBone;
+       }
     }
   }
 }
@@ -1082,7 +1080,6 @@ function renderBufferInit(buffer,pixelY,pixelX){
   for(let y=0;y<pixelY;y++){
     buffer[y] = [];
     for(let x=0;x<pixelX;x++){
-      buffer[y][x] = [];
       buffer[y][x] = [99999];
     }
   }
