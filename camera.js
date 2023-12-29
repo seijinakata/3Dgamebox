@@ -820,25 +820,27 @@ function makeShaddowProjectedObject(orgObject,polyList){
   return projectedObject;
 }
 //ポリゴン製造
-function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector){
+function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,shadowFlag){
+  
   let polygonElement = [];
-  let projectedVertices =   [[pos1[position_X],pos1[position_Y],pos1[position_Z]],
-                            [pos2[position_X],pos2[position_Y],pos2[position_Z]],
-                            [pos3[position_X],pos3[position_Y],pos3[position_Z]]];
 
+  let projectedVertices =   [[pos1[position_X],pos1[position_Y],pos1[position_Z]],
+                          [pos2[position_X],pos2[position_Y],pos2[position_Z]],
+                          [pos3[position_X],pos3[position_Y],pos3[position_Z]]]; 
   let Va = vecMinus(pos1,pos2);
   let Vb = vecMinus(pos3,pos1);
   polygonElement[cross_Z] = culVecCrossZ(Va,Vb);
-  polygonElement[projected_Verts] = projectedVertices;
+  polygonElement[projected_Verts] = projectedVertices;                   
   polygonElement[UV_Vector] = UVVector;
-  //ライトシミュレーション用
-  Va = vecMinus(worldPos1,worldPos2);
-  Vb = vecMinus(worldPos3,worldPos1);
-
-  polygonElement[poly_Cross_World_Vector3] = culVecCross(Va,Vb);
-  culVecNormalize(polygonElement[poly_Cross_World_Vector3]);
-  round100(polygonElement[poly_Cross_World_Vector3][0]);
-  round100(polygonElement[poly_Cross_World_Vector3][1]);
+  if(shadowFlag == true){
+    //ライトシミュレーション用
+    Va = vecMinus(worldPos1,worldPos2);
+    Vb = vecMinus(worldPos3,worldPos1);
+    polygonElement[poly_Cross_World_Vector3] = culVecCross(Va,Vb);
+    culVecNormalize(polygonElement[poly_Cross_World_Vector3]);
+    round100(polygonElement[poly_Cross_World_Vector3][0]);
+    round100(polygonElement[poly_Cross_World_Vector3][1]);   
+  }
 
   return polygonElement;
 }
@@ -878,9 +880,10 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
 
     let boneWeightVerts = matVecMul(mixMatrix,object.meshVerts[i]);
    
-    worldVerts[i] = boneWeightVerts;
+    
     let viewZ = matMulVertsZCamera(viewMatrix,boneWeightVerts);
     if(viewZ > 0){
+      worldVerts[i] = boneWeightVerts;
       let projectionMatrix =  matPers(viewZ);
       let cameraBoneWeightVerts = matMulVertsXYZCamera(viewMatrix,boneWeightVerts,viewZ);
       protMatVecMul(projectionMatrix,cameraBoneWeightVerts);
@@ -889,8 +892,9 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       cameraBoneWeightVerts[1] = ((cameraBoneWeightVerts[1] + 0.5)*screen_size_h)|0;
       projectedVerts[i] = cameraBoneWeightVerts;
     }else{
-      //ラスタライズしないのでx,y,zは適当な値
-      projectedVerts[i] = setVector3(0,0,0);
+      //ラスタライズしないのでnull、ポリゴンのuv値を合わせたいので飛ばさない。
+      projectedVerts[i] = null;
+      worldVerts[i] = null;
     }
     
     //shadowはテクスチャ貼らないのでＵＶ値のポリゴンを合わせる必要なし
@@ -913,11 +917,13 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
   let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
-    poly[i] = setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i]);
-      if(object.shadowFlag == true){
-       shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);        
-      }
+    if((projectedVerts[triangleFaceIndex[0]] != null && projectedVerts[triangleFaceIndex[1]] != null && projectedVerts[triangleFaceIndex[2]] != null)){
+      poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
+        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag));
+    }
+    if(object.shadowFlag == true){
+      shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);        
+    }
   }
 
   //ｚソート
@@ -993,10 +999,9 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
     vecPlus(verts,worldTranslation.position);
     //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
 
-    worldVerts.push(verts);
-
     let viewZ = matMulVertsZCamera(viewMatrix,verts);
     if(viewZ > 0){
+      worldVerts[i] = verts;
       let projectionMatrix =  matPers(viewZ);
       let cameraVerts = matMulVertsXYZCamera(viewMatrix,verts,viewZ);
       protMatVecMul(projectionMatrix,cameraVerts);
@@ -1005,8 +1010,9 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
       cameraVerts[1] = ((cameraVerts[1] + 0.5)*screen_size_h)|0;
       projectedVerts[i] = cameraVerts;    
     }else{
-      //ラスタライズしないのでx,y,zは適当な値
-      projectedVerts[i] = setVector3(0,0,0);
+      //ラスタライズしないのでnull、ポリゴンのuv値を合わせたいので飛ばさない。
+      projectedVerts[i] = null;
+      worldVerts[i] = null;
     }
     //shadowはテクスチャ貼らないのでＵＶ値のポリゴンを合わせる必要なし
     if(object.shadowFlag == true){
@@ -1027,11 +1033,13 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
-    poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-      worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i]));
-      if(object.shadowFlag == true){
-        shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));  
-      }
+    if((projectedVerts[triangleFaceIndex[0]] != null && projectedVerts[triangleFaceIndex[1]] != null && projectedVerts[triangleFaceIndex[2]] != null)){
+      poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
+        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag));
+    }
+    if(object.shadowFlag == true){
+      shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));  
+    }
   } 
   //ｚソート
   objectZsort(projectedObjects,object,poly);
@@ -1423,7 +1431,6 @@ function outputVector3QuaternionMul(a,b)
 }
 function Vector3QuaternionMul(a,b){
   // ベクトルをQuaternionに変換 q * p * q^-1 でベクトルを回転。w=0とおいて、最後wを無視する。
-  //let bQuaternion = Quaternion(b[0], b[1], b[2],0);
   //同じクォータニオンでもp(b)が元の頂点、q(a)が回転させたい軸、出力が回転させた結果
   let aConjugated = Conjugated(a[0],a[1],a[2],a[3]);
   vector3QuaternionMul(a,b);
@@ -1994,7 +2001,6 @@ for(let j=0;j<projectedObjectsLength;j++){
 	for(let projectedPolyNum=0;projectedPolyNum<projectedObjects_j_polygonNum;projectedPolyNum++){
     let currentVerts = currentProjectedObject[poly_List][projectedPolyNum][projected_Verts];
     //各点のZ座標がこれより下なら作画しない。x,yが画面外なら作画しない。
-    if (!(currentVerts[0][2] > 0.0 && currentVerts[1][2] >0.0 && currentVerts[2][2] > 0.0)) continue;
     let triangleXMin = minXCul(currentVerts);
       if(triangleXMin >= screen_size_w) continue;
     let triangleXMax = maxXCul(currentVerts);
