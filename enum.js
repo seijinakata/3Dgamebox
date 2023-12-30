@@ -20,8 +20,8 @@ export const rot_Y = 1;
 export const rot_Z = 2;
 
 //polygon
-export const cross_Z = 0;
-export const projected_Verts = 1;
+export const projected_Verts = 0;
+export const cross_Z = 1;
 export const UV_Vector = 2;
 export const poly_Cross_World_Vector3 = 3;
 
@@ -31,7 +31,6 @@ export const obj_BackCulling_Flag = 1;
 export const obj_Image = 2;
 export const obj_Shadow_Flag = 3;
 export const obj_LightShadow_Flag = 4;
-
 
 //paint
 export const delta_X = 0;

@@ -622,7 +622,6 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
   }
 }
 
- 
 // ルックアップテーブルを生成しておく
 export const sinLut = [];
 export const cosLut = [];
@@ -650,9 +649,9 @@ let viewPortMatrix = [
 ];
 let inverseViewPortMatrix = CalInvMat4x4(viewPortMatrix);
 
-let viewMatrix = matIdentity();
-let inverseViewMatrix = matIdentity();
-let sunViewMatrix = matIdentity();
+let viewMatrix;
+let inverseViewMatrix;
+let sunViewMatrix;
 // Camera
 let cameraPos = setVector3(0.0,-3,-5);
 let lookat = setVector3(0.0,-1,1);
@@ -660,7 +659,6 @@ let sunPos = setVector3(0,-3,-2);
 let sunLookat = setVector3(0.0,-0.0,0);
 let up = setVector3(0,1,0);
 let lookatIndex = 0;
-
 
 // index、三角形の結び順格納
 function setFaceIndex(v0,v1,v2){
@@ -825,8 +823,8 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,shadow
   let polygonElement = [];
 
   let projectedVertices =   [[pos1[position_X],pos1[position_Y],pos1[position_Z]],
-                          [pos2[position_X],pos2[position_Y],pos2[position_Z]],
-                          [pos3[position_X],pos3[position_Y],pos3[position_Z]]]; 
+                            [pos2[position_X],pos2[position_Y],pos2[position_Z]],
+                            [pos3[position_X],pos3[position_Y],pos3[position_Z]]]; 
   let Va = vecMinus(pos1,pos2);
   let Vb = vecMinus(pos3,pos1);
   polygonElement[cross_Z] = culVecCrossZ(Va,Vb);
@@ -880,7 +878,6 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
 
     let boneWeightVerts = matVecMul(mixMatrix,object.meshVerts[i]);
    
-    
     let viewZ = matMulVertsZCamera(viewMatrix,boneWeightVerts);
     if(viewZ > 0){
       worldVerts[i] = boneWeightVerts;
@@ -1583,7 +1580,7 @@ function makeQuaternionMatrix(q){
 function slerpQuaternionArray(out,t,q,tNum,currentTime){
   let i = 0, j = tNum - 1;
 
-  /* u を含む t の区間 [t[i], t[i+1]) を二分法で求める */
+  /* currentTime を含む t の区間 [t[i], t[i+1]) を二分法で求める */
   while (i < j) {
     let k = ((i + j) * 0.5)|0;
     if (t[k] < currentTime)
@@ -1600,13 +1597,22 @@ function slerpQuaternion(out,q1,q2,t) {
   // 角度算出
   let dot = q1[0] * q2[0] + q1[1] * q2[1] + q1[2] * q2[2] + q1[3] * q2[3];
   //sin2+cos2 = 1^2
-  let pow2Sin = 1.0 - dot * dot, sin;
-  if (pow2Sin <= 0.0 || (sin = Math.sqrt(pow2Sin)) == 0.0) {
+  let pow2Sin = 1.0 - dot * dot;
+  if (pow2Sin <= 0.0) {
     out[0] = q1[0];
     out[1] = q1[1];
     out[2] = q1[2];
     out[3] = q1[3];
   }else{
+    let sin = Math.sqrt(pow2Sin);
+    //０で割らせないようにする。
+    if(sin == 0){
+      out[0] = q1[0];
+      out[1] = q1[1];
+      out[2] = q1[2];
+      out[3] = q1[3];
+      return;
+    }
     let  angle = Math.acos(dot);
     let  anglet = angle * t;
     let  t1 = Math.sin(anglet) / sin;
