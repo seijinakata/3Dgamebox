@@ -436,7 +436,7 @@ function CalDetMat4x4(m)
           -m[1]*m[4]*m[10]
           -m[2]*m[5]*m[8];
 }
-/*
+/*original,m[12]からm[15]を０とした
 function CalDetMat4x4(m)
 {
     return m[0]*m[5]*m[10]*m[15]+m[0]*m[6]*m[11]*m[13]+m[0]*m[7]*m[9]*m[14]
@@ -458,6 +458,56 @@ function CalDetMat4x4(m)
  * @param[out] invm 逆行列
  * @return 逆行列の存在
  */
+export function CalInvMat4x4(m)
+{
+    let m5Crossm10 = m[5]*m[10];
+    let m6Crossm8 = m[6]*m[8];
+    let m4Crossm9 = m[4]*m[9];
+    let m6Crossm9 = m[6]*m[9];
+    let m4Crossm10 = m[4]*m[10];
+    let m5Crossm8 = m[5]*m[8];
+    let det = m[0]*m5Crossm10
+            +m[1]*m6Crossm8
+            +m[2]*m4Crossm9
+            -m[0]*m6Crossm9
+            -m[1]*m4Crossm10
+            -m[2]*m5Crossm8;
+    if(det == 0){
+        m[0] += 1;
+        det = CalDetMat4x4(m);
+    }
+        let  inv_det = 1.0/det;
+ 
+        let m2Crossm9 = m[2]*m[9];
+        let m1Crossm10 = m[1]*m[10];
+        let m1Crossm6 = m[1]*m[6];
+        let m2Crossm5 = m[2]*m[5];
+        let m0  = inv_det*(m5Crossm10-m6Crossm9);
+        let m1  = inv_det*(m2Crossm9-m1Crossm10);
+        let m2  = inv_det*(m1Crossm6-m2Crossm5);
+        let m3  = inv_det*(m1Crossm10*m[7]+m2Crossm5*m[11]+m[3]*m6Crossm9-m1Crossm6*m[11]-m2Crossm9*m[7]-m[3]*m5Crossm10);
+ 
+        let m0Crossm10 = m[0]*m[10];
+        let m2Crossm8 = m[2]*m[8];
+        let m2Crossm4 = m[2]*m[4];
+        let m0Crossm6 = m[0]*m[6];
+        let m4  = inv_det*(m6Crossm8-m4Crossm10);
+        let m5  = inv_det*(m0Crossm10-m2Crossm8);
+        let m6  = inv_det*(m2Crossm4-m0Crossm6);
+        let m7  = inv_det*(m0Crossm6*m[11]+m2Crossm8*m[7]+m[3]*m4Crossm10-m0Crossm10*m[7]-m2Crossm4*m[11]-m[3]*m6Crossm8);
+ 
+        let m1Crossm8 = m[1]*m[8];
+        let m0Crossm9 = m[0]*m[9];
+        let m0Crossm5 = m[0]*m[5];
+        let m1Crossm4 = m[1]*m[4];
+        let m8  = inv_det*(m4Crossm9-m5Crossm8);
+        let m9  = inv_det*(m1Crossm8-m0Crossm9);
+        let m10  = inv_det*(m0Crossm5-m1Crossm4);
+        let m11  = inv_det*(m0Crossm9*m[7]+m1Crossm4*m[11]+m[3]*m5Crossm8-m0Crossm5*m[11]-m1Crossm8*m[7]-m[3]*m4Crossm9);
+
+        return [m0,m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11];
+}
+/*original,m[12]からm[15]を０とした
 export function CalInvMat4x4(m)
 {
     let det = CalDetMat4x4(m);
@@ -484,7 +534,7 @@ export function CalInvMat4x4(m)
 
         return [m0,m1,m2,m3,m4,m5,m6,m7,m8,m9,m10,m11];
 }
-/*
+
 export function CalInvMat4x4(m,invm)
 {
     let det = CalDetMat4x4(m);
