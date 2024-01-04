@@ -625,8 +625,9 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
 // ルックアップテーブルを生成しておく
 export const sinLut = [];
 export const cosLut = [];
-const DEG_TO_RAD = Math.PI / 180;
-//const RAD_TO_DEG = 180 / Math.PI;
+const PI = Math.PI;
+const DEG_TO_RAD = PI / 180;
+//const RAD_TO_DEG = 180 / PI;
 for(let i = 0; i < 360; i++) {
   sinLut.push(round(Math.sin(i * DEG_TO_RAD)));
   cosLut.push(round(Math.cos(i * DEG_TO_RAD)));
@@ -1120,12 +1121,12 @@ function makeSphereVerts(numCorners,radius){
   let circleDeg = 360/numCorners;
 
   for(let j=0;j<numRings;j++){
-    let r = Math.sin(circleDeg * j*Math.PI/180);
-    let z = Math.cos(circleDeg * j*Math.PI/180);
+    let r = Math.sin(circleDeg * j*PI/180);
+    let z = Math.cos(circleDeg * j*PI/180);
     for(let i=0;i<numCorners;i++){
       let verts = [];
-      let orginX = Math.sin(circleDeg * i*Math.PI/180) * r;
-      let orginY = Math.cos(circleDeg * i*Math.PI/180) * r;
+      let orginX = Math.sin(circleDeg * i*PI/180) * r;
+      let orginY = Math.cos(circleDeg * i*PI/180) * r;
       let orginZ = z//1.0 - 2.0/(numRings-1)*j;//zを0.5刻みにする
       let vertsX = [orginX*radius];
       let vertsY = [orginY*radius];
@@ -1615,8 +1616,25 @@ function slerpQuaternion(out,q1,q2,t) {
     }
     let  angle = Math.acos(dot);
     let  anglet = angle * t;
-    let  t1 = Math.sin(anglet) / sin;
-    let  t0 = Math.sin(angle - anglet) / sin;
+    let angleMinusAnglet = angle-anglet;
+    let angleMinusAngletSin;
+    if(angleMinusAnglet<0){
+      angleMinusAnglet = (((angleMinusAnglet * 180 /PI)|0)) + 360;
+      angleMinusAngletSin = sinLut[angleMinusAnglet];
+    }else{
+      angleMinusAnglet = (angleMinusAnglet * 180 /PI)|0
+      angleMinusAngletSin = sinLut[angleMinusAnglet];
+    }
+    let angletSin;
+    if(anglet<0){
+      anglet = ((anglet * 180 /PI)|0) + 360;
+      angletSin = sinLut[anglet];
+    }else{
+      anglet = (anglet * 180 /PI)|0
+      angletSin = sinLut[anglet];
+    }
+    let  t1 = angletSin / sin;
+    let  t0 = angleMinusAngletSin / sin;
     
     out[0] = q1[0] * t0 + q2[0] * t1;
     out[1] = q1[1] * t0 + q2[1] * t1;
