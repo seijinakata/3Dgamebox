@@ -1605,7 +1605,7 @@ function slerpQuaternion(out,q1,q2,t) {
     out[2] = q1[2];
     out[3] = q1[3];
   }else{
-    let sin = Math.sqrt(pow2Sin);
+    let sin = NewtonMethod(1,pow2Sin);
     //０で割らせないようにする。
     if(sin == 0){
       out[0] = q1[0];
