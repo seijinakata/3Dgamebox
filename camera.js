@@ -819,45 +819,46 @@ function makeShaddowProjectedObject(orgObject,polyList){
   return projectedObject;
 }
 //ポリゴン製造
-function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,shadowFlag){
+function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,shadowFlag,backCullingFlag){
   
   let polygonElement = [];
-
-  let projectedVertices =   [[pos1[position_X],pos1[position_Y],pos1[position_Z]],
-                            [pos2[position_X],pos2[position_Y],pos2[position_Z]],
-                            [pos3[position_X],pos3[position_Y],pos3[position_Z]]]; 
   let Va = vecMinus(pos1,pos2);
   let Vb = vecMinus(pos3,pos1);
   polygonElement[cross_Z] = culVecCrossZ(Va,Vb);
-  polygonElement[projected_Verts] = projectedVertices;                   
-  polygonElement[UV_Vector] = UVVector;
-  if(shadowFlag == true){
-    //ライトシミュレーション用
-    Va = vecMinus(worldPos1,worldPos2);
-    Vb = vecMinus(worldPos3,worldPos1);
-    polygonElement[poly_Cross_World_Vector3] = culVecCross(Va,Vb);
-    culVecNormalize(polygonElement[poly_Cross_World_Vector3]);
-    round100(polygonElement[poly_Cross_World_Vector3][0]);
-    round100(polygonElement[poly_Cross_World_Vector3][1]);   
+  //backCullingがあるものにもライトシミュレーションがかかるのを防ぐ。
+  if(!(backCullingFlag == true && polygonElement[cross_Z]>0)){
+    polygonElement[projected_Verts] =[[pos1[position_X],pos1[position_Y],pos1[position_Z]],
+                                      [pos2[position_X],pos2[position_Y],pos2[position_Z]],
+                                      [pos3[position_X],pos3[position_Y],pos3[position_Z]]]; 
+               
+    polygonElement[UV_Vector] = UVVector;
+    if(shadowFlag == true){
+      //ライトシミュレーション用
+      Va = vecMinus(worldPos1,worldPos2);
+      Vb = vecMinus(worldPos3,worldPos1);
+      polygonElement[poly_Cross_World_Vector3] = culVecCross(Va,Vb);
+      culVecNormalize(polygonElement[poly_Cross_World_Vector3]);
+      round100(polygonElement[poly_Cross_World_Vector3][0]);
+      round100(polygonElement[poly_Cross_World_Vector3][1]);   
+    } 
   }
 
   return polygonElement;
 }
 
 //シャドウマップ用ポリゴン製造
-function setShadowPolygon(pos1,pos2,pos3){
+function setShadowPolygon(pos1,pos2,pos3,backCullingFlag){
   let polygonElement = [];
 
   let Va = vecMinus(pos1,pos2);
   let Vb = vecMinus(pos3,pos1);
   polygonElement[cross_Z] = culVecCrossZ(Va,Vb);
-
-  let projectedVertices =   [[pos1[position_X],pos1[position_Y],pos1[position_Z]],
-                            [pos2[position_X],pos2[position_Y],pos2[position_Z]],
-                            [pos3[position_X],pos3[position_Y],pos3[position_Z]]];
-
-  polygonElement[projected_Verts] = projectedVertices;
-
+  if(!(backCullingFlag == true && polygonElement[cross_Z]>0)){
+    polygonElement[projected_Verts] = [[pos1[position_X],pos1[position_Y],pos1[position_Z]],
+                                      [pos2[position_X],pos2[position_Y],pos2[position_Z]],
+                                      [pos3[position_X],pos3[position_Y],pos3[position_Z]]];  
+  }
+  
   return polygonElement;
 }
 
@@ -913,14 +914,15 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
   let poly = [];
   let shadowPoly = [];
   let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
+  let backCullingFlag = object.backCullingFlag;
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     if((projectedVerts[triangleFaceIndex[0]] != null && projectedVerts[triangleFaceIndex[1]] != null && projectedVerts[triangleFaceIndex[2]] != null)){
       poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag));
+        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag,backCullingFlag));
     }
     if(object.shadowFlag == true){
-      shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]);        
+      shadowPoly[i] = setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]],backCullingFlag);        
     }
   }
 
@@ -1029,14 +1031,15 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   let poly = [];
   let shadowPoly = [];
   let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
+  let backCullingFlag = object.backCullingFlag;
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     if((projectedVerts[triangleFaceIndex[0]] != null && projectedVerts[triangleFaceIndex[1]] != null && projectedVerts[triangleFaceIndex[2]] != null)){
       poly.push(setPolygon(projectedVerts[triangleFaceIndex[0]],projectedVerts[triangleFaceIndex[1]],projectedVerts[triangleFaceIndex[2]],
-        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag));
+        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag,backCullingFlag));
     }
     if(object.shadowFlag == true){
-      shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]]));  
+      shadowPoly.push(setShadowPolygon(shadowProjectedVerts[triangleFaceIndex[0]],shadowProjectedVerts[triangleFaceIndex[1]],shadowProjectedVerts[triangleFaceIndex[2]],backCullingFlag));  
     }
   } 
   //ｚソート
@@ -1054,7 +1057,8 @@ function objectZsort(projectedObjects,object,poly){
       return;
     }
     for(let j=0;j<projectedObjectLength;j++){
-      if(projectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>poly[0][projected_Verts][0][position_Z]){
+      // if(projectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>poly[0][projected_Verts][0][position_Z])
+      if(projectedObjects[j][poly_List][0][cross_Z]>poly[0][cross_Z]){
         for(let i=projectedObjectLength-1;j<=i;i--){
           projectedObjects[i+1] = projectedObjects[i]
         }
@@ -1071,7 +1075,7 @@ function objectShadowZsort(shadowPprojectedObjects,object,shadowPoly){
     return;
   }
   for(let j=0;j<shadowPprojectedObjectsLength;j++){
-    if(shadowPprojectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>shadowPoly[0][projected_Verts][0][position_Z]){
+    if(shadowPprojectedObjects[j][poly_List][0][cross_Z]>shadowPoly[0][cross_Z]){
       for(let i=shadowPprojectedObjectsLength-1;j<=i;i--){
         shadowPprojectedObjects[i+1] = shadowPprojectedObjects[i]
       }
@@ -2023,29 +2027,22 @@ for(let j=0;j<projectedObjectsLength;j++){
   let currentProjectedObject = projectedObjects[j];
   let projectedObjects_j_polygonNum = currentProjectedObject[poly_List].length;
 	for(let projectedPolyNum=0;projectedPolyNum<projectedObjects_j_polygonNum;projectedPolyNum++){
-    let currentVerts = currentProjectedObject[poly_List][projectedPolyNum][projected_Verts];
-    //各点のZ座標がこれより下なら作画しない。x,yが画面外なら作画しない。
-    let triangleXMin = minXCul(currentVerts);
-      if(triangleXMin >= screen_size_w) continue;
-    let triangleXMax = maxXCul(currentVerts);
-      if(triangleXMax < 0) continue;
-    let triangleYMin = minYCul(currentVerts);
-      if(triangleYMin >= screen_size_h) continue;
-    let triangleYMax = maxYCul(currentVerts);
-      if(triangleYMax < 0) continue;
-
-	  //-の方がこちらに近くなる座標軸だから
-	  if(currentProjectedObject[obj_BackCulling_Flag] == true){
-      if(currentProjectedObject[poly_List][projectedPolyNum][cross_Z]<0){
+    //x,yが画面外なら作画しない。
+    //zが-の方がこちらに近くなる座標軸だから
+    if(!(currentProjectedObject[obj_BackCulling_Flag] == true && currentProjectedObject[poly_List][projectedPolyNum][cross_Z]>0)){
+      let currentVerts = currentProjectedObject[poly_List][projectedPolyNum][projected_Verts];
+      let triangleXMin = minXCul(currentVerts);
+        if(triangleXMin >= screen_size_w) continue;
+      let triangleXMax = maxXCul(currentVerts);
+        if(triangleXMax < 0) continue;
+      let triangleYMin = minYCul(currentVerts);
+        if(triangleYMin >= screen_size_h) continue;
+      let triangleYMax = maxYCul(currentVerts);
+        if(triangleYMax < 0) continue;
         triangleToBuffer(zBuffering,currentProjectedObject[obj_Image],currentVerts,currentProjectedObject[poly_List][projectedPolyNum][poly_Cross_World_Vector3],
-            currentProjectedObject[poly_List][projectedPolyNum][UV_Vector],sunVec,currentProjectedObject[obj_Shadow_Flag],currentProjectedObject[obj_LightShadow_Flag]
-           ,screen_size_h,screen_size_w);
-	    } 
-	  }else{
-      triangleToBuffer(zBuffering,currentProjectedObject[obj_Image],currentVerts,currentProjectedObject[poly_List][projectedPolyNum][poly_Cross_World_Vector3],
-        currentProjectedObject[poly_List][projectedPolyNum][UV_Vector],sunVec,currentProjectedObject[obj_Shadow_Flag],currentProjectedObject[obj_LightShadow_Flag]
-       ,screen_size_h,screen_size_w);
-	  }
+          currentProjectedObject[poly_List][projectedPolyNum][UV_Vector],sunVec,currentProjectedObject[obj_Shadow_Flag],currentProjectedObject[obj_LightShadow_Flag]
+        ,screen_size_h,screen_size_w); 
+    }
   }  
 }
 //shadowMap
@@ -2054,6 +2051,9 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
   let currentshadowProjectedObject = shadowProjectedObjects[j];
   let shadowProjectedObjects_j_polygonNum = currentshadowProjectedObject[poly_List].length;
 	for(let projectedPolyNum=0;projectedPolyNum<shadowProjectedObjects_j_polygonNum;projectedPolyNum++){
+    //x,yが画面外なら作画しない。
+    //zが-の方がこちらに近くなる座標軸だから
+    if(!(currentshadowProjectedObject[obj_BackCulling_Flag] == true && currentshadowProjectedObject[poly_List][projectedPolyNum][cross_Z]>0)){
     let currentVerts = currentshadowProjectedObject[poly_List][projectedPolyNum][projected_Verts];
     ///x,yが画面外なら作画しない。
     let triangleXMin = minXCul(currentVerts);
@@ -2064,15 +2064,8 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
       if(triangleYMin >= screen_size_h) continue;
     let triangleYMax = maxYCul(currentVerts);
       if(triangleYMax < 0) continue;
-
-	  //-の方がこちらに近くなる座標軸だから
-	  if(currentshadowProjectedObject[obj_BackCulling_Flag] == true){
-	    if(currentshadowProjectedObject[poly_List][projectedPolyNum][cross_Z]<0){
-        triangleToShadowBuffer(shadowMap,currentshadowProjectedObject[poly_List][projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
-      }
-	  }else{
       triangleToShadowBuffer(shadowMap,currentshadowProjectedObject[poly_List][projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
-	  }
+    }
   }  
 }
 //作画
