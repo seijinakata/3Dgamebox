@@ -804,18 +804,10 @@ class Object{
 function makeProjectedObject(orgObject,polyList){
   let projectedObject = [];
   projectedObject[poly_List] = polyList;
-  projectedObject[obj_BackCulling_Flag] = orgObject.backCullingFlag;
   projectedObject[obj_Image] = orgObject.textureImage;
   projectedObject[obj_Shadow_Flag] = orgObject.shadowFlag;
   projectedObject[obj_LightShadow_Flag] = orgObject.lightShadowFlag;
 
-  return projectedObject;
-}
-//projectedObject
-function makeShaddowProjectedObject(orgObject,polyList){
-  let projectedObject = [];
-  projectedObject[poly_List] = polyList;
-  projectedObject[obj_BackCulling_Flag] = orgObject.backCullingFlag;
   return projectedObject;
 }
 //ポリゴン製造
@@ -935,7 +927,7 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
   //ｚソート
   objectZsort(projectedObjects,object,poly);
   if(object.shadowFlag == true){
-   objectShadowZsort(shadowPprojectedObjects,object,shadowPoly);   
+   objectShadowZsort(shadowPprojectedObjects,shadowPoly);   
   }
 }
 function daeMekeSkinMeshBone(daeLoadPack){
@@ -1063,7 +1055,7 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   //ｚソート
   objectZsort(projectedObjects,object,poly);
   if(object.shadowFlag == true){
-    objectShadowZsort(shadowPprojectedObjects,object,shadowPoly);   
+    objectShadowZsort(shadowPprojectedObjects,shadowPoly);   
   }
 }
 
@@ -1087,23 +1079,23 @@ function objectZsort(projectedObjects,object,poly){
     }
     projectedObjects[projectedObjectLength] = makeProjectedObject(object,poly);
 }
-function objectShadowZsort(shadowPprojectedObjects,object,shadowPoly){
+function objectShadowZsort(shadowPprojectedObjects,shadowPoly){
   if(shadowPoly.length == 0) return;
   let shadowPprojectedObjectsLength = shadowPprojectedObjects.length;
   if(shadowPprojectedObjectsLength == 0){
-    shadowPprojectedObjects[0] = makeShaddowProjectedObject(object,shadowPoly);
+    shadowPprojectedObjects[0] = shadowPoly;
     return;
   }
   for(let j=0;j<shadowPprojectedObjectsLength;j++){
-    if(shadowPprojectedObjects[j][poly_List][0][cross_Z]>shadowPoly[0][cross_Z]){
+    if(shadowPprojectedObjects[j][0][cross_Z]>shadowPoly[0][cross_Z]){
       for(let i=shadowPprojectedObjectsLength-1;j<=i;i--){
         shadowPprojectedObjects[i+1] = shadowPprojectedObjects[i]
       }
-      shadowPprojectedObjects[j] = makeShaddowProjectedObject(object,shadowPoly);
+      shadowPprojectedObjects[j] = shadowPoly;
       return;
     }
   }
-  shadowPprojectedObjects[shadowPprojectedObjectsLength] = makeShaddowProjectedObject(object,shadowPoly);
+  shadowPprojectedObjects[shadowPprojectedObjectsLength] = shadowPoly;
 }
 //ループに入る前に生成 z = 99999;pushを使わないようにするため
 function renderBufferInit(buffer,pixelY,pixelX){
@@ -2066,9 +2058,9 @@ for(let j=0;j<projectedObjectsLength;j++){
 let shadowProjectedObjectsLength  = shadowProjectedObjects.length;
 for(let j=0;j<shadowProjectedObjectsLength;j++){
   let currentshadowProjectedObject = shadowProjectedObjects[j];
-  let shadowProjectedObjects_j_polygonNum = currentshadowProjectedObject[poly_List].length;
+  let shadowProjectedObjects_j_polygonNum = currentshadowProjectedObject.length;
 	for(let projectedPolyNum=0;projectedPolyNum<shadowProjectedObjects_j_polygonNum;projectedPolyNum++){
-    let currentVerts = currentshadowProjectedObject[poly_List][projectedPolyNum][projected_Verts];
+    let currentVerts = currentshadowProjectedObject[projectedPolyNum][projected_Verts];
     ///x,yが画面外なら作画しない。
     let triangleXMin = minXCul(currentVerts);
       if(triangleXMin >= screen_size_w) continue;
@@ -2078,7 +2070,7 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
       if(triangleYMin >= screen_size_h) continue;
     let triangleYMax = maxYCul(currentVerts);
       if(triangleYMax < 0) continue;
-      triangleToShadowBuffer(shadowMap,currentshadowProjectedObject[poly_List][projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
+      triangleToShadowBuffer(shadowMap,currentshadowProjectedObject[projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
   }  
 }
 //作画
