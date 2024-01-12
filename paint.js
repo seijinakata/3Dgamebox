@@ -566,18 +566,17 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 		do {
 			let zBufferingY = zBuffering[startY];
 			//Xが０未満でのｚ値の加算
-			let i = startX;
 			if(startX<0){
 				//絶対値にしてる
 				// let offset = -startX;
 				// startZ += (offset * dz);
 				startZ -= (startX * dz);
-				i = 0;
+				startX = 0;
 			}
-			for(;i<endX;i++){
-				let z = zBufferingY[i];
+			for(;startX<endX;startX++){
+				let z = zBufferingY[startX];
 				if(z>startZ){
-					zBufferingY[i] = startZ;
+					zBufferingY[startX] = startZ;
 				}
 				startZ+=dz;
 			}
@@ -611,11 +610,12 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         let sl = setVector2(pt[position_X],pt[position_Z]);
         let sr = setVector2(pt[position_X],pt[position_Z]);
 		if(triangleTop<0){
-			let offset = -triangleTop;
-			sl[0] += (offset * dl[0]);
-			sl[1] += (offset * dl[1]);
-			sr[0] += (offset * dr[0]);
-			sr[1] += (offset * dr[1]);
+			//horizonのXのoffsetと同じ考え方。
+			let offset = triangleTop;
+			sl[0] -= (offset * dl[0]);
+			sl[1] -= (offset * dl[1]);
+			sr[0] -= (offset * dr[0]);
+			sr[1] -= (offset * dr[1]);
 			triangleTop = 0;
 		}
 		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
@@ -658,11 +658,12 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
 		if(mid<0){
-			let offset = -mid;
-			sl[0] += (offset * dl[0]);
-			sl[1] += (offset * dl[1]);
-			sr[0] += (offset * dr[0]);
-			sr[1] += (offset * dr[1]);
+			//horizonのXのoffsetと同じ考え方。
+			let offset = mid;
+			sl[0] -= (offset * dl[0]);
+			sl[1] -= (offset * dl[1]);
+			sr[0] -= (offset * dr[0]);
+			sr[1] -= (offset * dr[1]);
 			mid = 0;
 		}
 		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
@@ -710,18 +711,17 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 	let dz = zStep/xStep;
 	let zBufferingY = zBuffering[y];
 	//Xが０未満でのｚ値の加算
-	let i = startX;
 	if(startX<0){
 		//絶対値にしてる
 		// let offset = -startX;
 		// startZ += (offset * dz);
 		startZ -= (startX * dz);
-		i = 0;
+		startX = 0;
 	}
-	for(;i<endX;i++){
-		let z = zBufferingY[i];
+	for(;startX<endX;startX++){
+		let z = zBufferingY[startX];
 		if(z>startZ){
-			zBufferingY[i] = startZ;
+			zBufferingY[startX] = startZ;
 		}
 		startZ+=dz;
 	}
@@ -766,19 +766,18 @@ function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt
 
 			let zBufferingY = zBuffering[startY];
 			//Xが０未満でのｚ値の加算
-			let i = startX;
 			if(startX<0){
 				//絶対値にしてる
 				// let offset = -startX;
 				// startZ += (offset * dz);
 				startZ -= (startX * dz);
-				i = 0;
+				startX = 0;
 			}
-			for(;i<endX;i++){
-				let z = zBufferingY[i][0];
+			for(;startX<endX;startX++){
+				let z = zBufferingY[startX][0];
 				if(z>startZ){
 					let imageDataRGBA = imageData[mi[5]][mi[4]];
-					zBufferingY[i] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+					zBufferingY[startX] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
 						imageDataRGBA[BLUE],shadowFlag,lightShadowFlag,sunCosin);
 				}
 				startZ+=dz;
@@ -813,11 +812,12 @@ function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt
         let sl = setVector2(pt[position_X],pt[position_Z]);
         let sr = setVector2(pt[position_X],pt[position_Z]);
 		if(triangleTop<0){
-			let offset = -triangleTop;
-			sl[0] += (offset * dl[0]);
-			sl[1] += (offset * dl[1]);
-			sr[0] += (offset * dr[0]);
-			sr[1] += (offset * dr[1]);
+			//horizonのXのoffsetと同じ考え方。
+			let offset = triangleTop;
+			sl[0] -= (offset * dl[0]);
+			sl[1] -= (offset * dl[1]);
+			sr[0] -= (offset * dr[0]);
+			sr[1] -= (offset * dr[1]);
 			triangleTop = 0;
 		}
 		if(screen_size_h<mid)mid=screen_size_h;
@@ -851,11 +851,12 @@ function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
 		if(mid<0){
-			let offset = -mid;
-			sl[0] += (offset * dl[0]);
-			sl[1] += (offset * dl[1]);
-			sr[0] += (offset * dr[0]);
-			sr[1] += (offset * dr[1]);
+			//horizonのXのoffsetと同じ考え方。
+			let offset = mid;
+			sl[0] -= (offset * dl[0]);
+			sl[1] -= (offset * dl[1]);
+			sr[0] -= (offset * dr[0]);
+			sr[1] -= (offset * dr[1]);
 			mid = 0;
 		}
 		let triangleBtm = pb[position_Y];
@@ -893,19 +894,18 @@ function scan_NoTextureMappingHorizontal(zBuffering,screen_size_w,y,startX,endX,
 	let dz = zStep/xStep;
 	let zBufferingY = zBuffering[y];
 	//Xが０未満でのｚ値の加算
-	let i = startX;
 	if(startX<0){
 		//絶対値にしてる
 		// let offset = -startX;
 		// startZ += (offset * dz);
 		startZ -= (startX * dz);
-		i = 0;
+		startX = 0;
 	}
-	for(;i<endX;i++){
-		let z = zBufferingY[i][0];
+	for(;startX<endX;startX++){
+		let z = zBufferingY[startX][0];
 		if(z>startZ){
 			let imageDataRGBA = imageData[mi[5]][mi[4]];
-			zBufferingY[i] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+			zBufferingY[startX] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
 				imageDataRGBA[BLUE],shadowFlag,lightShadowFlag,sunCosin);
 		}
 		startZ+=dz;
@@ -951,19 +951,18 @@ function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_s
 		do {
 			let zBufferingY = zBuffering[startY];
 			//Xが０未満でのｚ値の加算
-			let i = startX;
 			if(startX<0){
 				//絶対値にしてる
 				// let offset = -startX;
 				// startZ += (offset * dz);
 				startZ -= (startX * dz);
-				i = 0;
+				startX = 0;
 			}
-			for(;i<endX;i++){
-				let z = zBufferingY[i][0];
+			for(;startX<endX;startX++){
+				let z = zBufferingY[startX][0];
 				if(z>startZ){
 					let imageDataRGBA = imageData[mi[5]][mi[4]];
-					zBufferingY[i] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+					zBufferingY[startX] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
 						imageDataRGBA[BLUE],false,false);
 				}
 				startZ+=dz;
@@ -998,11 +997,12 @@ function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_s
         let sl = setVector2(pt[position_X],pt[position_Z]);
         let sr = setVector2(pt[position_X],pt[position_Z]);
 		if(triangleTop<0){
-			let offset = -triangleTop;
-			sl[0] += (offset * dl[0]);
-			sl[1] += (offset * dl[1]);
-			sr[0] += (offset * dr[0]);
-			sr[1] += (offset * dr[1]);
+			//horizonのXのoffsetと同じ考え方。
+			let offset = triangleTop;
+			sl[0] -= (offset * dl[0]);
+			sl[1] -= (offset * dl[1]);
+			sr[0] -= (offset * dr[0]);
+			sr[1] -= (offset * dr[1]);
 			triangleTop = 0;
 		}
 		if(screen_size_h<mid)mid=screen_size_h;
@@ -1036,11 +1036,12 @@ function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_s
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
 		if(mid<0){
-			let offset = -mid;
-			sl[0] += (offset * dl[0]);
-			sl[1] += (offset * dl[1]);
-			sr[0] += (offset * dr[0]);
-			sr[1] += (offset * dr[1]);
+			//horizonのXのoffsetと同じ考え方。
+			let offset = mid;
+			sl[0] -= (offset * dl[0]);
+			sl[1] -= (offset * dl[1]);
+			sr[0] -= (offset * dr[0]);
+			sr[1] -= (offset * dr[1]);
 			mid = 0;
 		}
 		let triangleBtm = pb[position_Y];
@@ -1077,19 +1078,18 @@ function scan_NoTextureMappingSunCosinHorizontal(zBuffering,screen_size_w,y,star
 	let dz = zStep/xStep;
 	let zBufferingY = zBuffering[y];
 	//Xが０未満でのｚ値の加算
-	let i = startX;
 	if(startX<0){
 		//絶対値にしてる
 		// let offset = -startX;
 		// startZ += (offset * dz);
 		startZ -= (startX * dz);
-		i = 0;
+		startX = 0;
 	}
-	for(;i<endX;i++){
-		let z = zBufferingY[i][0];
+	for(;startX<endX;startX++){
+		let z = zBufferingY[startX][0];
 		if(z>startZ){
 			let imageDataRGBA = imageData[mi[5]][mi[4]];
-			zBufferingY[i] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+			zBufferingY[startX] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
 				imageDataRGBA[BLUE],false,false);
 		}
 		startZ+=dz;
@@ -1138,16 +1138,15 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 			do {
 				let zBufferingY = zBuffering[startY];
 				//Xが０未満でのｚ値の加算
-				let i = startX;
 				if(startX<0){
 					//絶対値にしてる
 					// let offset = -startX;
 					// startZ += (offset * dz);
 					startZ -= (startX * dz);
-					i = 0;
+					startX = 0;
 				}
-				for(;i<endX;i++){
-					let z = zBufferingY[i][0];
+				for(;startX<endX;startX++){
+					let z = zBufferingY[startX][0];
 					if(z>startZ){
 							// if(tmpOrgy == null){
 					// 	tmpOrgy = y * iA[3] + tmpOrgyef;
@@ -1156,7 +1155,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 
 					/* 元画像における縦方向座標を計算 */
 					/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-					let selectOrgy = tmpOrgy + i * inv_b;
+					let selectOrgy = tmpOrgy + startX * inv_b;
 					/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 					//let selectOrgy = startX * iA[2] + y * iA[3]
 					//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
@@ -1173,7 +1172,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 					
 					/* 元画像における横方向座標を計算 */
 					/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-					let selectOrgx = tmpOrgx + i * inv_a;
+					let selectOrgx = tmpOrgx + startX * inv_a;
 					/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 					//let selectOrgx = startX * iA[0] + y * iA[1]
 					//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
@@ -1190,7 +1189,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 					
 					//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
 					let imageDataRGBA = imageData[selectOrgy][selectOrgx];
-					zBufferingY[i] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+					zBufferingY[startX] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
 						imageDataRGBA[BLUE],false,false);
 					}
 					startZ+=dz;
@@ -1225,11 +1224,12 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
         let sl = setVector2(pt[position_X],pt[position_Z]);
         let sr = setVector2(pt[position_X],pt[position_Z]);
 		if(triangleTop<0){
-			let offset = -triangleTop;
-			sl[0] += (offset * dl[0]);
-			sl[1] += (offset * dl[1]);
-			sr[0] += (offset * dr[0]);
-			sr[1] += (offset * dr[1]);
+			//horizonのXのoffsetと同じ考え方。
+			let offset = triangleTop;
+			sl[0] -= (offset * dl[0]);
+			sl[1] -= (offset * dl[1]);
+			sr[0] -= (offset * dr[0]);
+			sr[1] -= (offset * dr[1]);
 			triangleTop = 0;
 		}
 		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
@@ -1280,11 +1280,12 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
 		if(mid<0){
-			let offset = -mid;
-			sl[0] += (offset * dl[0]);
-			sl[1] += (offset * dl[1]);
-			sr[0] += (offset * dr[0]);
-			sr[1] += (offset * dr[1]);
+			//horizonのXのoffsetと同じ考え方。
+			let offset = mid;
+			sl[0] -= (offset * dl[0]);
+			sl[1] -= (offset * dl[1]);
+			sr[0] -= (offset * dr[0]);
+			sr[1] -= (offset * dr[1]);
 			mid = 0;
 		}
 		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
@@ -1341,17 +1342,16 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 
 	let dz = zStep/xStep;
 	let zBufferingY = zBuffering[y];
-	let i = startX;
 	//Xが０未満でのｚ値の加算
 	if(startX<0){
 		//絶対値にしてる
 		// let offset = -startX;
 		// startZ += (offset * dz);
 		startZ -= (startX * dz);
-		i = 0;
+		startX = 0;
 	}
-	for(;i<=endX;i++){
-		let z = zBufferingY[i][0];
+	for(;startX<=endX;startX++){
+		let z = zBufferingY[startX][0];
 			if(z>startZ){
 				// if(tmpOrgy == null){
 				// 	tmpOrgy = y * iA[3] + tmpOrgyef;
@@ -1360,7 +1360,7 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 
 				/* 元画像における縦方向座標を計算 */
 				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-				let selectOrgy = tmpOrgy + i * iA_2;
+				let selectOrgy = tmpOrgy + startX * iA_2;
 				/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 				//let selectOrgy = startX * iA[2] + y * iA[3]
 				//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
@@ -1377,7 +1377,7 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 				
 				/* 元画像における横方向座標を計算 */
 				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-				let selectOrgx = tmpOrgx + i * iA_0;
+				let selectOrgx = tmpOrgx + startX * iA_0;
 				/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 				//let selectOrgx = startX * iA[0] + y * iA[1]
 				//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
@@ -1394,7 +1394,7 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 				
 				//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
 				let imageDataRGBA = imageData[selectOrgy][selectOrgx];
-				zBufferingY[i] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+				zBufferingY[startX] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
 					imageDataRGBA[BLUE],false,false);
 
 			}
@@ -1531,11 +1531,12 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
         let sl = setVector2(pt[position_X],pt[position_Z]);
         let sr = setVector2(pt[position_X],pt[position_Z]);
 		if(triangleTop<0){
-			let offset = -triangleTop;
-			sl[0] += (offset * dl[0]);
-			sl[1] += (offset * dl[1]);
-			sr[0] += (offset * dr[0]);
-			sr[1] += (offset * dr[1]);
+			//horizonのXのoffsetと同じ考え方。
+			let offset = triangleTop;
+			sl[0] -= (offset * dl[0]);
+			sl[1] -= (offset * dl[1]);
+			sr[0] -= (offset * dr[0]);
+			sr[1] -= (offset * dr[1]);
 			triangleTop = 0;
 		}
 		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
@@ -1588,11 +1589,12 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
 		if(mid<0){
-			let offset = -mid;
-			sl[0] += (offset * dl[0]);
-			sl[1] += (offset * dl[1]);
-			sr[0] += (offset * dr[0]);
-			sr[1] += (offset * dr[1]);
+			//horizonのXのoffsetと同じ考え方。
+			let offset = mid;
+			sl[0] -= (offset * dl[0]);
+			sl[1] -= (offset * dl[1]);
+			sr[0] -= (offset * dr[0]);
+			sr[1] -= (offset * dr[1]);
 			mid = 0;
 		}
 		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
@@ -1654,15 +1656,14 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 	let dz = zStep/xStep;
 	let zBufferingY = zBuffering[y];
 	//Xが０未満でのｚ値の加算
-	let i = startX;
 	if(startX<0){
 		// let offset = -startX;
 		// startZ += (offset * dz);
 		startZ -= (startX * dz);
-		i = 0;
+		startX = 0;
 	}
-	for(;i<=endX;i++){
-		let z = zBufferingY[i][0];
+	for(;startX<=endX;startX++){
+		let z = zBufferingY[startX][0];
 		if(z>startZ){
 			// if(tmpOrgy == null){
 			// 	tmpOrgy = y * iA[3] + tmpOrgyef;
@@ -1671,7 +1672,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 
 			/* 元画像における縦方向座標を計算 */
 			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-			let selectOrgy = tmpOrgy + i * iA_2;
+			let selectOrgy = tmpOrgy + startX * iA_2;
 			/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 			//let selectOrgy = startX * iA[2] + y * iA[3]
 			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
@@ -1688,7 +1689,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 			
 			/* 元画像における横方向座標を計算 */
 			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-			let selectOrgx = tmpOrgx + i * iA_0;
+			let selectOrgx = tmpOrgx + startX * iA_0;
 			/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 			//let selectOrgx = startX * iA[0] + y * iA[1]
 			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
@@ -1705,7 +1706,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 
 			//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
 			let imageDataRGBA = imageData[selectOrgy][selectOrgx];
-			zBufferingY[i] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+			zBufferingY[startX] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
 				imageDataRGBA[BLUE],shadowFlag,lightShadowFlag,sunCosin);
 
 		}
