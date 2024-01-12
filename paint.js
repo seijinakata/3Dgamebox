@@ -568,8 +568,10 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 			//Xが０未満でのｚ値の加算
 			let i = startX;
 			if(startX<0){
-				let offset = -1 * startX;
-				startZ += (offset * dz);
+				//絶対値にしてる
+				// let offset = -startX;
+				// startZ += (offset * dz);
+				startZ -= (startX * dz);
 				i = 0;
 			}
 			for(;i<endX;i++){
@@ -710,8 +712,10 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 	//Xが０未満でのｚ値の加算
 	let i = startX;
 	if(startX<0){
-		let offset = -1 * startX;
-		startZ += (offset * dz);
+		//絶対値にしてる
+		// let offset = -startX;
+		// startZ += (offset * dz);
+		startZ -= (startX * dz);
 		i = 0;
 	}
 	for(;i<endX;i++){
@@ -764,8 +768,10 @@ function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt
 			//Xが０未満でのｚ値の加算
 			let i = startX;
 			if(startX<0){
-				let offset = -1 * startX;
-				startZ += (offset * dz);
+				//絶対値にしてる
+				// let offset = -startX;
+				// startZ += (offset * dz);
+				startZ -= (startX * dz);
 				i = 0;
 			}
 			for(;i<endX;i++){
@@ -889,8 +895,10 @@ function scan_NoTextureMappingHorizontal(zBuffering,screen_size_w,y,startX,endX,
 	//Xが０未満でのｚ値の加算
 	let i = startX;
 	if(startX<0){
-		let offset = -1 * startX;
-		startZ += (offset * dz);
+		//絶対値にしてる
+		// let offset = -startX;
+		// startZ += (offset * dz);
+		startZ -= (startX * dz);
 		i = 0;
 	}
 	for(;i<endX;i++){
@@ -945,8 +953,10 @@ function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_s
 			//Xが０未満でのｚ値の加算
 			let i = startX;
 			if(startX<0){
-				let offset = -1 * startX;
-				startZ += (offset * dz);
+				//絶対値にしてる
+				// let offset = -startX;
+				// startZ += (offset * dz);
+				startZ -= (startX * dz);
 				i = 0;
 			}
 			for(;i<endX;i++){
@@ -1069,8 +1079,10 @@ function scan_NoTextureMappingSunCosinHorizontal(zBuffering,screen_size_w,y,star
 	//Xが０未満でのｚ値の加算
 	let i = startX;
 	if(startX<0){
-		let offset = -1 * startX;
-		startZ += (offset * dz);
+		//絶対値にしてる
+		// let offset = -startX;
+		// startZ += (offset * dz);
+		startZ -= (startX * dz);
 		i = 0;
 	}
 	for(;i<endX;i++){
@@ -1128,8 +1140,10 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 				//Xが０未満でのｚ値の加算
 				let i = startX;
 				if(startX<0){
-					let offset = -1 * startX;
-					startZ += (offset * dz);
+					//絶対値にしてる
+					// let offset = -startX;
+					// startZ += (offset * dz);
+					startZ -= (startX * dz);
 					i = 0;
 				}
 				for(;i<endX;i++){
@@ -1330,8 +1344,10 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 	let i = startX;
 	//Xが０未満でのｚ値の加算
 	if(startX<0){
-		let offset = -startX;
-		startZ += (offset * dz);
+		//絶対値にしてる
+		// let offset = -startX;
+		// startZ += (offset * dz);
+		startZ -= (startX * dz);
 		i = 0;
 	}
 	for(;i<=endX;i++){
@@ -1430,8 +1446,10 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 				//Xが０未満でのｚ値の加算
 				let i = startX;
 				if(startX<0){
-					let offset = -1 * startX;
-					startZ += (offset * dz);
+					//絶対値にしてる
+					// let offset = -startX;
+					// startZ += (offset * dz);
+					startZ -= (startX * dz);
 					i = 0;
 				}
 				for(;i<endX;i++){
@@ -1638,8 +1656,9 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 	//Xが０未満でのｚ値の加算
 	let i = startX;
 	if(startX<0){
-		let offset = -startX;
-		startZ += (offset * dz);
+		// let offset = -startX;
+		// startZ += (offset * dz);
+		startZ -= (startX * dz);
 		i = 0;
 	}
 	for(;i<=endX;i++){
