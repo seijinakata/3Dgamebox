@@ -1425,7 +1425,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
         //start position
         let sl = setVector2(pt[position_X],pt[position_Z]);
         let sr = setVector2(pt[position_X],pt[position_Z]);
-		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){		
+		if(!(triangleEndXOver(sr,dr)) && !(triangleStartXOver(sl,dl,screen_size_w))){
 			if(triangleTop<0){
 				//horizonのXのoffsetと同じ考え方。
 				vec2OffsetMulAfterMinus(sl,dl,triangleTop);
@@ -1460,7 +1460,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
         //start position
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
-		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){		
+		if(!(triangleEndXOver(sr,dr)) && !(triangleStartXOver(sl,dl,screen_size_w))){
 			if(mid<0){
 				//horizonのXのoffsetと同じ考え方。
 				vec2OffsetMulAfterMinus(sl,dl,mid);
