@@ -61,17 +61,14 @@ export function XYRound(XY){
 }
 
 export function setVector2(x,y){
-    let vector2 = [x,y];
-    return vector2;
+    return [x,y];
 }
 export function setVector3(x,y,z){
-    let vector3 = [x,y,z];
-    return vector3;
+    return [x,y,z];
 }
 export function setVector4(x,y,z,w){
-    let vector4 = [x,y,z,w];
-    return vector4;
-    }
+    return [x,y,z,w];
+}
     
 export function vec2Plus(Va,Vb){
     Va[0] = Va[0] + Vb[0];
@@ -81,60 +78,58 @@ export function vec2Plus(Va,Vb){
 export function vec2Minus(Va,Vb){
     let vx = Va[0] - Vb[0];
     let vy = Va[1] - Vb[1];
-    let vector2 = setVector2(vx,vy);
-    return vector2;
+    return [vx,vy];
+}
+export function vec2OffsetMulAfterMinus(Va,Vb,offset){
+    let vx = Va[0] -= (offset * Vb[0]);
+    let vy = Va[1] -= (offset * Vb[1]);
+    return [vx,vy];
 }
 export function vec2Mul(Va,Vb){
     let vx = Va[0] * Vb[0];
     let vy = Va[1] * Vb[1];
-    let vector2 = setVector2(vx,vy);
-    return vector2;
+    return [vx,vy];
 }
 export function vec2Div(Va,Vb){
     let vx = Va[0] / Vb[0];
     let vy = Va[1] / Vb[1];
-    let vector2 = setVector2(vx,vy);
-    return vector2;
+    return [vx,vy];
 }
 
 export function vecMul(Va,Vb){
     let vx = Va[0] * Vb[0];
     let vy = Va[1] * Vb[1];
     let vz = Va[2] * Vb[2];
-    let vector3 = setVector3(vx,vy,vz);
-    return vector3
-    }
+    return [vx,vy,vz];
+}
 export function vecDiv(Va,Vb){
     let vx = Va[0] / Vb[0];
     let vy = Va[1] / Vb[1];
     let vz = Va[2] / Vb[2];
-    let vector3 = setVector3(vx,vy,vz);
-    return vector3;
-    }
+    return [vx,vy,vz];
+}
 export function vecPlus(Va,Vb){
     Va[0]= Va[0] + Vb[0];
     Va[1]= Va[1] + Vb[1];
     Va[2] = Va[2] + Vb[2];
-    }
+}
 export function vecMinus(Va,Vb){
     let vx = Va[0] - Vb[0];
     let vy = Va[1] - Vb[1];
     let vz = Va[2] - Vb[2];
-    let vector3 = setVector3(vx,vy,vz);
-    return vector3;
-    }
+    return [vx,vy,vz];
+}
   
 export function culVecCross(Va,Vb){
     let crossx = Va[1] * Vb[2] - Va[2] * Vb[1];
     let crossy = Va[2] * Vb[0] - Va[0] * Vb[2];
     let crossz = Va[0] * Vb[1] - Va[1] * Vb[0];
-    let crossVector3 = setVector3(crossx,crossy,crossz);
-    return crossVector3;
-    }
+    return [crossx,crossy,crossz];
+}
     
 export function culVecCrossZ(Va,Vb){
     return Va[0] * Vb[1] - Va[1] * Vb[0];
-    }
+}
 export function culVecDot(Va,Vb){
     return Va[0] * Vb[0] + Va[1] * Vb[1] + Va[2] * Vb[2];
     }

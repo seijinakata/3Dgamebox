@@ -1,6 +1,6 @@
 //newをすると重くなる構造体はjson,配列に置き換え中
 import { matVecMul,matIdentity,matPers,getInverseMatrix, matMul,getInvert2, CalInvMat4x4,protMatVecMul } from "./matrix.js";
-import { XRound, culVecDot, round, setVector2,setVector3, vec2Minus, vec2Plus, vecMinus, vecMul } from "./vector.js";
+import { XRound, culVecDot, round, setVector2,setVector3, vec2Minus, vec2OffsetMulAfterMinus, vec2Plus, vecMinus, vecMul } from "./vector.js";
 import { SCREEN_SIZE_W,SCREEN_SIZE_H} from "./camera.js";
 import { delta_X, delta_Z, position_X, position_Y, position_Z } from './enum.js';
 
@@ -611,11 +611,8 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         let sr = setVector2(pt[position_X],pt[position_Z]);
 		if(triangleTop<0){
 			//horizonのXのoffsetと同じ考え方。
-			let offset = triangleTop;
-			sl[0] -= (offset * dl[0]);
-			sl[1] -= (offset * dl[1]);
-			sr[0] -= (offset * dr[0]);
-			sr[1] -= (offset * dr[1]);
+			vec2OffsetMulAfterMinus(sl,dl,triangleTop);
+			vec2OffsetMulAfterMinus(sr,dr,triangleTop);
 			triangleTop = 0;
 		}
 		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
@@ -659,11 +656,8 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
         let sr = setVector2(pr[0],pr[2]);
 		if(mid<0){
 			//horizonのXのoffsetと同じ考え方。
-			let offset = mid;
-			sl[0] -= (offset * dl[0]);
-			sl[1] -= (offset * dl[1]);
-			sr[0] -= (offset * dr[0]);
-			sr[1] -= (offset * dr[1]);
+			vec2OffsetMulAfterMinus(sl,dl,mid);
+			vec2OffsetMulAfterMinus(sr,dr,mid);
 			mid = 0;
 		}
 		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
@@ -813,11 +807,8 @@ function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt
         let sr = setVector2(pt[position_X],pt[position_Z]);
 		if(triangleTop<0){
 			//horizonのXのoffsetと同じ考え方。
-			let offset = triangleTop;
-			sl[0] -= (offset * dl[0]);
-			sl[1] -= (offset * dl[1]);
-			sr[0] -= (offset * dr[0]);
-			sr[1] -= (offset * dr[1]);
+			vec2OffsetMulAfterMinus(sl,dl,triangleTop);
+			vec2OffsetMulAfterMinus(sr,dr,triangleTop);
 			triangleTop = 0;
 		}
 		if(screen_size_h<mid)mid=screen_size_h;
@@ -852,11 +843,8 @@ function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt
         let sr = setVector2(pr[0],pr[2]);
 		if(mid<0){
 			//horizonのXのoffsetと同じ考え方。
-			let offset = mid;
-			sl[0] -= (offset * dl[0]);
-			sl[1] -= (offset * dl[1]);
-			sr[0] -= (offset * dr[0]);
-			sr[1] -= (offset * dr[1]);
+			vec2OffsetMulAfterMinus(sl,dl,mid);
+			vec2OffsetMulAfterMinus(sr,dr,mid);
 			mid = 0;
 		}
 		let triangleBtm = pb[position_Y];
@@ -998,11 +986,8 @@ function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_s
         let sr = setVector2(pt[position_X],pt[position_Z]);
 		if(triangleTop<0){
 			//horizonのXのoffsetと同じ考え方。
-			let offset = triangleTop;
-			sl[0] -= (offset * dl[0]);
-			sl[1] -= (offset * dl[1]);
-			sr[0] -= (offset * dr[0]);
-			sr[1] -= (offset * dr[1]);
+			vec2OffsetMulAfterMinus(sl,dl,triangleTop);
+			vec2OffsetMulAfterMinus(sr,dr,triangleTop);
 			triangleTop = 0;
 		}
 		if(screen_size_h<mid)mid=screen_size_h;
@@ -1037,11 +1022,8 @@ function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_s
         let sr = setVector2(pr[0],pr[2]);
 		if(mid<0){
 			//horizonのXのoffsetと同じ考え方。
-			let offset = mid;
-			sl[0] -= (offset * dl[0]);
-			sl[1] -= (offset * dl[1]);
-			sr[0] -= (offset * dr[0]);
-			sr[1] -= (offset * dr[1]);
+			vec2OffsetMulAfterMinus(sl,dl,mid);
+			vec2OffsetMulAfterMinus(sr,dr,mid);
 			mid = 0;
 		}
 		let triangleBtm = pb[position_Y];
@@ -1225,11 +1207,8 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
         let sr = setVector2(pt[position_X],pt[position_Z]);
 		if(triangleTop<0){
 			//horizonのXのoffsetと同じ考え方。
-			let offset = triangleTop;
-			sl[0] -= (offset * dl[0]);
-			sl[1] -= (offset * dl[1]);
-			sr[0] -= (offset * dr[0]);
-			sr[1] -= (offset * dr[1]);
+			vec2OffsetMulAfterMinus(sl,dl,triangleTop);
+			vec2OffsetMulAfterMinus(sr,dr,triangleTop);
 			triangleTop = 0;
 		}
 		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
@@ -1281,11 +1260,8 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
         let sr = setVector2(pr[0],pr[2]);
 		if(mid<0){
 			//horizonのXのoffsetと同じ考え方。
-			let offset = mid;
-			sl[0] -= (offset * dl[0]);
-			sl[1] -= (offset * dl[1]);
-			sr[0] -= (offset * dr[0]);
-			sr[1] -= (offset * dr[1]);
+			vec2OffsetMulAfterMinus(sl,dl,mid);
+			vec2OffsetMulAfterMinus(sr,dr,mid);
 			mid = 0;
 		}
 		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
@@ -1532,11 +1508,8 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
         let sr = setVector2(pt[position_X],pt[position_Z]);
 		if(triangleTop<0){
 			//horizonのXのoffsetと同じ考え方。
-			let offset = triangleTop;
-			sl[0] -= (offset * dl[0]);
-			sl[1] -= (offset * dl[1]);
-			sr[0] -= (offset * dr[0]);
-			sr[1] -= (offset * dr[1]);
+			vec2OffsetMulAfterMinus(sl,dl,triangleTop);
+			vec2OffsetMulAfterMinus(sr,dr,triangleTop);
 			triangleTop = 0;
 		}
 		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
@@ -1590,11 +1563,8 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
         let sr = setVector2(pr[0],pr[2]);
 		if(mid<0){
 			//horizonのXのoffsetと同じ考え方。
-			let offset = mid;
-			sl[0] -= (offset * dl[0]);
-			sl[1] -= (offset * dl[1]);
-			sr[0] -= (offset * dr[0]);
-			sr[1] -= (offset * dr[1]);
+			vec2OffsetMulAfterMinus(sl,dl,mid);
+			vec2OffsetMulAfterMinus(sr,dr,mid);
 			mid = 0;
 		}
 		if(!(sr[0]<0 && dr[0]<=0) && !(sl[0]>screen_size_w && dl[0]>=0)){
