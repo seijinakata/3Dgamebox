@@ -589,22 +589,35 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 	}
 
 	let mid = pm[position_Y];
+	let drDeltaXZ = null;
+	let dlDeltaXZ = null;
 	//tmp[0]がpm[0]より大きい時の初期値
 	let pl = branch(pt,pb,mid);//pt->mid
-
 	let pr = pm;
 	if(pl[0]>pm[0]){
 		pr = pl;
 		pl = pm;
+        let er = vecMinus(pb,pt);
+        drDeltaXZ =  delta_xz(er);
+	}else{
+        let el = vecMinus(pb,pt);
+        dlDeltaXZ =  delta_xz(el);
 	}
 
 	//mid=0はlowerで対応
     if(mid>0){//upper
 		let triangleTop = pt[position_Y];
-        let el = vecMinus(pl,pt);//pt->pl
-        let er = vecMinus(pr,pt);//pt->pr
-        let dl = delta_xz(el);
-        let dr = delta_xz(er);
+		let dl,dr;
+		if(drDeltaXZ != null){
+			let el = vecMinus(pl,pt);//pt->pl
+			dl = delta_xz(el);
+			dr = drDeltaXZ;
+		}
+		if(dlDeltaXZ != null){
+			let er = vecMinus(pr,pt);//pt->pr
+			dr = delta_xz(er);
+			dl = dlDeltaXZ;
+		}
         //start position
         let sl = setVector2(pt[position_X],pt[position_Z]);
         let sr = setVector2(pt[position_X],pt[position_Z]);
@@ -631,10 +644,17 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 		}
     }
     if(mid<screen_size_h){//lower
-		let el = vecMinus(pb,pl);//pl->pb
-		let er = vecMinus(pb,pr);//pr->pb
-        let dl = delta_xz(el);
-        let dr = delta_xz(er);
+		let dl,dr;
+		if(drDeltaXZ != null){
+			let el = vecMinus(pb,pl);//pl->pb
+			dl = delta_xz(el);
+			dr = drDeltaXZ;
+		}
+		if(dlDeltaXZ != null){
+			let er = vecMinus(pb,pr);//pr->pb
+			dr = delta_xz(er);
+			dl = dlDeltaXZ;
+		}
         //start position
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
@@ -755,22 +775,35 @@ function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt
 	}
 	
 	let mid = pm[position_Y];
-
+	let drDeltaXZ = null;
+	let dlDeltaXZ = null;
 	//tmp[0]がpm[0]より大きい時の初期値
-	let pl = branch(pt,pb,mid);//pt->mid	
+	let pl = branch(pt,pb,mid);//pt->mid
 	let pr = pm;
 	if(pl[0]>pm[0]){
 		pr = pl;
 		pl = pm;
+        let er = vecMinus(pb,pt);
+        drDeltaXZ =  delta_xz(er);
+	}else{
+        let el = vecMinus(pb,pt);
+        dlDeltaXZ =  delta_xz(el);
 	}
 
 	//mid=0はlowerで対応
     if(mid>0){//upper
 		let triangleTop = pt[position_Y];
-        let el = vecMinus(pl,pt);//pt->pl
-        let er = vecMinus(pr,pt);//pt->pr
-        let dl = delta_xz(el);
-        let dr = delta_xz(er);
+		let dl,dr;
+		if(drDeltaXZ != null){
+			let el = vecMinus(pl,pt);//pt->pl
+			dl = delta_xz(el);
+			dr = drDeltaXZ;
+		}
+		if(dlDeltaXZ != null){
+			let er = vecMinus(pr,pt);//pt->pr
+			dr = delta_xz(er);
+			dl = dlDeltaXZ;
+		}
         //start position
         let sl = setVector2(pt[position_X],pt[position_Z]);
         let sr = setVector2(pt[position_X],pt[position_Z]);
@@ -797,10 +830,17 @@ function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt
 		}	
     }
     if(mid<screen_size_h){//lower
-		let el = vecMinus(pb,pl);//pl->pb
-		let er = vecMinus(pb,pr);//pr->pb
-        let dl = delta_xz(el);
-        let dr = delta_xz(er);
+		let dl,dr;
+		if(drDeltaXZ != null){
+			let el = vecMinus(pb,pl);//pl->pb
+			dl = delta_xz(el);
+			dr = drDeltaXZ;
+		}
+		if(dlDeltaXZ != null){
+			let er = vecMinus(pb,pr);//pr->pb
+			dr = delta_xz(er);
+			dl = dlDeltaXZ;
+		}
         //start position
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
@@ -921,22 +961,35 @@ function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_s
 	}
 
 	let mid = pm[position_Y];
-
+	let drDeltaXZ = null;
+	let dlDeltaXZ = null;
 	//tmp[0]がpm[0]より大きい時の初期値
-	let pl = branch(pt,pb,mid);//pt->mid	
+	let pl = branch(pt,pb,mid);//pt->mid
 	let pr = pm;
 	if(pl[0]>pm[0]){
 		pr = pl;
 		pl = pm;
+        let er = vecMinus(pb,pt);
+        drDeltaXZ =  delta_xz(er);
+	}else{
+        let el = vecMinus(pb,pt);
+        dlDeltaXZ =  delta_xz(el);
 	}
 
 	//mid=0はlowerで対応
     if(mid>0){//upper
 		let triangleTop = pt[position_Y];
-        let el = vecMinus(pl,pt);//pt->pl
-        let er = vecMinus(pr,pt);//pt->pr
-        let dl = delta_xz(el);
-        let dr = delta_xz(er);
+		let dl,dr;
+		if(drDeltaXZ != null){
+			let el = vecMinus(pl,pt);//pt->pl
+			dl = delta_xz(el);
+			dr = drDeltaXZ;
+		}
+		if(dlDeltaXZ != null){
+			let er = vecMinus(pr,pt);//pt->pr
+			dr = delta_xz(er);
+			dl = dlDeltaXZ;
+		}
         //start position
         let sl = setVector2(pt[position_X],pt[position_Z]);
         let sr = setVector2(pt[position_X],pt[position_Z]);
@@ -963,10 +1016,17 @@ function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_s
 		}
     }
     if(mid<screen_size_h){//lower
-		let el = vecMinus(pb,pl);//pl->pb
-		let er = vecMinus(pb,pr);//pr->pb
-        let dl = delta_xz(el);
-        let dr = delta_xz(er);
+		let dl,dr;
+		if(drDeltaXZ != null){
+			let el = vecMinus(pb,pl);//pl->pb
+			dl = delta_xz(el);
+			dr = drDeltaXZ;
+		}
+		if(dlDeltaXZ != null){
+			let er = vecMinus(pb,pr);//pr->pb
+			dr = delta_xz(er);
+			dl = dlDeltaXZ;
+		}
         //start position
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
@@ -1130,22 +1190,35 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 	}
 
 	let mid = pm[1];
-
+	let drDeltaXZ = null;
+	let dlDeltaXZ = null;
 	//tmp[0]がpm[0]より大きい時の初期値
-	let pl = branch(pt,pb,mid);//pt->mid	
+	let pl = branch(pt,pb,mid);//pt->mid
 	let pr = pm;
 	if(pl[0]>pm[0]){
 		pr = pl;
 		pl = pm;
+        let er = vecMinus(pb,pt);
+        drDeltaXZ =  delta_xz(er);
+	}else{
+        let el = vecMinus(pb,pt);
+        dlDeltaXZ =  delta_xz(el);
 	}
 
 	//mid=0はlowerで対応
     if(mid>0){//upper
-		let triangleTop = pt[1];
-        let el = vecMinus(pl,pt);//pt->pl
-        let er = vecMinus(pr,pt);//pt->pr
-        let dl = delta_xz(el);
-        let dr = delta_xz(er);
+		let triangleTop = pt[position_Y];
+		let dl,dr;
+		if(drDeltaXZ != null){
+			let el = vecMinus(pl,pt);//pt->pl
+			dl = delta_xz(el);
+			dr = drDeltaXZ;
+		}
+		if(dlDeltaXZ != null){
+			let er = vecMinus(pr,pt);//pt->pr
+			dr = delta_xz(er);
+			dl = dlDeltaXZ;
+		}
         //start position
         let sl = setVector2(pt[position_X],pt[position_Z]);
         let sr = setVector2(pt[position_X],pt[position_Z]);
@@ -1177,10 +1250,17 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 		}
     }
     if(mid<screen_size_h){//lower
-		let el = vecMinus(pb,pl);//pl->pb
-		let er = vecMinus(pb,pr);//pr->pb
-        let dl = delta_xz(el);
-        let dr = delta_xz(er);
+		let dl,dr;
+		if(drDeltaXZ != null){
+			let el = vecMinus(pb,pl);//pl->pb
+			dl = delta_xz(el);
+			dr = drDeltaXZ;
+		}
+		if(dlDeltaXZ != null){
+			let er = vecMinus(pb,pr);//pr->pb
+			dr = delta_xz(er);
+			dl = dlDeltaXZ;
+		}
         //start position
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
@@ -1406,22 +1486,35 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 	}
 
 	let mid = pm[1];
-	
+	let drDeltaXZ = null;
+	let dlDeltaXZ = null;
 	//tmp[0]がpm[0]より大きい時の初期値
-	let pl = branch(pt,pb,mid);//pt->mid	
+	let pl = branch(pt,pb,mid);//pt->mid
 	let pr = pm;
 	if(pl[0]>pm[0]){
 		pr = pl;
 		pl = pm;
+        let er = vecMinus(pb,pt);
+        drDeltaXZ =  delta_xz(er);
+	}else{
+        let el = vecMinus(pb,pt);
+        dlDeltaXZ =  delta_xz(el);
 	}
-	
+
 	//mid=0はlowerで対応
     if(mid>0){//upper
-		let triangleTop = pt[1];
-        let el = vecMinus(pl,pt);//pt->pl
-        let er = vecMinus(pr,pt);//pt->pr
-        let dl = delta_xz(el);
-        let dr = delta_xz(er);
+		let triangleTop = pt[position_Y];
+		let dl,dr;
+		if(drDeltaXZ != null){
+			let el = vecMinus(pl,pt);//pt->pl
+			dl = delta_xz(el);
+			dr = drDeltaXZ;
+		}
+		if(dlDeltaXZ != null){
+			let er = vecMinus(pr,pt);//pt->pr
+			dr = delta_xz(er);
+			dl = dlDeltaXZ;
+		}
         //start position
         let sl = setVector2(pt[position_X],pt[position_Z]);
         let sr = setVector2(pt[position_X],pt[position_Z]);
@@ -1453,10 +1546,17 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 		}
     }
     if(mid<screen_size_h){//lower
-		let el = vecMinus(pb,pl);//pl->pb
-		let er = vecMinus(pb,pr);//pr->pb
-        let dl = delta_xz(el);
-        let dr = delta_xz(er);
+		let dl,dr;
+		if(drDeltaXZ != null){
+			let el = vecMinus(pb,pl);//pl->pb
+			dl = delta_xz(el);
+			dr = drDeltaXZ;
+		}
+		if(dlDeltaXZ != null){
+			let er = vecMinus(pb,pr);//pr->pb
+			dr = delta_xz(er);
+			dl = dlDeltaXZ;
+		}
         //start position
         let sl = setVector2(pl[0],pl[2]);
         let sr = setVector2(pr[0],pr[2]);
