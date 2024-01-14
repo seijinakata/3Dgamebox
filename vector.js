@@ -119,7 +119,17 @@ export function vecMinus(Va,Vb){
     let vz = Va[2] - Vb[2];
     return [vx,vy,vz];
 }
-  
+//
+export function vec2NoYVec3Minus(Vec2,Vec3){
+    let vx = Vec2[0] - Vec3[0];
+    let vz = Vec2[1] - Vec3[2];
+    return [vx,vz];
+}
+export function vec3NoYVec2Minus(Vec3,Vec2){
+    let vx = Vec3[0] - Vec2[0];
+    let vz = Vec3[2] - Vec2[1];
+    return [vx,vz];
+}
 export function culVecCross(Va,Vb){
     let crossx = Va[1] * Vb[2] - Va[2] * Vb[1];
     let crossy = Va[2] * Vb[0] - Va[0] * Vb[2];
