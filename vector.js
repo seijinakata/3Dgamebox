@@ -71,8 +71,8 @@ export function setVector4(x,y,z,w){
 }
     
 export function vec2Plus(Va,Vb){
-    Va[0] = Va[0] + Vb[0];
-    Va[1] = Va[1] + Vb[1];
+    Va[0] += Vb[0];
+    Va[1] += Vb[1];
 }
 
 export function vec2Minus(Va,Vb){
@@ -109,9 +109,9 @@ export function vecDiv(Va,Vb){
     return [vx,vy,vz];
 }
 export function vecPlus(Va,Vb){
-    Va[0]= Va[0] + Vb[0];
-    Va[1]= Va[1] + Vb[1];
-    Va[2] = Va[2] + Vb[2];
+    Va[0] += Vb[0];
+    Va[1] += Vb[1];
+    Va[2] += Vb[2];
 }
 export function vecMinus(Va,Vb){
     let vx = Va[0] - Vb[0];
@@ -119,7 +119,13 @@ export function vecMinus(Va,Vb){
     let vz = Va[2] - Vb[2];
     return [vx,vy,vz];
 }
-//
+//crossZ用
+export function vec3CrossZMinus(Va,Vb){
+    let vx = Va[0] - Vb[0];
+    let vy = Va[1] - Vb[1];
+    return [vx,vy];
+}
+
 export function vec2NoYVec3Minus(Vec2,Vec3){
     let vx = Vec2[0] - Vec3[0];
     let vz = Vec2[1] - Vec3[2];

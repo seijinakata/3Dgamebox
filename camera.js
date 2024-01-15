@@ -1,6 +1,6 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
-import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,round100,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul, minXCul, maxXCul, minYCul, maxYCul} from './vector.js';
+import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,round100,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul, minXCul, maxXCul, minYCul, maxYCul, vec3CrossZMinus} from './vector.js';
 import {matIdentity,matDirectMul,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera, makeScalingMatrix, matWaightAndPlus} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,triangleToBuffer,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
@@ -903,8 +903,8 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
     let pos2 = projectedVerts[triangleFaceIndex[1]];
     let pos3 = projectedVerts[triangleFaceIndex[2]];
     if((pos1 != null && pos2 != null && pos3 != null)){
-      let Va = vecMinus(pos1,pos2);
-      let Vb = vecMinus(pos3,pos1);
+      let Va = vec3CrossZMinus(pos1,pos2);
+      let Vb = vec3CrossZMinus(pos3,pos1);
       let crossZ = culVecCrossZ(Va,Vb);
       //zが-の方がこちらに近くなる座標軸だから
       if(!(backCullingFlag == true && crossZ>0)){
@@ -916,11 +916,13 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       let pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
       let pos2 = shadowProjectedVerts[triangleFaceIndex[1]];
       let pos3 = shadowProjectedVerts[triangleFaceIndex[2]];
-      let Va = vecMinus(pos1,pos2);
-      let Vb = vecMinus(pos3,pos1);
-      let crossZ = culVecCrossZ(Va,Vb);
-      if(!(backCullingFlag == true && crossZ>0)){
-        shadowPoly.push(setShadowPolygon(pos1,pos2,pos3,crossZ));    
+      if((pos1 != null && pos2 != null && pos3 != null)){
+        let Va = vec3CrossZMinus(pos1,pos2);
+        let Vb = vec3CrossZMinus(pos3,pos1);
+        let crossZ = culVecCrossZ(Va,Vb);
+        if(!(backCullingFlag == true && crossZ>0)){
+          shadowPoly.push(setShadowPolygon(pos1,pos2,pos3,crossZ));    
+        }        
       }
     }
   }
@@ -1031,8 +1033,8 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
     let pos2 = projectedVerts[triangleFaceIndex[1]];
     let pos3 = projectedVerts[triangleFaceIndex[2]];
     if((pos1 != null && pos2 != null && pos3 != null)){
-      let Va = vecMinus(pos1,pos2);
-      let Vb = vecMinus(pos3,pos1);
+      let Va = vec3CrossZMinus(pos1,pos2);
+      let Vb = vec3CrossZMinus(pos3,pos1);
       let crossZ = culVecCrossZ(Va,Vb);
       //zが-の方がこちらに近くなる座標軸だから
       if(!(backCullingFlag == true && crossZ>0)){
@@ -1044,11 +1046,13 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
       let pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
       let pos2 = shadowProjectedVerts[triangleFaceIndex[1]];
       let pos3 = shadowProjectedVerts[triangleFaceIndex[2]];
-      let Va = vecMinus(pos1,pos2);
-      let Vb = vecMinus(pos3,pos1);
-      let crossZ = culVecCrossZ(Va,Vb);
-      if(!(backCullingFlag == true && crossZ>0)){
-        shadowPoly.push(setShadowPolygon(pos1,pos2,pos3,crossZ));    
+      if((pos1 != null && pos2 != null && pos3 != null)){
+        let Va = vec3CrossZMinus(pos1,pos2);
+        let Vb = vec3CrossZMinus(pos3,pos1);
+        let crossZ = culVecCrossZ(Va,Vb);
+        if(!(backCullingFlag == true && crossZ>0)){
+          shadowPoly.push(setShadowPolygon(pos1,pos2,pos3,crossZ));    
+        }        
       }
     }
   } 
