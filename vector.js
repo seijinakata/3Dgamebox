@@ -125,7 +125,11 @@ export function vec3CrossZMinus(Va,Vb){
     let vy = Va[1] - Vb[1];
     return [vx,vy];
 }
-
+export function vec3notYMinus(Va,Vb){
+    let vx = Va[0] - Vb[0];
+    let vz = Va[2] - Vb[2];
+    return [vx,vz];
+}
 export function vec2NoYVec3Minus(Vec2,Vec3){
     let vx = Vec2[0] - Vec3[0];
     let vz = Vec2[1] - Vec3[2];
