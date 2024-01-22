@@ -81,9 +81,8 @@ export function vec2Minus(Va,Vb){
     return [vx,vy];
 }
 export function vec2OffsetMulAfterMinus(Va,Vb,offset){
-    let vx = Va[0] -= (offset * Vb[0]);
-    let vy = Va[1] -= (offset * Vb[1]);
-    return [vx,vy];
+    Va[0] -= (offset * Vb[0]);
+    Va[1] -= (offset * Vb[1]);
 }
 export function vec2Mul(Va,Vb){
     let vx = Va[0] * Vb[0];

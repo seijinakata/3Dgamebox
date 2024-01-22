@@ -1577,21 +1577,40 @@ return Quaternion(q1,q2,q3,q0);
 }
 //回転行列を元に作られたQuaternion行列
 function makeQuaternionMatrix(q){
-  let pow2qx = 2*q[0]*q[0];
-  let qxqy = 2*q[0]*q[1];
-  let qxqz = 2*q[0]*q[2];
-  let qxqw = 2*q[0]*q[3];
-  let pow2qy = 2*q[1]*q[1];
-  let qyqz = 2*q[1]*q[2];
-  let qyqw = 2*q[1]*q[3];
-  let pow2qz = 2*q[2]*q[2];
-  let qzqw = 2*q[2]*q[3];
-  let pow2qw = 2*q[3]*q[3];
+  let mul2q0 = 2*q[0];
+  let pow2qx = mul2q0*q[0];
+  let qxqy = mul2q0*q[1];
+  let qxqz = mul2q0*q[2];
+  let qxqw = mul2q0*q[3];
+  let mul2q1 = 2*q[1];
+  let pow2qy = mul2q1*q[1];
+  let qyqz = mul2q1*q[2];
+  let qyqw = mul2q1*q[3];
+  let mul2q2 = 2*q[2];
+  let pow2qz = mul2q2*q[2];
+  let qzqw = mul2q2*q[3];
+  let pow2qwMinus1 = 2*q[3]*q[3]-1;
   
-   return [pow2qw+pow2qx-1,qxqy-qzqw,qxqz+qyqw,0,
-          qxqy+qzqw,pow2qw+pow2qy-1,qyqz-qxqw,0,
-          qxqz-qyqw,qyqz+qxqw,pow2qw+pow2qz-1,0];
+   return [pow2qwMinus1+pow2qx,qxqy-qzqw,qxqz+qyqw,0,
+          qxqy+qzqw,pow2qwMinus1+pow2qy,qyqz-qxqw,0,
+          qxqz-qyqw,qyqz+qxqw,pow2qwMinus1+pow2qz,0];
 }
+//original
+//   let pow2qx = 2*q[0]*q[0];
+//   let qxqy = 2*q[0]*q[1];
+//   let qxqz = 2*q[0]*q[2];
+//   let qxqw = 2*q[0]*q[3];
+//   let pow2qy = 2*q[1]*q[1];
+//   let qyqz = 2*q[1]*q[2];
+//   let qyqw = 2*q[1]*q[3];
+//   let pow2qz = 2*q[2]*q[2];
+//   let qzqw = 2*q[2]*q[3];
+//   let pow2qw = 2*q[3]*q[3];
+  
+//    return [pow2qw+pow2qx-1,qxqy-qzqw,qxqz+qyqw,0,
+//           qxqy+qzqw,pow2qw+pow2qy-1,qyqz-qxqw,0,
+//           qxqz-qyqw,qyqz+qxqw,pow2qw+pow2qz-1,0];
+// }
 /*
 ** 複数のクォータニオン間の球面線形補間（折れ線）
 **   out ← t[i] におけるクォータニオン q[i], 0 <= i < tNum に対する
