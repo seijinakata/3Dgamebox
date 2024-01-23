@@ -49,6 +49,9 @@ export function minZCul(t){
 export function round(orgValue){
     return ((orgValue * 1000)|0) / 1000;
 }
+export function mul1000Round(orgValue){
+    return ((orgValue * 1000)|0);
+}
 export function round100(orgValue){
     return ((orgValue * 100)|0) / 100;
 }
