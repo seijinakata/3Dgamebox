@@ -2138,11 +2138,13 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
 
         //world=>shadowView
         //sunViewMatrixrixmul and projection(/shadowPixelZ) and viewPort (+ 0.5)*screen_size_wh)|0;
-        let shadowPixelZ = (sunViewMatrix[8]*shadowPixelX + sunViewMatrix[9]*shadowPixelY + sunViewMatrix[10]*pixelZ + sunViewMatrix[11] * 1000)/1000000;
-        let shadowMatrixPixelY = (((((sunViewMatrix[4]*shadowPixelX + sunViewMatrix[5]*shadowPixelY + sunViewMatrix[6]*pixelZ + sunViewMatrix[7] * 1000)/1000000)/shadowPixelZ) + 0.5) * screen_size_h)|0;
+        // original let shadowPixelZ = (sunViewMatrix[8]*shadowPixelX + sunViewMatrix[9]*shadowPixelY + sunViewMatrix[10]*pixelZ + sunViewMatrix[11] * 1000)/1000000;
+        let shadowPixelZ = (sunViewMatrix[8]*shadowPixelX + sunViewMatrix[9]*shadowPixelY + sunViewMatrix[10]*pixelZ + sunViewMatrix[11] * 1000);
+        let shadowMatrixPixelY = (((((sunViewMatrix[4]*shadowPixelX + sunViewMatrix[5]*shadowPixelY + sunViewMatrix[6]*pixelZ + sunViewMatrix[7] * 1000))/shadowPixelZ) + 0.5) * screen_size_h)|0;
         if(shadowMatrixPixelY>=0 && shadowMatrixPixelY<screen_size_h){
-          let shadowMatrixPixelX = (((((sunViewMatrix[0]*shadowPixelX + sunViewMatrix[1]*shadowPixelY + sunViewMatrix[2]*pixelZ + sunViewMatrix[3] * 1000)/1000000)/shadowPixelZ) + 0.5) * screen_size_w)|0;
-          if(shadowMatrixPixelX>=0 && shadowMatrixPixelX<screen_size_w){ 
+          let shadowMatrixPixelX = (((((sunViewMatrix[0]*shadowPixelX + sunViewMatrix[1]*shadowPixelY + sunViewMatrix[2]*pixelZ + sunViewMatrix[3] * 1000))/shadowPixelZ) + 0.5) * screen_size_w)|0;
+          if(shadowMatrixPixelX>=0 && shadowMatrixPixelX<screen_size_w){
+            shadowPixelZ /= 1000000;
             if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.5<shadowPixelZ){
               pixelR *= 0.5;
               pixelG *= 0.5;
