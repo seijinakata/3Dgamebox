@@ -897,6 +897,8 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
   let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
   let backCullingFlag = object.backCullingFlag;
   let shadowFlag = object.shadowFlag;
+  let polyLength = 0;
+  let shadowPolyLength = 0;
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     let pos1 = projectedVerts[triangleFaceIndex[0]];
@@ -908,8 +910,9 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       let crossZ = culVecCrossZ(Va,Vb);
       //zが-の方がこちらに近くなる座標軸だから
       if(!(backCullingFlag == true && crossZ>0)){
-        poly.push(setPolygon(pos1,pos2,pos3,
-          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag,crossZ));
+        poly[polyLength] = setPolygon(pos1,pos2,pos3,
+          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag,crossZ);
+          polyLength++;
       }
     }
     if(shadowFlag == true){
@@ -921,7 +924,8 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
         let Vb = vec3CrossZMinus(pos3,pos1);
         let crossZ = culVecCrossZ(Va,Vb);
         if(!(backCullingFlag == true && crossZ>0)){
-          shadowPoly.push(setShadowPolygon(pos1,pos2,pos3,crossZ));    
+          shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3,crossZ);
+          shadowPolyLength++;
         }        
       }
     }
@@ -1027,6 +1031,8 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
   let backCullingFlag = object.backCullingFlag;
   let shadowFlag = object.shadowFlag;
+  let polyLength = 0;
+  let shadowPolyLength = 0;
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     let pos1 = projectedVerts[triangleFaceIndex[0]];
@@ -1038,8 +1044,9 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
       let crossZ = culVecCrossZ(Va,Vb);
       //zが-の方がこちらに近くなる座標軸だから
       if(!(backCullingFlag == true && crossZ>0)){
-        poly.push(setPolygon(pos1,pos2,pos3,
-          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag,crossZ));
+        poly[polyLength] = setPolygon(pos1,pos2,pos3,
+          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag,crossZ);
+          polyLength++;
       }
     }
     if(shadowFlag == true){
@@ -1051,7 +1058,8 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
         let Vb = vec3CrossZMinus(pos3,pos1);
         let crossZ = culVecCrossZ(Va,Vb);
         if(!(backCullingFlag == true && crossZ>0)){
-          shadowPoly.push(setShadowPolygon(pos1,pos2,pos3,crossZ));    
+          shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3,crossZ);
+          shadowPolyLength++;
         }        
       }
     }
@@ -1939,14 +1947,14 @@ for(let j=0;j<steves_length;j++){
 
 // steves[0][0].bones[0].position = setVector3(0.0,0,0);
 steves[0][0].bones[0].position = setVector3(-0.5,0,0.5);
-
+let tmpDaeMekeSkinMeshBone = daeMekeSkinMeshBone;
 //makeBones
 for(let j=0;j<steves.length;j++){
   let objects = steves[j];
   let object_Number = objects[0].objectNumber;
   for(let i=0;i<object_Number;i++){
     let object = objects[i];
-    daeMekeSkinMeshBone(object);
+    tmpDaeMekeSkinMeshBone(object);
   }
 }
 
@@ -1990,6 +1998,8 @@ for(let j=0;j<steves.length;j++){
   inverseViewMatrix = CalInvMat4x4(viewMatrix);
   sunViewMatrix = matCamera(sunPos,sunLookat,up);
 
+  var tmpQuaternionXYZRoll = quaternionXYZRoll;
+  var tmpQbjectPolygonPush = objectPolygonPush;
   //dicesregister
   for(let Object of dices){
     // let worldMatrix = matIdentity();
@@ -2001,10 +2011,10 @@ for(let j=0;j<steves.length;j++){
     for(let i=0;i<Object[0].objectNumber;i++){
     let object = Object[i];
     let worldTranslation = {};
-    worldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
+    worldTranslation.quaternion = tmpQuaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
     worldTranslation.position = object.bones[0].position;
     worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
-    objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    tmpQbjectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
     }
   }
   //cuberegister
@@ -2018,17 +2028,18 @@ for(let j=0;j<steves.length;j++){
     for(let i=0;i<Object[0].objectNumber;i++){
     let object = Object[i];
     let worldTranslation = {};
-    worldTranslation.quaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
+    worldTranslation.quaternion = tmpQuaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
     worldTranslation.position = object.bones[0].position;
     worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
-    objectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    tmpQbjectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
     }
   }
+  var tmpQbjectSkinMeshPolygonPush = objectSkinMeshPolygonPush;
   //steves
   for(let j=0;j<steves.length;j++){
     for(let i=0;i<steves[j].length;i++){
       let object = steves[j][i];
-      objectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+      tmpQbjectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
     }
   }
   //AABB
@@ -2058,6 +2069,11 @@ culVecNormalize(sunVec);
 round100(sunVec[0]);
 round100(sunVec[1]);
 //camera
+var tmpTriangleToBuffer = triangleToBuffer;
+var tmpMinXCul = minXCul;
+var tmpMaxXCul = maxXCul;
+var tmpMinYCul = minYCul;
+var tmpMaxYCul = maxYCul;
 let projectedObjectsLength  = projectedObjects.length;
 for(let j=0;j<projectedObjectsLength;j++){
   let currentProjectedObject = projectedObjects[j];
@@ -2065,19 +2081,20 @@ for(let j=0;j<projectedObjectsLength;j++){
 	for(let projectedPolyNum=0;projectedPolyNum<projectedObjects_j_polygonNum;projectedPolyNum++){
     //x,yが画面外なら作画しない。
     let currentVerts = currentProjectedObject[poly_List][projectedPolyNum][projected_Verts];
-    let triangleXMin = minXCul(currentVerts);
+    let triangleXMin = tmpMinXCul(currentVerts);
       if(triangleXMin >= screen_size_w) continue;
-    let triangleXMax = maxXCul(currentVerts);
+    let triangleXMax = tmpMaxXCul(currentVerts);
       if(triangleXMax < 0) continue;
-    let triangleYMin = minYCul(currentVerts);
+    let triangleYMin = tmpMinYCul(currentVerts);
       if(triangleYMin >= screen_size_h) continue;
-    let triangleYMax = maxYCul(currentVerts);
+    let triangleYMax = tmpMaxYCul(currentVerts);
       if(triangleYMax < 0) continue;
-      triangleToBuffer(zBuffering,currentProjectedObject[obj_Image],currentVerts,currentProjectedObject[poly_List][projectedPolyNum][poly_Cross_World_Vector3],
+      tmpTriangleToBuffer(zBuffering,currentProjectedObject[obj_Image],currentVerts,currentProjectedObject[poly_List][projectedPolyNum][poly_Cross_World_Vector3],
         currentProjectedObject[poly_List][projectedPolyNum][UV_Vector],sunVec,currentProjectedObject[obj_Shadow_Flag],currentProjectedObject[obj_LightShadow_Flag]
       ,screen_size_h,screen_size_w); 
   }  
 }
+let tmpTriangleToShadowBuffer = triangleToShadowBuffer;
 //shadowMap
 let shadowProjectedObjectsLength  = shadowProjectedObjects.length;
 for(let j=0;j<shadowProjectedObjectsLength;j++){
@@ -2086,15 +2103,15 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
 	for(let projectedPolyNum=0;projectedPolyNum<shadowProjectedObjects_j_polygonNum;projectedPolyNum++){
     let currentVerts = currentshadowProjectedObject[projectedPolyNum][projected_Verts];
     ///x,yが画面外なら作画しない。
-    let triangleXMin = minXCul(currentVerts);
+    let triangleXMin = tmpMinXCul(currentVerts);
       if(triangleXMin >= screen_size_w) continue;
-    let triangleXMax = maxXCul(currentVerts);
+    let triangleXMax = tmpMaxXCul(currentVerts);
       if(triangleXMax < 0) continue;
-    let triangleYMin = minYCul(currentVerts);
+    let triangleYMin = tmpMinYCul(currentVerts);
       if(triangleYMin >= screen_size_h) continue;
-    let triangleYMax = maxYCul(currentVerts);
+    let triangleYMax = tmpMaxYCul(currentVerts);
       if(triangleYMax < 0) continue;
-      triangleToShadowBuffer(shadowMap,currentshadowProjectedObject[projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
+      tmpTriangleToShadowBuffer(shadowMap,currentshadowProjectedObject[projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
   }  
 }
 //作画
@@ -2102,6 +2119,7 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
 matDirectMul(sunViewMatrix,inverseViewMatrix);
 //整数演算
 matRound4X4(sunViewMatrix);
+var tmpMul1000Round = mul1000Round;
 for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   let basearrayY = basearray[pixelY];
   let zBufferingY = zBuffering[pixelY];
@@ -2111,7 +2129,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
     let pixelZ = pixel[pixel_Z];
     if(pixelZ<99999){
       if(pixel[pixel_shadow_Flag] == true){
-        pixelZ = mul1000Round(pixelZ)
+        pixelZ = tmpMul1000Round(pixelZ);
         let pixelR = pixel[pixel_R];
         let pixelG = pixel[pixel_G];
         let pixelB = pixel[pixel_B];
