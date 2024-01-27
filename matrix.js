@@ -8,6 +8,14 @@ export function matCopy(m){
     let copyMat = [m[0],m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8],m[9],m[10],m[11]];
     return copyMat;
 }
+export function mat1Demention2DementionMatCopy(m){
+    let copyMat = [
+        [m[0],m[1],m[2],m[3]],
+        [m[4],m[5],m[6],m[7]],
+        [m[8],m[9],m[10],m[11]]
+    ];
+    return copyMat;
+}
 // export function matRound4X4(mat){
 //     mat[0] = ((mat[0] * 1000)|0) / 1000;
 //     mat[1] = ((mat[1] * 1000)|0) / 1000;
@@ -57,11 +65,10 @@ export function matRound(mat){
     mat[11] /= 1000;
 }
 export function matIdentity(){
-        let identityMatrix = 
-        [
-         1, 0, 0, 0,
-         0, 1, 0, 0,
-         0, 0, 1, 0];
+    let identityMatrix = [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0]];
          //0, 0, 0, 1];
     
     return identityMatrix;
@@ -612,36 +619,42 @@ export function getInvert2(_11,_12,_21,_22){
     let c = -_21 * inv_det; // c = -c / det
     let d = _11 * inv_det;  // d = a / det
     return [[a,b],[c,d]];
-  }
+}
+
 export function getInverseMatrix(matrix){
 
-    let a  = [];
-    for (const line of matrix) {
-        a.push([...line]);
-    }
+    let a = mat1Demention2DementionMatCopy(matrix);
     let inv_a = matIdentity(); //ここに逆行列が入る(単位行列)
     let buf; //一時的なデータを蓄える
     let i,j,k; //カウンタ
-    let n=4;  //配列の次数
+    let col=4;  //行の次数
+    let row = 3;//列の次数
 
    //掃き出し法
-   for(i=0;i<n;i++){
+   for(i=0;i<row;i++){
+    if(a[i][i] == 0) return;
     buf=1/a[i][i];
-        for(j=0;j<n;j++){
+        for(j=0;j<col;j++){
             a[i][j]*=buf;
             inv_a[i][j]*=buf;
         }
-    for(j=0;j<n;j++){
+    
+    for(j=0;j<row;j++){
         if(i!=j){
             buf=a[j][i];
-            for(k=0;k<n;k++){
+            for(k=0;k<col;k++){
                 a[j][k]-=a[i][k]*buf;
                 inv_a[j][k]-=inv_a[i][k]*buf;
             }
-        }
+        }   
     }
    }
-    return inv_a;
+   //4行目[0,0,0,1,0,0,0,1]aの４行目の上３列を０にする演算あとはすべて０しか入っていない。
+   inv_a[0][3]-= a[0][3];
+   inv_a[1][3]-= a[1][3];
+   inv_a[2][3]-= a[2][3];
+   //一次元に戻す
+   return [inv_a[0][0],inv_a[0][1],inv_a[0][2],inv_a[0][3],inv_a[1][0],inv_a[1][1],inv_a[1][2],inv_a[1][3],inv_a[2][0],inv_a[2][1],inv_a[2][2],inv_a[2][3]];
 }
 /*//二次元配列
 export function matRound4X4(mat){

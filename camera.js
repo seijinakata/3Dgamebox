@@ -643,12 +643,12 @@ canvas.width = SCREEN_SIZE_W*5;
 canvas.height = SCREEN_SIZE_H*7;
 //viewPortMat
 let viewPortMatrix = [
-  [ SCREEN_SIZE_W, 0, 0, SCREEN_SIZE_W/2],
-  [ 0, SCREEN_SIZE_H, 0, SCREEN_SIZE_H/2],
-  [ 0, 0, 1, 0],
-  [ 0, 0, 0, 1]
+   SCREEN_SIZE_W, 0, 0, SCREEN_SIZE_W/2,
+   0, SCREEN_SIZE_H, 0, SCREEN_SIZE_H/2,
+   0, 0, 1, 0,
+   0, 0, 0, 1
 ];
-let inverseViewPortMatrix = CalInvMat4x4(viewPortMatrix);
+let inverseViewPortMatrix = getInverseMatrix(viewPortMatrix);
 
 let viewMatrix;
 let inverseViewMatrix;
@@ -1995,7 +1995,7 @@ for(let j=0;j<steves.length;j++){
   //   }
   // }
 
-  inverseViewMatrix = CalInvMat4x4(viewMatrix);
+  inverseViewMatrix = getInverseMatrix(viewMatrix);
   sunViewMatrix = matCamera(sunPos,sunLookat,up);
 
   var tmpQuaternionXYZRoll = quaternionXYZRoll;
