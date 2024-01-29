@@ -626,29 +626,91 @@ export function getInverseMatrix(matrix){
     let a = mat1Demention2DementionMatCopy(matrix);
     let inv_a = matIdentity(); //ここに逆行列が入る(単位行列)
     let buf; //一時的なデータを蓄える
-    let i,j,k; //カウンタ
-    let col=4;  //行の次数
-    let row = 3;//列の次数
+ 
+    //掃き出し法ループアンローリングa行列を１or０にする演算は行わない,inv_aは単位行列
+    //1行目
+    if(a[0][0] == 0) return;
+    buf = 1/a[0][0];
+    a[0][1] *= buf;
+    a[0][2] *= buf;
+    a[0][3] *= buf;
+    inv_a[0][0] *= buf;
 
-   //掃き出し法
-   for(i=0;i<row;i++){
-    if(a[i][i] == 0) return;
-    buf=1/a[i][i];
-        for(j=0;j<col;j++){
-            a[i][j]*=buf;
-            inv_a[i][j]*=buf;
-        }
+    buf = a[1][0];
+    a[1][1] -= a[0][1] * buf;
+    a[1][2] -= a[0][2] * buf;
+    a[1][3] -= a[0][3] * buf;
+    inv_a[1][0] -= inv_a[0][0] * buf;
+
+    buf = a[2][0];
+    a[2][1] -= a[0][1] * buf;
+    a[2][2] -= a[0][2] * buf;
+    a[2][3] -= a[0][3] * buf;
+    inv_a[2][0] -= inv_a[0][0] * buf;
+
+    //inv_aにdataが入っているのは[1][0],[2][0]
+    //2行目
+    if(a[1][1] == 0) return;
+    buf = 1/a[1][1];
+    a[1][2] *= buf;
+    a[1][3] *= buf;
+    inv_a[1][1] *= buf;
+
+    buf = a[0][1];
+    a[0][2] -= a[1][2] * buf;
+    a[0][3] -= a[1][3] * buf;
+    inv_a[0][0] -= inv_a[1][0] * buf;
+    inv_a[0][1] -= inv_a[1][1] * buf;
+    buf = a[2][1];
+    a[2][2] -= a[1][2] * buf;
+    a[2][3] -= a[1][3] * buf;
+    //初めは単位行列
+    inv_a[2][0] -= inv_a[1][0] * buf;
+    inv_a[2][1] -= inv_a[1][1] * buf;
+
+    //inv_aにdataが入っているのは[1][0],[0][1],[2][0],[2][1]
+    //3行目
+    if(a[2][2] == 0) return;
+    buf = 1/a[2][2];
+    a[2][3] *= buf;
+    inv_a[2][0] *= buf;
+    inv_a[2][1] *= buf;
+    inv_a[2][2] *= buf;
+
+    buf = a[0][2];
+    a[0][3] -= a[2][3] * buf;
+    //初めは単位行列
+    inv_a[0][0] -= inv_a[2][0] * buf;
+    inv_a[0][1] -= inv_a[2][1] * buf;
+    inv_a[0][2] -= inv_a[2][2] * buf;
+    buf = a[1][2];
+    a[1][3] -= a[2][3] * buf;
+    //初めは単位行列
+    inv_a[1][0] -= inv_a[2][0] * buf;
+    inv_a[1][1] -= inv_a[2][1] * buf;
+    inv_a[1][2] -= inv_a[2][2] * buf;
+
+//let i,j,k; //カウンタ
+//let col=4;  //行の次数
+//let row = 3;//列の次数
+//    for(i=0;i<row;i++){
+//     if(a[i][i] == 0) return;
+//     buf=1/a[i][i];
+//         for(j=0;j<col;j++){
+//             a[i][j]*=buf;
+//             inv_a[i][j]*=buf;
+//         }
     
-    for(j=0;j<row;j++){
-        if(i!=j){
-            buf=a[j][i];
-            for(k=0;k<col;k++){
-                a[j][k]-=a[i][k]*buf;
-                inv_a[j][k]-=inv_a[i][k]*buf;
-            }
-        }   
-    }
-   }
+//     for(j=0;j<row;j++){
+//         if(i!=j){
+//             buf=a[j][i];
+//             for(k=0;k<col;k++){
+//                 a[j][k]-=a[i][k]*buf;
+//                 inv_a[j][k]-=inv_a[i][k]*buf;
+//             }
+//         }   
+//     }
+//    }
    //4行目[0,0,0,1,0,0,0,1]aの４行目の上３列を０にする演算あとはすべて０しか入っていない。
    inv_a[0][3]-= a[0][3];
    inv_a[1][3]-= a[1][3];
