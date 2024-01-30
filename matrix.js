@@ -66,10 +66,10 @@ export function matRound(mat){
 }
 export function matIdentity(){
     let identityMatrix = [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0]];
-         //0, 0, 0, 1];
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0];
+        //0, 0, 0, 1];
     
     return identityMatrix;
     }
@@ -624,7 +624,6 @@ export function getInvert2(_11,_12,_21,_22){
 export function getInverseMatrix(matrix){
 
     let a = mat1Demention2DementionMatCopy(matrix);
-    let inv_a = matIdentity(); //ここに逆行列が入る(単位行列)
     let buf; //一時的なデータを蓄える
  
     //掃き出し法ループアンローリングa行列を１or０にする演算は行わない,inv_aは単位行列
@@ -634,20 +633,20 @@ export function getInverseMatrix(matrix){
     a[0][1] *= buf;
     a[0][2] *= buf;
     a[0][3] *= buf;
-    inv_a[0][0] *= buf;
 
-    buf = a[1][0];
-    a[1][1] -= a[0][1] * buf;
-    a[1][2] -= a[0][2] * buf;
-    a[1][3] -= a[0][3] * buf;
-    inv_a[1][0] -= inv_a[0][0] * buf;
+    let buf1 = a[1][0];
+    a[1][1] -= a[0][1] * buf1;
+    a[1][2] -= a[0][2] * buf1;
+    a[1][3] -= a[0][3] * buf1;
 
-    buf = a[2][0];
-    a[2][1] -= a[0][1] * buf;
-    a[2][2] -= a[0][2] * buf;
-    a[2][3] -= a[0][3] * buf;
-    inv_a[2][0] -= inv_a[0][0] * buf;
-
+    let buf2 = a[2][0];
+    a[2][1] -= a[0][1] * buf2;
+    a[2][2] -= a[0][2] * buf2;
+    a[2][3] -= a[0][3] * buf2;
+    //ここに逆行列が入る(単位行列に１行目の計算結果を代入)
+    let inv_a = [[buf,0,0,0],
+                [-buf1,1,0,0],
+                [-buf2,0,1,0]];
     //inv_aにdataが入っているのは[1][0],[2][0]
     //2行目
     if(a[1][1] == 0) return;
