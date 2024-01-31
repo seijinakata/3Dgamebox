@@ -66,9 +66,9 @@ export function matRound(mat){
 }
 export function matIdentity(){
     let identityMatrix = [
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0];
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0]];
         //0, 0, 0, 1];
     
     return identityMatrix;
@@ -620,12 +620,10 @@ export function getInvert2(_11,_12,_21,_22){
     let d = _11 * inv_det;  // d = a / det
     return [[a,b],[c,d]];
 }
-
 export function getInverseMatrix(matrix){
 
     let a = mat1Demention2DementionMatCopy(matrix);
     let buf; //一時的なデータを蓄える
- 
     //掃き出し法ループアンローリングa行列を１or０にする演算は行わない,inv_aは単位行列
     //1行目
     if(a[0][0] == 0) return;
@@ -643,80 +641,202 @@ export function getInverseMatrix(matrix){
     a[2][1] -= a[0][1] * buf2;
     a[2][2] -= a[0][2] * buf2;
     a[2][3] -= a[0][3] * buf2;
-    //ここに逆行列が入る(単位行列に１行目の計算結果を代入)
+
     let inv_a = [[buf,0,0,0],
-                [-buf1,1,0,0],
-                [-buf2,0,1,0]];
-    //inv_aにdataが入っているのは[1][0],[2][0]
+                [-buf*buf1,1,0,0],
+                [-buf*buf2,0,1,0]];
+
     //2行目
     if(a[1][1] == 0) return;
     buf = 1/a[1][1];
     a[1][2] *= buf;
     a[1][3] *= buf;
+
+    inv_a[1][0] *= buf;
     inv_a[1][1] *= buf;
 
-    buf = a[0][1];
-    a[0][2] -= a[1][2] * buf;
-    a[0][3] -= a[1][3] * buf;
-    inv_a[0][0] -= inv_a[1][0] * buf;
-    inv_a[0][1] -= inv_a[1][1] * buf;
-    buf = a[2][1];
-    a[2][2] -= a[1][2] * buf;
-    a[2][3] -= a[1][3] * buf;
-    //初めは単位行列
-    inv_a[2][0] -= inv_a[1][0] * buf;
-    inv_a[2][1] -= inv_a[1][1] * buf;
+    buf1 = a[0][1];
+    a[0][2] -= a[1][2] * buf1;
+    a[0][3] -= a[1][3] * buf1;
 
-    //inv_aにdataが入っているのは[1][0],[0][1],[2][0],[2][1]
-    //3行目
+    inv_a[0][0] -= inv_a[1][0] * buf1;
+    inv_a[0][1] -= inv_a[1][1] * buf1;
+
+    buf2 = a[2][1];
+    a[2][2] -= a[1][2] * buf2;
+    a[2][3] -= a[1][3] * buf2;
+
+    inv_a[2][0] -= inv_a[1][0] * buf2;
+    inv_a[2][1] -= inv_a[1][1] * buf2;
+
+    //2行目
     if(a[2][2] == 0) return;
     buf = 1/a[2][2];
     a[2][3] *= buf;
+
     inv_a[2][0] *= buf;
     inv_a[2][1] *= buf;
     inv_a[2][2] *= buf;
 
-    buf = a[0][2];
-    a[0][3] -= a[2][3] * buf;
-    //初めは単位行列
-    inv_a[0][0] -= inv_a[2][0] * buf;
-    inv_a[0][1] -= inv_a[2][1] * buf;
-    inv_a[0][2] -= inv_a[2][2] * buf;
-    buf = a[1][2];
-    a[1][3] -= a[2][3] * buf;
-    //初めは単位行列
-    inv_a[1][0] -= inv_a[2][0] * buf;
-    inv_a[1][1] -= inv_a[2][1] * buf;
-    inv_a[1][2] -= inv_a[2][2] * buf;
+    buf1 = a[0][2];
+    a[0][3] -= a[2][3] * buf1;
 
-//let i,j,k; //カウンタ
-//let col=4;  //行の次数
-//let row = 3;//列の次数
-//    for(i=0;i<row;i++){
-//     if(a[i][i] == 0) return;
-//     buf=1/a[i][i];
-//         for(j=0;j<col;j++){
-//             a[i][j]*=buf;
-//             inv_a[i][j]*=buf;
-//         }
-    
-//     for(j=0;j<row;j++){
-//         if(i!=j){
-//             buf=a[j][i];
-//             for(k=0;k<col;k++){
-//                 a[j][k]-=a[i][k]*buf;
-//                 inv_a[j][k]-=inv_a[i][k]*buf;
-//             }
-//         }   
-//     }
-//    }
-   //4行目[0,0,0,1,0,0,0,1]aの４行目の上３列を０にする演算あとはすべて０しか入っていない。
-   inv_a[0][3]-= a[0][3];
-   inv_a[1][3]-= a[1][3];
-   inv_a[2][3]-= a[2][3];
-   //一次元に戻す
-   return [inv_a[0][0],inv_a[0][1],inv_a[0][2],inv_a[0][3],inv_a[1][0],inv_a[1][1],inv_a[1][2],inv_a[1][3],inv_a[2][0],inv_a[2][1],inv_a[2][2],inv_a[2][3]];
+    inv_a[0][0] -= inv_a[2][0] * buf1;
+    inv_a[0][1] -= inv_a[2][1] * buf1;
+    inv_a[0][2] -= inv_a[2][2] * buf1;
+
+    buf2 = a[1][2];
+    a[1][3] -= a[2][3] * buf2;
+
+    inv_a[1][0] -= inv_a[2][0] * buf2;
+    inv_a[1][1] -= inv_a[2][1] * buf2;
+    inv_a[1][2] -= inv_a[2][2] * buf2;
+    //4行目[0,0,0,1,0,0,0,1]aの４行目の上３列を０にする演算あとはすべて０しか入っていない。
+    inv_a[0][3]-= a[0][3];
+    inv_a[1][3]-= a[1][3];
+    inv_a[2][3]-= a[2][3];
+    //一次元に戻す
+    return [inv_a[0][0],inv_a[0][1],inv_a[0][2],inv_a[0][3],inv_a[1][0],inv_a[1][1],inv_a[1][2],inv_a[1][3],inv_a[2][0],inv_a[2][1],inv_a[2][2],inv_a[2][3]];
 }
+// //original
+// export function getInverseMatrix(matrix){
+
+//     let a = mat1Demention2DementionMatCopy(matrix);
+//     let buf; //一時的なデータを蓄える
+//     let inv_a = matIdentity();
+//     //掃き出し法ループアンローリングa行列を１or０にする演算は行わない,inv_aは単位行列
+//     //1行目
+//     if(a[0][0] == 0) return;
+//     buf = 1/a[0][0];
+//     a[0][0] = 1;
+//     a[0][1] *= buf;
+//     a[0][2] *= buf;
+//     a[0][3] *= buf;
+
+//     inv_a[0][0] *= buf;//
+//     inv_a[0][1] *= buf;
+//     inv_a[0][2] *= buf;
+//     inv_a[0][3] *= buf;
+
+//     let buf1 = a[1][0];
+//     a[1][0] = 0;
+//     a[1][1] -= a[0][1] * buf1;
+//     a[1][2] -= a[0][2] * buf1;
+//     a[1][3] -= a[0][3] * buf1;
+
+//     inv_a[1][0] -= inv_a[0][0] * buf1;//bu
+//     inv_a[1][1] -= inv_a[0][1] * buf1;
+//     inv_a[1][2] -= inv_a[0][2] * buf1;
+//     inv_a[1][3] -= inv_a[0][3] * buf1;
+
+//     let buf2 = a[2][0];
+//     a[2][0] = 0;
+//     a[2][1] -= a[0][1] * buf2;
+//     a[2][2] -= a[0][2] * buf2;
+//     a[2][3] -= a[0][3] * buf2;
+
+//     inv_a[2][0] -= inv_a[0][0] * buf2;//bu
+//     inv_a[2][1] -= inv_a[0][1] * buf2;
+//     inv_a[2][2] -= inv_a[0][2] * buf2;
+//     inv_a[2][3] -= inv_a[0][3] * buf2;
+
+//     //2行目
+//     if(a[1][1] == 0) return;
+//     buf = 1/a[1][1];
+//     a[1][0] = 0;
+//     a[1][1] = 1;
+//     a[1][2] *= buf;
+//     a[1][3] *= buf;
+
+//     inv_a[1][0] *= buf;//
+//     inv_a[1][1] *= buf;//
+//     inv_a[1][2] *= buf;
+//     inv_a[1][3] *= buf;
+
+//     buf1 = a[0][1];
+//     a[0][0] = 1;
+//     a[0][1] = 0;
+//     a[0][2] -= a[1][2] * buf1;
+//     a[0][3] -= a[1][3] * buf1;
+
+//     inv_a[0][0] -= inv_a[1][0] * buf1;//
+//     inv_a[0][1] -= inv_a[1][1] * buf1;//
+//     inv_a[0][2] -= inv_a[1][2] * buf1;
+//     inv_a[0][3] -= inv_a[1][3] * buf1;
+
+//     buf2 = a[2][1];
+//     a[2][0] = 0;
+//     a[2][1] = 0;
+//     a[2][2] -= a[1][2] * buf2;
+//     a[2][3] -= a[1][3] * buf2;
+
+//     inv_a[2][0] -= inv_a[1][0] * buf2;//
+//     inv_a[2][1] -= inv_a[1][1] * buf2;//
+//     inv_a[2][2] -= inv_a[1][2] * buf2;
+//     inv_a[2][3] -= inv_a[1][3] * buf2;
+
+//     //2行目
+//     if(a[2][2] == 0) return;
+//     buf = 1/a[2][2];
+//     a[2][0] = 0;
+//     a[2][1] = 0;
+//     a[2][2] = 1;
+//     a[2][3] *= buf;
+
+//     inv_a[2][0] *= buf;//
+//     inv_a[2][1] *= buf;//
+//     inv_a[2][2] *= buf;//
+//     inv_a[2][3] *= buf;
+
+//     buf1 = a[0][2];
+//     a[0][0] = 1;
+//     a[0][1] = 0;
+//     a[0][2] = 0;
+//     a[0][3] -= a[2][3] * buf1;
+
+//     inv_a[0][0] -= inv_a[2][0] * buf1;//
+//     inv_a[0][1] -= inv_a[2][1] * buf1;//
+//     inv_a[0][2] -= inv_a[2][2] * buf1;
+//     inv_a[0][3] -= inv_a[2][3] * buf1;
+
+//     buf2 = a[1][2];
+//     a[1][0] = 0;
+//     a[1][1] = 0;
+//     a[1][2] = 0;
+//     a[1][3] -= a[2][3] * buf2;
+
+//     inv_a[1][0] -= inv_a[2][0] * buf2;//
+//     inv_a[1][1] -= inv_a[2][1] * buf2;//
+//     inv_a[1][2] -= inv_a[2][2] * buf2;
+//     inv_a[1][3] -= inv_a[2][3] * buf2;
+// // let i,j,k; //カウンタ
+// // let col=4;  //行の次数
+// // let row = 3;//列の次数
+// //    for(i=0;i<row;i++){
+// //     if(a[i][i] == 0) return;
+// //     buf=1/a[i][i];
+// //         for(j=1;j<col;j++){
+// //             a[i][j]*=buf;
+// //             inv_a[i][j]*=buf;
+// //         }
+    
+// //     for(j=0;j<row;j++){
+// //         if(i!=j){
+// //             buf=a[j][i];
+// //             for(k=1;k<col;k++){
+// //                 a[j][k]-=a[i][k]*buf;
+// //                 inv_a[j][k]-=inv_a[i][k]*buf;
+// //             }
+// //         }   
+// //     }
+// //    }
+//    //4行目[0,0,0,1,0,0,0,1]aの４行目の上３列を０にする演算あとはすべて０しか入っていない。
+//    inv_a[0][3]-= a[0][3];
+//    inv_a[1][3]-= a[1][3];
+//    inv_a[2][3]-= a[2][3];
+//    //一次元に戻す
+//    return [inv_a[0][0],inv_a[0][1],inv_a[0][2],inv_a[0][3],inv_a[1][0],inv_a[1][1],inv_a[1][2],inv_a[1][3],inv_a[2][0],inv_a[2][1],inv_a[2][2],inv_a[2][3]];
+// }
 /*//二次元配列
 export function matRound4X4(mat){
     mat[0][0] = round( mat[0][0]);
