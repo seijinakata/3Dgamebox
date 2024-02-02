@@ -453,7 +453,7 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
                     let boneContents = {};
                     boneContents.bindPose = tempBind;
                     boneContents.quaternionBindPose = matrixMakeQuaternion(tempBind);
-                    boneContents.inverseBindPose = CalInvMat4x4(tempBind);
+                    boneContents.inverseBindPose = getInverseMatrix(tempBind);
                     boneContents.inverseQuaternionBindPose = Conjugated(boneContents.quaternionBindPose[0],boneContents.quaternionBindPose[1],
                       boneContents.quaternionBindPose[2],boneContents.quaternionBindPose[3]);
                     tempBindPosePack.push(boneContents);

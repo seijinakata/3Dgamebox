@@ -626,7 +626,7 @@ export function getInverseMatrix(matrix){
     let buf; //一時的なデータを蓄える
     //掃き出し法ループアンローリングa行列を１or０にする演算は行わない,inv_aは単位行列
     //1行目
-    if(a[0][0] == 0) return;
+    if(a[0][0] == 0) a[0][0] = 0.001;
     buf = 1/a[0][0];
     a[0][1] *= buf;
     a[0][2] *= buf;
@@ -647,7 +647,7 @@ export function getInverseMatrix(matrix){
                 [-buf*buf2,0,1,0]];
 
     //2行目
-    if(a[1][1] == 0) return;
+    if(a[1][1] == 0) a[1][1] = 0.001;
     buf = 1/a[1][1];
     a[1][2] *= buf;
     a[1][3] *= buf;
@@ -670,7 +670,7 @@ export function getInverseMatrix(matrix){
     inv_a[2][1] -= inv_a[1][1] * buf2;
 
     //2行目
-    if(a[2][2] == 0) return;
+    if(a[2][2] == 0) [1][1] == 0.001;
     buf = 1/a[2][2];
     a[2][3] *= buf;
 
