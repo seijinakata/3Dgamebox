@@ -2114,15 +2114,21 @@ for(let j=0;j<shadowProjectedObjectsLength;j++){
       tmpTriangleToShadowBuffer(shadowMap,currentshadowProjectedObject[projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
   }  
 }
-//作画
-//cameraView => sunView 合成関数
+//作画ピクセル処理が重たいので改造しまくり
+//cameraView => sunView 合成関数shadowMap用
 matDirectMul(sunViewMatrix,inverseViewMatrix);
 //整数演算
 matRound4X4(sunViewMatrix);
+sunViewMatrix[11] *= 1000;
+sunViewMatrix[7] *= 1000;
+sunViewMatrix[3] *= 1000;
 var tmpMul1000Round = mul1000Round;
 for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   let basearrayY = basearray[pixelY];
   let zBufferingY = zBuffering[pixelY];
+  let sunViewMatrix9MulShadowViewPortY = sunViewMatrix[9] * shadowViewPortY[pixelY];
+  let sunViewMatrix5MulShadowViewPortY = sunViewMatrix[5] * shadowViewPortY[pixelY];
+  let sunViewMatrix1MulShadowViewPortY = sunViewMatrix[1] * shadowViewPortY[pixelY];
   for (let pixelX=0;pixelX<screen_size_w;pixelX++) {
     let base = basearrayY[pixelX];
     let pixel = zBufferingY[pixelX];
@@ -2151,16 +2157,17 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         shadowPixelX *= pixelZ;
         shadowPixelY *= pixelZ;
         */
-        let shadowPixelY = shadowViewPortY[pixelY] * pixelZ;
+        //let shadowPixelY = shadowViewPortY[pixelY] * pixelZ;
         let shadowPixelX = shadowViewPortX[pixelX] * pixelZ;
 
         //world=>shadowView
         //sunViewMatrixrixmul and projection(/shadowPixelZ) and viewPort (+ 0.5)*screen_size_wh)|0;
+        //シャドウマップに照らし合わせるために製造した合成関数行列の掛け算のアンローリング
         // original let shadowPixelZ = (sunViewMatrix[8]*shadowPixelX + sunViewMatrix[9]*shadowPixelY + sunViewMatrix[10]*pixelZ + sunViewMatrix[11] * 1000)/1000000;
-        let shadowPixelZ = (sunViewMatrix[8]*shadowPixelX + sunViewMatrix[9]*shadowPixelY + sunViewMatrix[10]*pixelZ + sunViewMatrix[11] * 1000);
-        let shadowMatrixPixelY = (((((sunViewMatrix[4]*shadowPixelX + sunViewMatrix[5]*shadowPixelY + sunViewMatrix[6]*pixelZ + sunViewMatrix[7] * 1000))/shadowPixelZ) + 0.5) * screen_size_h)|0;
+        let shadowPixelZ = (sunViewMatrix[8]*shadowPixelX + sunViewMatrix9MulShadowViewPortY * pixelZ + sunViewMatrix[10]*pixelZ + sunViewMatrix[11]);
+        let shadowMatrixPixelY = (((((sunViewMatrix[4]*shadowPixelX + sunViewMatrix5MulShadowViewPortY * pixelZ + sunViewMatrix[6]*pixelZ + sunViewMatrix[7]))/shadowPixelZ) + 0.5) * screen_size_h)|0;
         if(shadowMatrixPixelY>=0 && shadowMatrixPixelY<screen_size_h){
-          let shadowMatrixPixelX = (((((sunViewMatrix[0]*shadowPixelX + sunViewMatrix[1]*shadowPixelY + sunViewMatrix[2]*pixelZ + sunViewMatrix[3] * 1000))/shadowPixelZ) + 0.5) * screen_size_w)|0;
+          let shadowMatrixPixelX = (((((sunViewMatrix[0]*shadowPixelX + sunViewMatrix1MulShadowViewPortY * pixelZ + sunViewMatrix[2]*pixelZ + sunViewMatrix[3]))/shadowPixelZ) + 0.5) * screen_size_w)|0;
           if(shadowMatrixPixelX>=0 && shadowMatrixPixelX<screen_size_w){
             shadowPixelZ /= 1000000;
             if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.5<shadowPixelZ){

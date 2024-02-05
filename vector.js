@@ -155,18 +155,7 @@ export function culVecCrossZ(Va,Vb){
 export function culVecDot(Va,Vb){
     return Va[0] * Vb[0] + Va[1] * Vb[1] + Va[2] * Vb[2];
     }
-  /*
-export   function culVecCross(ver1,ver2,ver3){
-    let N_x = (ver1[1]-ver2[1])*(ver2[2]-ver1[2])-(ver1[2]-ver2[2])*(ver3[1]-ver2[1]);
-    let N_y = (ver1[2]-ver2[2])*(ver3[0]-ver2[0])-(ver1[0]-ver2[0])*(ver3[2]-ver2[2]);
-    let N_z = (ver1[0]-ver2[0])*(ver3[1]-ver2[1])-(ver1[1]-ver2[1])*(ver3[0]-ver2[0]);
-    let length = Math.sqrt(N_x * N_x + N_y * N_y + N_z * N_z);
-    N_x /= length;
-    N_y /= length;
-    N_z /= length;
-    return N_x,N_y,N_z;
-  }
-  */
+
 function fx(x,param){
     return x * x - param;
 }
@@ -176,13 +165,12 @@ function dfx(x){
 }
 export function NewtonMethod(x,param){
 const TOLERANCE =  0.00001
-const MINUSTOLERANCE =  -0.00001
 let  beforeX = x;
 /* Newton's Method. */
 while(true){
     let nextX = beforeX - fx(beforeX,param)/dfx(beforeX);
     let nextBeforeX = nextX - beforeX;
-        if (MINUSTOLERANCE < nextBeforeX && nextBeforeX < TOLERANCE) {
+        if (0 <= nextBeforeX && nextBeforeX < TOLERANCE) {
             return nextX;
         }else{
             beforeX = nextX;
