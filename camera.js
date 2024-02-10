@@ -925,12 +925,12 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       let pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
       let pos2 = shadowProjectedVerts[triangleFaceIndex[1]];
       let pos3 = shadowProjectedVerts[triangleFaceIndex[2]];
-      let triangleXMin = minXPosCul(pos1,pos2,pos3);
-      let triangleXMax = maxXPosCul(pos1,pos2,pos3);
-      let triangleYMin = minYPosCul(pos1,pos2,pos3);
-      let triangleYMax = maxYPosCul(pos1,pos2,pos3);
+      if((pos1 != null && pos2 != null && pos3 != null)){
+        let triangleXMin = minXPosCul(pos1,pos2,pos3);
+        let triangleXMax = maxXPosCul(pos1,pos2,pos3);
+        let triangleYMin = minYPosCul(pos1,pos2,pos3);
+        let triangleYMax = maxYPosCul(pos1,pos2,pos3);
         if(triangleXMin<screen_size_w && triangleXMax>=0 && triangleYMin < screen_size_h && triangleYMax >=0){
-        if((pos1 != null && pos2 != null && pos3 != null)){
           let Va = vec3CrossZMinus(pos1,pos2);
           let Vb = vec3CrossZMinus(pos3,pos1);
           let crossZ = culVecCrossZ(Va,Vb);
@@ -1071,12 +1071,12 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
       let pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
       let pos2 = shadowProjectedVerts[triangleFaceIndex[1]];
       let pos3 = shadowProjectedVerts[triangleFaceIndex[2]];
-      let triangleXMin = minXPosCul(pos1,pos2,pos3);
-      let triangleXMax = maxXPosCul(pos1,pos2,pos3);
-      let triangleYMin = minYPosCul(pos1,pos2,pos3);
-      let triangleYMax = maxYPosCul(pos1,pos2,pos3);
-      if(triangleXMin<screen_size_w && triangleXMax>=0 && triangleYMin < screen_size_h && triangleYMax >=0){
-        if((pos1 != null && pos2 != null && pos3 != null)){
+      if((pos1 != null && pos2 != null && pos3 != null)){
+        let triangleXMin = minXPosCul(pos1,pos2,pos3);
+        let triangleXMax = maxXPosCul(pos1,pos2,pos3);
+        let triangleYMin = minYPosCul(pos1,pos2,pos3);
+        let triangleYMax = maxYPosCul(pos1,pos2,pos3);
+        if(triangleXMin<screen_size_w && triangleXMax>=0 && triangleYMin < screen_size_h && triangleYMax >=0){
           let Va = vec3CrossZMinus(pos1,pos2);
           let Vb = vec3CrossZMinus(pos3,pos1);
           let crossZ = culVecCrossZ(Va,Vb);
