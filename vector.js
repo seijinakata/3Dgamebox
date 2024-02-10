@@ -22,6 +22,18 @@ export function minXCul(t){
     if(t[2][0]<tmpMin)tmpMin = t[2][0];
     return tmpMin;
 }
+export function maxXPosCul(pos1,pos2,pos3){
+	let tmpMax = pos1[0];
+    if(pos2[0]>tmpMax)tmpMax = pos2[0];
+    if(pos3[0]>tmpMax)tmpMax = pos3[0];
+    return tmpMax;
+}
+export function minXPosCul(pos1,pos2,pos3){
+	let tmpMin = pos1[0];
+    if(pos2[0]<tmpMin)tmpMin = pos2[0];
+    if(pos3[0]<tmpMin)tmpMin = pos3[0];
+    return tmpMin;
+}
 export function maxYCul(t){
 	let tmpMax = t[0][1]
     if(t[1][1]>tmpMax)tmpMax = t[1][1];
@@ -34,6 +46,18 @@ export function minYCul(t){
     if(t[2][1]<tmpMin)tmpMin = t[2][1];
     return tmpMin;
 }
+export function maxYPosCul(pos1,pos2,pos3){
+	let tmpMax = pos1[1];
+    if(pos2[1]>tmpMax)tmpMax = pos2[1];
+    if(pos3[1]>tmpMax)tmpMax = pos3[1];
+    return tmpMax;
+}
+export function minYPosCul(pos1,pos2,pos3){
+	let tmpMin = pos1[1];
+    if(pos2[1]<tmpMin)tmpMin = pos2[1];
+    if(pos3[1]<tmpMin)tmpMin = pos3[1];
+    return tmpMin;
+}
 export function maxZCul(t){
 	let tmpMax = t[0][2]
     if(t[1][2]>tmpMax)tmpMax = t[1][2];
@@ -44,6 +68,18 @@ export function minZCul(t){
 	let tmpMin = t[0][2]
     if(t[1][2]<tmpMin)tmpMin = t[1][2];
     if(t[2][2]<tmpMin)tmpMin = t[2][2];
+    return tmpMin;
+}
+export function maxZPosCul(pos1,pos2,pos3){
+	let tmpMax = pos1[2];
+    if(pos2[2]>tmpMax)tmpMax = pos2[2];
+    if(pos3[2]>tmpMax)tmpMax = pos3[2];
+    return tmpMax;
+}
+export function minZPosCul(pos1,pos2,pos3){
+	let tmpMin = pos1[2];
+    if(pos2[2]<tmpMin)tmpMin = pos2[2];
+    if(pos3[2]<tmpMin)tmpMin = pos3[2];
     return tmpMin;
 }
 export function round(orgValue){
