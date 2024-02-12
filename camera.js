@@ -922,9 +922,9 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       }
     }
     if(shadowFlag == true){
-      let pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
-      let pos2 = shadowProjectedVerts[triangleFaceIndex[1]];
-      let pos3 = shadowProjectedVerts[triangleFaceIndex[2]];
+      pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
+      pos2 = shadowProjectedVerts[triangleFaceIndex[1]];
+      pos3 = shadowProjectedVerts[triangleFaceIndex[2]];
       if((pos1 != null && pos2 != null && pos3 != null)){
         let triangleXMin = minXPosCul(pos1,pos2,pos3);
         let triangleXMax = maxXPosCul(pos1,pos2,pos3);
@@ -1068,9 +1068,9 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
       }
     }
     if(shadowFlag == true){
-      let pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
-      let pos2 = shadowProjectedVerts[triangleFaceIndex[1]];
-      let pos3 = shadowProjectedVerts[triangleFaceIndex[2]];
+      pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
+      pos2 = shadowProjectedVerts[triangleFaceIndex[1]];
+      pos3 = shadowProjectedVerts[triangleFaceIndex[2]];
       if((pos1 != null && pos2 != null && pos3 != null)){
         let triangleXMin = minXPosCul(pos1,pos2,pos3);
         let triangleXMax = maxXPosCul(pos1,pos2,pos3);
