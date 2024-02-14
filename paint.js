@@ -160,23 +160,29 @@ export function delta_Noy_xz(edge,y){
     return setVector2(dx,dz);
 }
 // //ソート関数
-//sortするのはY座標のみポインタ交換
+//sortするのはY座標のみ
 export function sort_Yindex(t){
-    if(t[0][1]>t[1][1]){
-		let tempVerts = t[0];
-		t[0] = t[1];
-		t[1] = tempVerts;
+	let verts = [];
+	verts[0] = vertsCopy(t[0]);
+	verts[1] = vertsCopy(t[1]);
+	verts[2] = vertsCopy(t[2]);
+
+    if(verts[0][1]>verts[1][1]){
+		let tempVerts = verts[0];
+		verts[0] = verts[1];
+		verts[1] = tempVerts;
 	}
-    if(t[1][1]>t[2][1]){
-		let tempVerts = t[1];
-		t[1] = t[2];
-		t[2] = tempVerts;
+    if(verts[1][1]>verts[2][1]){
+		let tempVerts = verts[1];
+		verts[1] = verts[2];
+		verts[2] = tempVerts;
 	}
-    if(t[0][1]>t[1][1]){
-		let tempVerts = t[0];
-		t[0] = t[1];
-		t[1] = tempVerts;
+    if(verts[0][1]>verts[1][1]){
+		let tempVerts = verts[0];
+		verts[0] = verts[1];
+		verts[1] = tempVerts;
 	}
+	return verts;
 }
 export function branch(a,b,Y){
 	let  t = (Y-a[1])/(b[1]-a[1]);
@@ -533,10 +539,10 @@ export function triangleRasterize(buffer,bufferFrame,z,r,g,b,a,screen_size_h,scr
 export function triangleToShadowBuffer(zBuffering,vertex_list,screen_size_h,screen_size_w)
 {
 	//sortするのはY座標のみ
-	sort_Yindex(vertex_list);//ys
-	let pt = vertex_list[0];
-	let pm = vertex_list[1];
-	let pb = vertex_list[2];
+	let sortVerts = sort_Yindex(vertex_list);//ys
+	let pt = sortVerts[0];
+	let pm = sortVerts[1];
+	let pb = sortVerts[2];
 
 	scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb);		
 }
@@ -635,11 +641,11 @@ function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 			startZ -= (startX * dz);
 			startX = 0;
 		}
-		for(let i=0;i<=topDistance;i++){
-			for(;startX<endX;startX++){
-				let z = zBufferingY[startX];
+		for(let j=0;j<=topDistance;j++){
+			for(let i = startX;i<endX;i++){
+				let z = zBufferingY[i];
 				if(z>startZ){
-					zBufferingY[startX] = startZ;
+					zBufferingY[i] = startZ;
 				}
 				startZ+=dz;
 			}
@@ -867,12 +873,12 @@ function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt
 			startZ -= (startX * dz);
 			startX = 0;
 		}
-		for(let i=0;i<=topDistance;i++){
-			for(;startX<endX;startX++){
-				let z = zBufferingY[startX];
+		for(let j=0;j<=topDistance;j++){
+			for(let i=startX;i<endX;i++){
+				let z = zBufferingY[i];
 				if(z>startZ){
 					let imageDataRGBA = imageData[mi[5]][mi[4]];
-					zBufferingY[startX] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+					zBufferingY[i] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
 						imageDataRGBA[BLUE],shadowFlag,lightShadowFlag,sunCosin);
 				}
 				startZ+=dz;
@@ -1106,12 +1112,12 @@ function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_s
 			startZ -= (startX * dz);
 			startX = 0;
 		}
-		for(let i=0;i<=topDistance;i++){
-			for(;startX<endX;startX++){
-				let z = zBufferingY[startX];
+		for(let j=0;j<=topDistance;j++){
+			for(let i = startX;i<endX;i++){
+				let z = zBufferingY[i];
 				if(z>startZ){
 					let imageDataRGBA = imageData[mi[5]][mi[4]];
-					zBufferingY[startX] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+					zBufferingY[i] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
 						imageDataRGBA[BLUE],false,false);
 				}
 				startZ+=dz;
@@ -1390,9 +1396,9 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 			startZ -= (startX * dz);
 			startX = 0;
 		}
-		for(let i=0;i<=topDistance;i++){
-			for(;startX<endX;startX++){
-				let z = zBufferingY[startX][0];
+		for(let j=0;j<=topDistance;j++){
+			for(let i = startX;i<endX;i++){
+				let z = zBufferingY[i][0];
 				if(z>startZ){
 				// if(tmpOrgy == null){
 				// 	tmpOrgy = y * iA[3] + tmpOrgyef;
@@ -1401,7 +1407,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 
 				/* 元画像における縦方向座標を計算 */
 				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-				let selectOrgy = tmpOrgy + startX * inv_b;
+				let selectOrgy = tmpOrgy + i * inv_b;
 				/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 				//let selectOrgy = startX * iA[2] + y * iA[3]
 				//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
@@ -1420,7 +1426,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 				
 				/* 元画像における横方向座標を計算 */
 				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-				let selectOrgx = tmpOrgx + startX * inv_a;
+				let selectOrgx = tmpOrgx + i * inv_a;
 				/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 				//let selectOrgx = startX * iA[0] + y * iA[1]
 				//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
@@ -1438,7 +1444,7 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 				}				
 				//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
 				let imageDataRGBA = imageData[selectOrgy][selectOrgx];
-				zBufferingY[startX] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+				zBufferingY[i] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
 					imageDataRGBA[BLUE],false,false);
 				}
 				startZ+=dz;
@@ -1774,7 +1780,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 
 		let zStep = endZ - startZ;
 		let xStep = endX - startX;
-	
+		
 		if(screen_size_w<=endX)endX=screen_size_w-1;
 	
 		let dz = zStep/xStep;
@@ -1787,9 +1793,9 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 			startZ -= (startX * dz);
 			startX = 0;
 		}
-		for(let i=0;i<=topDistance;i++){
-			for(;startX<endX;startX++){
-				let z = zBufferingY[startX][0];
+		for(let j=0;j<=topDistance;j++){
+			for(let i = startX;i<endX;i++){
+				let z = zBufferingY[i][0];
 				if(z>startZ){
 				// if(tmpOrgy == null){
 				// 	tmpOrgy = y * iA[3] + tmpOrgyef;
@@ -1798,7 +1804,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 
 				/* 元画像における縦方向座標を計算 */
 				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-				let selectOrgy = tmpOrgy + startX * inv_b;
+				let selectOrgy = tmpOrgy + i * inv_b;
 				/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 				//let selectOrgy = startX * iA[2] + y * iA[3]
 				//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
@@ -1817,7 +1823,7 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 				
 				/* 元画像における横方向座標を計算 */
 				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-				let selectOrgx = tmpOrgx + startX * inv_a;
+				let selectOrgx = tmpOrgx + i * inv_a;
 				/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 				//let selectOrgx = startX * iA[0] + y * iA[1]
 				//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
@@ -2161,6 +2167,12 @@ export function textureTransform(a,b,c,d,h,w,alpha,imageData,vertex_list,screen_
 //lengthが高さ、length[0]が横
 export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVector3,mi,sunVec,shadowFlag,lightShadowFlag,screen_size_h,screen_size_w)
 {
+	//sortするのはY座標のみ
+	let sortVerts = sort_Yindex(vertex_list);
+	let pt = sortVerts[0];
+	let pm = sortVerts[1];
+	let pb = sortVerts[2];
+	
 	let _Ax = vertex_list[1][0] - vertex_list[0][0];
 	let _Ay = vertex_list[1][1] - vertex_list[0][1];
 	let _Bx = vertex_list[2][0] - vertex_list[0][0];
@@ -2178,11 +2190,6 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 	let cb = c*b;
 	
 	if(ad == cb) {
-		//sortするのはY座標のみ
-		sort_Yindex(vertex_list);
-		let pt = vertex_list[0];
-		let pm = vertex_list[1];
-		let pb = vertex_list[2];
 		if(shadowFlag == true){
 			let sunCosin = culVecDot(sunVec, crossWorldVector3)*1.5;//1.5掛けるのは明るさの調節
 			scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi,true,lightShadowFlag,sunCosin)
@@ -2202,11 +2209,6 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 		let e = vertex_list[0][0] - (a * mi[2] + c * mi[3]);
 		let tmpOrgyef =  - (e * inv_b) - f * inv_d;
 		let tmpOrgxef =  - (e * inv_a) - f * inv_c;
-		//sortするのはY座標のみ
-		sort_Yindex(vertex_list);
-		let pt = vertex_list[0];
-		let pm = vertex_list[1];
-		let pb = vertex_list[2];
 		let imageHeight = imageData.length;
 		let imageWidth = imageData[1].length;
 		if(shadowFlag == true){
