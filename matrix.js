@@ -620,6 +620,32 @@ export function getInvert2(_11,_12,_21,_22){
     let d = _11 * inv_det;  // d = a / det
     return [[a,b],[c,d]];
 }
+export function getInvert21(_11,_12,_21,_22){
+    let a = [_11,_12,_21,_22];
+    
+    let buf; //一時的なデータを蓄える
+    if(a[0] == 0) a[0] = 0.001;
+    buf = 1/a[0];
+    a[1] *= buf;
+
+    let buf1 = a[2];
+    a[3] -= a[1] * buf1;
+
+    let inv_a = [buf,0,-buf*buf1];
+    if(a[3] == 0) a[3] = 0.001;
+    buf = 1/a[3];
+
+    inv_a[2] *= buf;
+
+    inv_a[3] = buf;//inv_a[3] = 1;
+
+    buf = a[1];
+
+    inv_a[0] -= inv_a[2] * buf;
+    inv_a[1] -= inv_a[3] * buf;
+    //console.log(inv_a)
+    return inv_a;
+}
 export function getInverseMatrix(matrix){
 
     let a = mat1Demention2DementionMatCopy(matrix);
@@ -653,7 +679,7 @@ export function getInverseMatrix(matrix){
     a[1][3] *= buf;
 
     inv_a[1][0] *= buf;
-    inv_a[1][1] *= buf;
+    inv_a[1][1] = buf;//inv_a[1][1] = 1;
 
     buf1 = a[0][1];
     a[0][2] -= a[1][2] * buf1;

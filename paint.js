@@ -1,5 +1,5 @@
 //newをすると重くなる構造体はjson,配列に置き換え中
-import { matVecMul,matIdentity,matPers,getInverseMatrix, matMul,getInvert2, CalInvMat4x4,protMatVecMul } from "./matrix.js";
+import { matVecMul,matIdentity,matPers,getInverseMatrix, matMul,getInvert2, CalInvMat4x4,protMatVecMul, getInvert21 } from "./matrix.js";
 import { XRound, culVecDot, round, setVector2,setVector3, vec2Minus, vec2NoYVec3Minus, vec2OffsetMulAfterMinus, vec2Plus, vec3NoYVec2Minus, vec3notYMinus, vecMinus, vecMul } from "./vector.js";
 import { SCREEN_SIZE_W,SCREEN_SIZE_H} from "./camera.js";
 import { delta_X, delta_Z, position_X, position_Y, position_Z } from './enum.js';
@@ -551,12 +551,8 @@ export function triangleToShadowBuffer(zBuffering,vertex_list,screen_size_h,scre
 function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 	let topDistance = pb[1] - pt[1];
 	//2以上は3角形
-	if(topDistance == 0 || (topDistance == 1 && pb[1] == 0)
-	|| (topDistance == 1 && pt[1] == screen_size_h-1)){
+	if(topDistance == 0){
 		let startY = pb[1];
-		if(topDistance == 1 && pt[1] == screen_size_h-1){
-			startY = screen_size_h-1;
-		}
 		
 		let startX = pt[0];
 		let startZ = pt[2];
@@ -789,12 +785,8 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 function scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi,shadowFlag,lightShadowFlag,sunCosin){
 	let topDistance = pb[1] - pt[1];
 	//2以上は3角形
-	if(topDistance == 0 || (topDistance == 1 && pb[1] == 0)
-	|| (topDistance == 1 && pt[1] == screen_size_h-1)){
+	if(topDistance == 0){
 		let startY = pb[1];
-		if(topDistance == 1 && pt[1] == screen_size_h-1){
-			startY = screen_size_h-1;
-		}
 
 		let startX = pt[0];
 		let startZ = pt[2];
@@ -1032,12 +1024,8 @@ function scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_s
 
 	let topDistance = pb[1] - pt[1];
 	//2以上は3角形
-	if(topDistance == 0 || (topDistance == 1 && pb[1] == 0)
-	|| (topDistance == 1 && pt[1] == screen_size_h-1)){
+	if(topDistance == 0){
 		let startY = pb[1];
-		if(topDistance == 1 && pt[1] == screen_size_h-1){
-			startY = screen_size_h-1;
-		}
 
 		let startX = pt[0];
 		let startZ = pt[2];
@@ -1275,12 +1263,8 @@ function scan_NoTextureMappingSunCosinHorizontal(zBuffering,screen_size_w,y,star
 function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData,imageHeight,imageWidth){
 	let topDistance = pb[1] - pt[1];
 	//2以上は3角形
-	if(topDistance == 0 || (topDistance == 1 && pb[1] == 0)
-	|| (topDistance == 1 && pt[1] == screen_size_h-1)){
+	if(topDistance == 0){
 		let startY = pb[1];
-		if(topDistance == 1 && pt[1] == screen_size_h-1){
-			startY = screen_size_h-1;
-		}
 
 		let startX = pt[0];
 		let startZ = pt[2];
@@ -2218,24 +2202,24 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 	let b = mi[0][0] * _Ay + mi[0][1] * _By;
 	let d = mi[1][0] * _Ay + mi[1][1] * _By;
 
-	//逆行列のad-bc
-	let ad = a*d;
-	let cb = c*b;
+	// //逆行列のad-bc
+	// let ad = a*d;
+	// let cb = c*b;
 	
-	if(ad == cb) {
-		if(shadowFlag == true){
-			let sunCosin = culVecDot(sunVec, crossWorldVector3)*1.5;//1.5掛けるのは明るさの調節
-			scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi,true,lightShadowFlag,sunCosin)
-		}else{
-			scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi);
-		} 
-	}else{
-		let inv_det = 1.0/(ad - cb);
+	// if(ad == cb) {
+	// 	if(shadowFlag == true){
+	// 		let sunCosin = culVecDot(sunVec, crossWorldVector3)*1.5;//1.5掛けるのは明るさの調節
+	// 		scan_NoTextureMappingVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi,true,lightShadowFlag,sunCosin)
+	// 	}else{
+	// 		scan_NoTextureMappingSunCosinVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,imageData,mi);
+	// 	} 
+	// }else{
+		let invMat = getInvert21(a,b,c,d);
 		//acbdの逆行列
-		let inv_a = d * inv_det;
-		let inv_c = - c * inv_det;
-		let inv_b = - b * inv_det;
-		let inv_d = a * inv_det;
+		let inv_a = invMat[0];
+		let inv_c = invMat[2];
+		let inv_b = invMat[1];
+		let inv_d = invMat[3];
 		// let h = vertex_list[0][1] - (b * uv_list[0] * imageData[Image_Width] + d * uv_list[1] * imageData[Image_Height]);
 		// let w = vertex_list[0][0] - (a * uv_list[0] * imageData[Image_Width] + c * uv_list[1] * imageData[Image_Height]);
 		let f = vertex_list[0][1] - (b * mi[2] + d * mi[3]);
@@ -2250,5 +2234,5 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 		}else{
 			scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData,imageHeight,imageWidth);
 		}
-	}
+	// }
 }
