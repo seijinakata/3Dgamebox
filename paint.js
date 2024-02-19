@@ -1260,7 +1260,7 @@ function scan_NoTextureMappingSunCosinHorizontal(zBuffering,screen_size_w,y,star
 }
 //texturepaint
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
-function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData,imageHeight,imageWidth){
+function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,f,e,imageData,imageHeight,imageWidth){
 	let topDistance = pb[1] - pt[1];
 	//2以上は3角形
 	if(topDistance == 0){
@@ -1286,8 +1286,8 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 			endX = pb[0];
 			endZ = pb[2];
 		}
-		let tmpOrgy = startY * inv_d + tmpOrgyef;
-		let tmpOrgx = startY * inv_c + tmpOrgxef;
+		let tmpOrgy = startY * inv_d + f;
+		let tmpOrgx = startY * inv_c + e;
 
 		let zStep = endZ - startZ;
 		let xStep = endX - startX;
@@ -1308,8 +1308,8 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 			let z = zBufferingY[startX][0];
 			if(z>startZ){
 					// if(tmpOrgy == null){
-			// 	tmpOrgy = y * iA[3] + tmpOrgyef;
-			// 	tmpOrgx = y * iA[1] + tmpOrgxef;
+			// 	tmpOrgy = y * iA[3] + f;
+			// 	tmpOrgx = y * iA[1] + e;
 			// }
 
 			/* 元画像における縦方向座標を計算 */
@@ -1393,8 +1393,8 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 				endZ = pb[2];
 			}
 		}
-		let tmpOrgy = startY * inv_d + tmpOrgyef;
-		let tmpOrgx = startY * inv_c + tmpOrgxef;
+		let tmpOrgy = startY * inv_d + f;
+		let tmpOrgx = startY * inv_c + e;
 
 		let zStep = endZ - startZ;
 		let xStep = endX - startX;
@@ -1415,8 +1415,8 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 			let z = zBufferingY[startX][0];
 			if(z>startZ){
 			// if(tmpOrgy == null){
-			// 	tmpOrgy = y * iA[3] + tmpOrgyef;
-			// 	tmpOrgx = y * iA[1] + tmpOrgxef;
+			// 	tmpOrgy = y * iA[3] + f;
+			// 	tmpOrgx = y * iA[1] + e;
 			// }
 
 			/* 元画像における縦方向座標を計算 */
@@ -1509,8 +1509,8 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 				triangleTop = 0;
 			}
 			if(screen_size_h<mid)mid=screen_size_h;
-			let tmpOrgy = triangleTop * inv_d + tmpOrgyef;
-			let tmpOrgx = triangleTop * inv_c + tmpOrgxef;
+			let tmpOrgy = triangleTop * inv_d + f;
+			let tmpOrgx = triangleTop * inv_c + e;
 			for(;triangleTop<mid;triangleTop++){
 				//Y座標ごとの切片
 				let startX = top_int(sl[0]);
@@ -1551,8 +1551,8 @@ function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb
 			}
 			let triangleBtm = pb[1];
 			if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;
-			let tmpOrgy = mid * inv_d + tmpOrgyef;
-			let tmpOrgx = mid * inv_c + tmpOrgxef;
+			let tmpOrgy = mid * inv_d + f;
+			let tmpOrgx = mid * inv_c + e;
 			for(;mid<triangleBtm;mid++){
 				//Y座標ごとの切片
 				let startX = top_int(pl[0]);
@@ -1608,8 +1608,8 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 		let z = zBufferingY[startX][0];
 			if(z>startZ){
 				// if(tmpOrgy == null){
-				// 	tmpOrgy = y * iA[3] + tmpOrgyef;
-				// 	tmpOrgx = y * iA[1] + tmpOrgxef;
+				// 	tmpOrgy = y * iA[3] + f;
+				// 	tmpOrgx = y * iA[1] + e;
 				// }
 
 				/* 元画像における縦方向座標を計算 */
@@ -1661,7 +1661,7 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 }
 
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
-function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData,imageHeight,imageWidth,shadowFlag,lightShadowFlag,sunCosin){
+function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,f,e,imageData,imageHeight,imageWidth,shadowFlag,lightShadowFlag,sunCosin){
 	let topDistance = pb[1] - pt[1];
 	//2以上は3角形
 	if(topDistance == 0){
@@ -1687,8 +1687,8 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 			endX = pb[0];
 			endZ = pb[2];
 		}
-		let tmpOrgy = startY * inv_d + tmpOrgyef;
-		let tmpOrgx = startY * inv_c + tmpOrgxef;
+		let tmpOrgy = startY * inv_d + f;
+		let tmpOrgx = startY * inv_c + e;
 
 		let zStep = endZ - startZ;
 		let xStep = endX - startX;
@@ -1709,8 +1709,8 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 			let z = zBufferingY[startX][0];
 			if(z>startZ){
 					// if(tmpOrgy == null){
-			// 	tmpOrgy = y * iA[3] + tmpOrgyef;
-			// 	tmpOrgx = y * iA[1] + tmpOrgxef;
+			// 	tmpOrgy = y * iA[3] + f;
+			// 	tmpOrgx = y * iA[1] + e;
 			// }
 
 			/* 元画像における縦方向座標を計算 */
@@ -1795,8 +1795,8 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 				endZ = pb[2];
 			}
 		}
-		let tmpOrgy = startY * inv_d + tmpOrgyef;
-		let tmpOrgx = startY * inv_c + tmpOrgxef;
+		let tmpOrgy = startY * inv_d + f;
+		let tmpOrgx = startY * inv_c + e;
 
 		let zStep = endZ - startZ;
 		let xStep = endX - startX;
@@ -1817,8 +1817,8 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 			let z = zBufferingY[startX][0];
 			if(z>startZ){
 			// if(tmpOrgy == null){
-			// 	tmpOrgy = y * iA[3] + tmpOrgyef;
-			// 	tmpOrgx = y * iA[1] + tmpOrgxef;
+			// 	tmpOrgy = y * iA[3] + f;
+			// 	tmpOrgx = y * iA[1] + e;
 			// }
 
 			/* 元画像における縦方向座標を計算 */
@@ -1912,8 +1912,8 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 				triangleTop = 0;
 			}
 			if(screen_size_h<mid)mid=screen_size_h;
-			let tmpOrgy = triangleTop * inv_d + tmpOrgyef;
-			let tmpOrgx = triangleTop * inv_c + tmpOrgxef;
+			let tmpOrgy = triangleTop * inv_d + f;
+			let tmpOrgx = triangleTop * inv_c + e;
 			for(;triangleTop<mid;triangleTop++){
 				//Y座標ごとの切片
 				let startX = top_int(sl[0]);
@@ -1954,8 +1954,8 @@ function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv
 			}
 			let triangleBtm = pb[1];
 			if(screen_size_h<triangleBtm)triangleBtm=screen_size_h;
-			let tmpOrgy = mid * inv_d + tmpOrgyef;
-			let tmpOrgx = mid * inv_c + tmpOrgxef;
+			let tmpOrgy = mid * inv_d + f;
+			let tmpOrgx = mid * inv_c + e;
 			for(;mid<triangleBtm;mid++){
 				//Y座標ごとの切片
 				let startX = top_int(pl[0]);
@@ -2000,8 +2000,8 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 		let z = zBufferingY[startX][0];
 		if(z>startZ){
 			// if(tmpOrgy == null){
-			// 	tmpOrgy = y * iA[3] + tmpOrgyef;
-			// 	tmpOrgx = y * iA[1] + tmpOrgxef;
+			// 	tmpOrgy = y * iA[3] + f;
+			// 	tmpOrgx = y * iA[1] + e;
 			// }
 
 			/* 元画像における縦方向座標を計算 */
@@ -2222,17 +2222,17 @@ export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVect
 		let inv_d = invMat[3];
 		// let h = vertex_list[0][1] - (b * uv_list[0] * imageData[Image_Width] + d * uv_list[1] * imageData[Image_Height]);
 		// let w = vertex_list[0][0] - (a * uv_list[0] * imageData[Image_Width] + c * uv_list[1] * imageData[Image_Height]);
-		let f = vertex_list[0][1] - (b * mi[2] + d * mi[3]);
-		let e = vertex_list[0][0] - (a * mi[2] + c * mi[3]);
-		let tmpOrgyef =  - (e * inv_b) - f * inv_d;
-		let tmpOrgxef =  - (e * inv_a) - f * inv_c;
+		// let f = vertex_list[0][1] - (b * mi[2] + d * mi[3]);
+		// let e = vertex_list[0][0] - (a * mi[2] + c * mi[3]);
+		let f = mi[3] - (inv_b * vertex_list[0][0] + inv_d * vertex_list[0][1]);
+		let e = mi[2] - (inv_a * vertex_list[0][0] + inv_c * vertex_list[0][1]);
 		let imageHeight = imageData.length;
 		let imageWidth = imageData[1].length;
 		if(shadowFlag == true){
 			let sunCosin = culVecDot(sunVec, crossWorldVector3)*1.5;//1.5掛けるのは明るさの調節
-			scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData,imageHeight,imageWidth,true,lightShadowFlag,sunCosin);
+			scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,f,e,imageData,imageHeight,imageWidth,true,lightShadowFlag,sunCosin);
 		}else{
-			scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,tmpOrgyef,tmpOrgxef,imageData,imageHeight,imageWidth);
+			scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,inv_a,inv_c,inv_b,inv_d,f,e,imageData,imageHeight,imageWidth);
 		}
 	// }
 }
