@@ -1420,12 +1420,7 @@ function culUVVector(daeLoadPack){
     let Ay = (daeLoadPack.faceIndexMeshUV[i][3] - daeLoadPack.faceIndexMeshUV[i][1]) * imageHeight;
     let Bx = (daeLoadPack.faceIndexMeshUV[i][4] - daeLoadPack.faceIndexMeshUV[i][0]) * imageWidth;
     let By = (daeLoadPack.faceIndexMeshUV[i][5] - daeLoadPack.faceIndexMeshUV[i][1]) * imageHeight;
-    let mi = getInvert2(Ax,Ay,Bx,By);
-    round100(mi[0][0]);
-    round100(mi[0][1]);
-    round100(mi[1][0]);
-    round100(mi[1][1]);
-    if (!mi) return;
+    let mi = [];
     let preUV_List0 = round100(daeLoadPack.faceIndexMeshUV[i][0] * imageWidth);
     mi.push(preUV_List0);
     let preUV_List1 = round100(daeLoadPack.faceIndexMeshUV[i][1] * imageHeight);
@@ -1438,6 +1433,10 @@ function culUVVector(daeLoadPack){
     if(vMin>imageHeight-1) vMin = imageHeight-1;
     mi.push(uMin);
     mi.push(vMin);
+    mi.push(Ax);
+    mi.push(Ay);
+    mi.push(Bx);
+    mi.push(By);
     UVVector.push(mi);
   }
   daeLoadPack.UVVector = UVVector;
