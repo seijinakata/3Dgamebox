@@ -620,11 +620,11 @@ export function getInvert2(_11,_12,_21,_22){
     let d = _11 * inv_det;  // d = a / det
     return [[a,b],[c,d]];
 }
-export function getInvert21(_11,_12,_21,_22){
+export function getTextureInvert(_11,_12,_21,_22){
     let a = [_11,_12,_21,_22];
     
     let buf; //一時的なデータを蓄える
-    if(a[0] == 0) a[0] = 0.001;
+    if(a[0] == 0) a[0] = 1;
     buf = 1/a[0];
     a[1] *= buf;
 
@@ -632,7 +632,7 @@ export function getInvert21(_11,_12,_21,_22){
     a[3] -= a[1] * buf1;
 
     let inv_a = [buf,0,-buf*buf1];
-    if(a[3] == 0) a[3] = 0.001;
+    if(a[3] == 0) a[3] = 1;
     buf = 1/a[3];
 
     inv_a[2] *= buf;
