@@ -1849,8 +1849,8 @@ if(dataLoad == false){
     for(let i=0;i<cube1Loadpack[0].objectNumber;i++){
       cube1Loadpack[i].textureImage = cubePixelImage;
       cube1Loadpack[i].backCullingFlag = true;
-      cube1Loadpack[i].shadowFlag = true;
-      cube1Loadpack[i].lightShadowFlag = true;
+      cube1Loadpack[i].shadowFlag = false;
+      cube1Loadpack[i].lightShadowFlag = false;
       cube1Loadpack[i].bones[0].position[position_Y] = 0;
       cube1Loadpack[i].bones[0].position[position_Z] = 2.5;
       cube1Loadpack[i].bones[0].scaleXYZ = setVector3(0.1,0.1,0.1)
