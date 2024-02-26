@@ -810,16 +810,18 @@ function makeProjectedObject(orgObject,polyList){
 
   return projectedObject;
 }
+
 //ポリゴン製造
 function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,shadowFlag,crossZ){
   
   let polygonElement = [];
   polygonElement[cross_Z] = crossZ;
-  polygonElement[projected_Verts] =[[pos1[position_X],pos1[position_Y],pos1[position_Z]],
-                                    [pos2[position_X],pos2[position_Y],pos2[position_Z]],
-                                    [pos3[position_X],pos3[position_Y],pos3[position_Z]]]; 
-               
+  polygonElement[projected_Verts] = [];
+  polygonElement[projected_Verts][0] = pos1;
+  polygonElement[projected_Verts][1] = pos2;
+  polygonElement[projected_Verts][2] = pos3;
   polygonElement[UV_Vector] = UVVector;
+
   if(shadowFlag == true){
     //ライトシミュレーション用
     let Va = vecMinus(worldPos1,worldPos2);
@@ -837,9 +839,10 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,shadow
 function setShadowPolygon(pos1,pos2,pos3,crossZ){
   let polygonElement = [];
   polygonElement[cross_Z] = crossZ;
-  polygonElement[projected_Verts] = [[pos1[position_X],pos1[position_Y],pos1[position_Z]],
-                                    [pos2[position_X],pos2[position_Y],pos2[position_Z]],
-                                    [pos3[position_X],pos3[position_Y],pos3[position_Z]]];  
+  polygonElement[projected_Verts] = [];
+  polygonElement[projected_Verts][0] = pos1;
+  polygonElement[projected_Verts][1] = pos2;
+  polygonElement[projected_Verts][2] = pos3;
   
   return polygonElement;
 }
