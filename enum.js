@@ -21,9 +21,16 @@ export const rot_Z = 2;
 
 //polygon
 export const cross_Z = 0;
-export const projected_Verts = 1;
-export const UV_Vector = 2;
-export const poly_Cross_World_Vector3 = 3;
+export const PT = 1;
+export const PM = 2;
+export const PB = 3;
+export const AFFINE_A = 4;
+export const AFFINE_B = 5;
+export const AFFINE_C = 6;
+export const AFFINE_D = 7;
+export const AFFINE_F = 8;
+export const AFFINE_E = 9;
+export const poly_Cross_World_Vector3 = 10;
 
 //projectedObject
 export const poly_List = 0;

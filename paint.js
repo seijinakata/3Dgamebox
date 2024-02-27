@@ -184,6 +184,30 @@ export function sort_Yindex(t){
 	}
 	return verts;
 }
+//sortするのはY座標のみ
+export function sort_YPoint(pos1,pos2,pos3){
+	let verts = [];
+	verts[0] = vertsCopy(pos1);
+	verts[1] = vertsCopy(pos2);
+	verts[2] = vertsCopy(pos3);
+
+    if(verts[0][1]>verts[1][1]){
+		let tempVerts = verts[0];
+		verts[0] = verts[1];
+		verts[1] = tempVerts;
+	}
+    if(verts[1][1]>verts[2][1]){
+		let tempVerts = verts[1];
+		verts[1] = verts[2];
+		verts[2] = tempVerts;
+	}
+    if(verts[0][1]>verts[1][1]){
+		let tempVerts = verts[0];
+		verts[0] = verts[1];
+		verts[1] = tempVerts;
+	}
+	return verts;
+}
 export function branch(a,b,Y){
 	let  t = (Y-a[1])/(b[1]-a[1]);
 	let invt = (1-t);
@@ -546,21 +570,8 @@ export function triangleRasterize(buffer,bufferFrame,z,r,g,b,a,screen_size_h,scr
 		}
 	}
 }
-
-//lengthが高さ、length[0]が横
-export function triangleToShadowBuffer(zBuffering,vertex_list,screen_size_h,screen_size_w)
-{
-	//sortするのはY座標のみ
-	let sortVerts = sort_Yindex(vertex_list);//ys
-	let pt = sortVerts[0];
-	let pm = sortVerts[1];
-	let pb = sortVerts[2];
-
-	scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb);		
-}
-
 //x,yの最初の初期値を０にするのはダメ差分を取るため。shadowMap用
-function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
+export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb){
 	let topDistance = pb[1] - pt[1];
 	//2以上は3角形
 	if(topDistance == 0){
@@ -796,7 +807,7 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 
 //texturepaint
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
-function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,c,b,d,f,e,imageData,imageHeight,imageWidth){
+export function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,c,b,d,f,e,imageData,imageHeight,imageWidth){
 	let topDistance = pb[1] - pt[1];
 	//2以上は3角形
 	if(topDistance == 0){
@@ -1186,7 +1197,7 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 }
 
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
-function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,c,b,d,f,e,imageData,imageHeight,imageWidth,shadowFlag,lightShadowFlag,sunCosin){
+export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,c,b,d,f,e,imageData,imageHeight,imageWidth,shadowFlag,lightShadowFlag,sunCosin){
 	let topDistance = pb[1] - pt[1];
 	//2以上は3角形
 	if(topDistance == 0){
@@ -1703,44 +1714,5 @@ export function textureTransform(a,b,c,d,h,w,alpha,imageData,vertex_list,screen_
 				}				
 			}
 	    }
-	}
-}
-
-//lengthが高さ、length[0]が横
-export function triangleToBuffer(zBuffering,imageData,vertex_list,crossWorldVector3,mi,sunVec,shadowFlag,lightShadowFlag,screen_size_h,screen_size_w)
-{
-	//sortするのはY座標のみ
-	let sortVerts = sort_Yindex(vertex_list);
-	let pt = sortVerts[0];
-	let pm = sortVerts[1];
-	let pb = sortVerts[2];
-
-	//基底変換　プロジェクションバーティックス＝＞テクスチャ
-	//A=テクスチャ側、_A=プロジェクションバーティックス側
-	//Ax = a*_Ax + c*_Ay	|Ax| = |_Ax _Ay| |a|		|_Ax _Ay|^-1 |Ax| = |a|
-	//Bx = a*_Bx + c*_By 	|Bx|   |_Bx _By| |c|		|_Bx _By|    |Bx|   |c|
-	//b,dも考え方同じ
-	let _Ax = vertex_list[1][0] - vertex_list[0][0];
-	let _Ay = vertex_list[1][1] - vertex_list[0][1];
-	let _Bx = vertex_list[2][0] - vertex_list[0][0];
-	let _By = vertex_list[2][1] - vertex_list[0][1];
-	let invMat = getTextureInvert(_Ax,_Ay,_Bx,_By);
-
-	let a = invMat[0] * mi[4] + invMat[1] * mi[6];
-	let c = invMat[2] * mi[4] + invMat[3] * mi[6];
-
-	let b = invMat[0] * mi[5] + invMat[1] * mi[7];
-	let d = invMat[2] * mi[5] + invMat[3] * mi[7];
-
-	// テクスチャy = b * vertsx + d * vertsy + f アフィン変換の変形
-	let f = mi[1] - (b * vertex_list[0][0] + d * vertex_list[0][1]);
-	let e = mi[0] - (a * vertex_list[0][0] + c * vertex_list[0][1]);
-	let imageHeight = imageData.length;
-	let imageWidth = imageData[1].length;
-	if(shadowFlag == true){
-		let sunCosin = culVecDot(sunVec, crossWorldVector3)*1.5;//1.5掛けるのは明るさの調節
-		scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,c,b,d,f,e,imageData,imageHeight,imageWidth,true,lightShadowFlag,sunCosin);
-	}else{
-		scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,c,b,d,f,e,imageData,imageHeight,imageWidth);
 	}
 }

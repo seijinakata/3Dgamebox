@@ -1,10 +1,10 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
 import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,round100,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul, minXCul, maxXCul, minYCul, maxYCul, vec3CrossZMinus, mul1000Round, minXPosCul, maxXPosCul, minYPosCul, maxYPosCul} from './vector.js';
-import {matIdentity,matDirectMul,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera, makeScalingMatrix, matWaightAndPlus, matRound} from './matrix.js';
+import {matIdentity,matDirectMul,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera, makeScalingMatrix, matWaightAndPlus, matRound, getTextureInvert} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
-import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,triangleToBuffer,branch, triangleToShadowBuffer, vertsCopy, top_int} from './paint.js';
-import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, projected_Verts, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, UV_Vector, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, pixel_LightShadow_Flag } from './enum.js';
+import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,branch, vertsCopy, top_int, sort_YPoint, scan_ShadowVertical, scan_vertical, scan_verticalNoSunCosin} from './paint.js';
+import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, pixel_LightShadow_Flag, PT, PM, PB, AFFINE_A, AFFINE_C, AFFINE_B, AFFINE_D, AFFINE_F, AFFINE_E } from './enum.js';
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
 
@@ -816,12 +816,32 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,shadow
   
   let polygonElement = [];
   polygonElement[cross_Z] = crossZ;
-  polygonElement[projected_Verts] = [];
-  polygonElement[projected_Verts][0] = pos1;
-  polygonElement[projected_Verts][1] = pos2;
-  polygonElement[projected_Verts][2] = pos3;
-  polygonElement[UV_Vector] = UVVector;
+  
+  //sortするのはY座標のみ
+	let sortVerts = sort_YPoint(pos1,pos2,pos3);
+	polygonElement[PT] = sortVerts[0];
+	polygonElement[PM] = sortVerts[1];
+	polygonElement[PB] = sortVerts[2];
+  	//基底変換　プロジェクションバーティックス＝＞テクスチャ
+	//A=テクスチャ側、_A=プロジェクションバーティックス側
+	//Ax = a*_Ax + c*_Ay	|Ax| = |_Ax _Ay| |a|		|_Ax _Ay|^-1 |Ax| = |a|
+	//Bx = a*_Bx + c*_By 	|Bx|   |_Bx _By| |c|		|_Bx _By|    |Bx|   |c|
+	//b,dも考え方同じ
+	let _Ax = pos2[0] - pos1[0];
+	let _Ay = pos2[1] - pos1[1];
+	let _Bx = pos3[0] - pos1[0];
+	let _By = pos3[1] - pos1[1];
+	let invMat = getTextureInvert(_Ax,_Ay,_Bx,_By);
 
+	polygonElement[AFFINE_A] = invMat[0] * UVVector[4] + invMat[1] * UVVector[6];
+	polygonElement[AFFINE_C] = invMat[2] * UVVector[4] + invMat[3] * UVVector[6];
+
+	polygonElement[AFFINE_B] = invMat[0] * UVVector[5] + invMat[1] * UVVector[7];
+	polygonElement[AFFINE_D] = invMat[2] * UVVector[5] + invMat[3] * UVVector[7];
+
+  // テクスチャy = b * vertsx + d * vertsy + f アフィン変換の変形
+  polygonElement[AFFINE_F] = UVVector[1] - (polygonElement[AFFINE_B] * pos1[0] + polygonElement[AFFINE_D] * pos1[1]);
+  polygonElement[AFFINE_E] = UVVector[0] - (polygonElement[AFFINE_A] * pos1[0] + polygonElement[AFFINE_C] * pos1[1]);
   if(shadowFlag == true){
     //ライトシミュレーション用
     let Va = vecMinus(worldPos1,worldPos2);
@@ -839,10 +859,11 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,shadow
 function setShadowPolygon(pos1,pos2,pos3,crossZ){
   let polygonElement = [];
   polygonElement[cross_Z] = crossZ;
-  polygonElement[projected_Verts] = [];
-  polygonElement[projected_Verts][0] = pos1;
-  polygonElement[projected_Verts][1] = pos2;
-  polygonElement[projected_Verts][2] = pos3;
+  //sortするのはY座標のみ
+	let sortVerts = sort_YPoint(pos1,pos2,pos3);
+	polygonElement[PT] = sortVerts[0];
+	polygonElement[PM] = sortVerts[1];
+	polygonElement[PB] = sortVerts[2];
   
   return polygonElement;
 }
@@ -2095,25 +2116,45 @@ culVecNormalize(sunVec);
 round100(sunVec[0]);
 round100(sunVec[1]);
 //camera
-var tmpTriangleToBuffer = triangleToBuffer;
+//lengthが高さ、length[0]が横
+var tmpScan_vertical = scan_vertical;
+var tmpScan_verticalNoSunCosin = scan_verticalNoSunCosin;
+var tmpCulVecDot = culVecDot;
 let projectedObjectsLength  = projectedObjects.length;
 for(let j=0;j<projectedObjectsLength;j++){
   let currentProjectedObject = projectedObjects[j];
+  let shadowFlag = currentProjectedObject[obj_Shadow_Flag];
+  let lightShadowFlag = currentProjectedObject[obj_LightShadow_Flag];
   let projectedObjects_j_polygonNum = currentProjectedObject[poly_List].length;
 	for(let projectedPolyNum=0;projectedPolyNum<projectedObjects_j_polygonNum;projectedPolyNum++){
-      tmpTriangleToBuffer(zBuffering,currentProjectedObject[obj_Image],currentProjectedObject[poly_List][projectedPolyNum][projected_Verts],currentProjectedObject[poly_List][projectedPolyNum][poly_Cross_World_Vector3],
-        currentProjectedObject[poly_List][projectedPolyNum][UV_Vector],sunVec,currentProjectedObject[obj_Shadow_Flag],currentProjectedObject[obj_LightShadow_Flag]
-      ,screen_size_h,screen_size_w); 
+    let polygonElement = currentProjectedObject[poly_List][projectedPolyNum];
+    let currentTextureImage = currentProjectedObject[obj_Image];
+    let imageHeight = currentTextureImage.length;
+    let imageWidth = currentTextureImage[1].length;
+    if(shadowFlag == true){
+      let sunCosin = tmpCulVecDot(sunVec, polygonElement[poly_Cross_World_Vector3])*1.5;//1.5掛けるのは明るさの調節
+      tmpScan_vertical(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
+      polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
+      polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
+      currentTextureImage,imageHeight,imageWidth,true,lightShadowFlag,sunCosin);
+    }else{
+      tmpScan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
+      polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
+      polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
+      currentTextureImage,imageHeight,imageWidth);
+    }
   }  
 }
-let tmpTriangleToShadowBuffer = triangleToShadowBuffer;
+let tmpScan_ShadowVertical = scan_ShadowVertical;
 //shadowMap
 let shadowProjectedObjectsLength  = shadowProjectedObjects.length;
 for(let j=0;j<shadowProjectedObjectsLength;j++){
   let currentshadowProjectedObject = shadowProjectedObjects[j];
   let shadowProjectedObjects_j_polygonNum = currentshadowProjectedObject.length;
 	for(let projectedPolyNum=0;projectedPolyNum<shadowProjectedObjects_j_polygonNum;projectedPolyNum++){
-    tmpTriangleToShadowBuffer(shadowMap,currentshadowProjectedObject[projectedPolyNum][projected_Verts],screen_size_h,screen_size_w);
+    let polygonElement = currentshadowProjectedObject[projectedPolyNum];
+    tmpScan_ShadowVertical(shadowMap,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],
+      polygonElement[PB]);
   }  
 }
 //作画ピクセル処理が重たいので改造しまくり
