@@ -454,7 +454,6 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
                     boneContents.bindPose = tempBind;
                     boneContents.quaternionBindPose = matrixMakeQuaternion(tempBind);
                     boneContents.inverseBindPose = getInverseMatrix(tempBind);
-                    console.log(boneContents.inverseBindPose)
                     boneContents.inverseQuaternionBindPose = Conjugated(boneContents.quaternionBindPose[0],boneContents.quaternionBindPose[1],
                       boneContents.quaternionBindPose[2],boneContents.quaternionBindPose[3]);
                     tempBindPosePack.push(boneContents);
@@ -817,7 +816,6 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,shadow
   
   let polygonElement = [];
   polygonElement[cross_Z] = crossZ;
-  
   //sortするのはY座標のみ
 	let sortVerts = sort_YPoint(pos1,pos2,pos3);
 	polygonElement[PT] = sortVerts[0];
@@ -911,6 +909,8 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
         shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
         shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;   
         shadowProjectedVerts[i] = shadowVerts;   
+      }else{
+        shadowProjectedVerts[i] = null;
       }
     } 
   }
@@ -925,44 +925,50 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     let pos1 = projectedVerts[triangleFaceIndex[0]];
+    if(pos1 == null) continue;
     let pos2 = projectedVerts[triangleFaceIndex[1]];
+    if(pos2 == null) continue;
     let pos3 = projectedVerts[triangleFaceIndex[2]];
-    if((pos1 != null && pos2 != null && pos3 != null)){
-      let triangleXMin = minXPosCul(pos1,pos2,pos3);
-      let triangleXMax = maxXPosCul(pos1,pos2,pos3);
-      let triangleYMin = minYPosCul(pos1,pos2,pos3);
-      let triangleYMax = maxYPosCul(pos1,pos2,pos3);
-      if(triangleXMin<screen_size_w && triangleXMax>=0 && triangleYMin < screen_size_h && triangleYMax >=0){
+    if(pos3 == null) continue;
+    let triangleXMin = minXPosCul(pos1,pos2,pos3);
+    if(triangleXMin>=screen_size_w) continue;
+    let triangleXMax = maxXPosCul(pos1,pos2,pos3);
+    if(triangleXMax<0) continue;
+    let triangleYMin = minYPosCul(pos1,pos2,pos3);
+    if(triangleYMin >= screen_size_h) continue;
+    let triangleYMax = maxYPosCul(pos1,pos2,pos3);
+    if(triangleYMax < 0) continue;
+    let Va = vec3CrossZMinus(pos1,pos2);
+    let Vb = vec3CrossZMinus(pos3,pos1);
+    let crossZ = culVecCrossZ(Va,Vb);
+    //zが-の方がこちらに近くなる座標軸だから
+    if(!(backCullingFlag == true && crossZ>0)){
+      poly[polyLength] = setPolygon(pos1,pos2,pos3,
+        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag,crossZ);
+        polyLength++;
+    }   
+    if(shadowFlag == true){
+      pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
+      if(pos1 == null) continue;
+      pos2 = shadowProjectedVerts[triangleFaceIndex[1]];
+      if(pos2 == null) continue;
+      pos3 = shadowProjectedVerts[triangleFaceIndex[2]];
+      if(pos3 == null) continue;
+      triangleXMin = minXPosCul(pos1,pos2,pos3);
+      if(triangleXMin>=screen_size_w) continue;
+      triangleXMax = maxXPosCul(pos1,pos2,pos3);
+      if(triangleXMax<0) continue;
+      triangleYMin = minYPosCul(pos1,pos2,pos3);
+      if(triangleYMin >= screen_size_h) continue;
+      triangleYMax = maxYPosCul(pos1,pos2,pos3);
+      if(triangleYMax < 0) continue;
       let Va = vec3CrossZMinus(pos1,pos2);
       let Vb = vec3CrossZMinus(pos3,pos1);
       let crossZ = culVecCrossZ(Va,Vb);
-        //zが-の方がこちらに近くなる座標軸だから
-        if(!(backCullingFlag == true && crossZ>0)){
-          poly[polyLength] = setPolygon(pos1,pos2,pos3,
-            worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag,crossZ);
-            polyLength++;
-        }
-      }
-    }
-    if(shadowFlag == true){
-      pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
-      pos2 = shadowProjectedVerts[triangleFaceIndex[1]];
-      pos3 = shadowProjectedVerts[triangleFaceIndex[2]];
-      if((pos1 != null && pos2 != null && pos3 != null)){
-        let triangleXMin = minXPosCul(pos1,pos2,pos3);
-        let triangleXMax = maxXPosCul(pos1,pos2,pos3);
-        let triangleYMin = minYPosCul(pos1,pos2,pos3);
-        let triangleYMax = maxYPosCul(pos1,pos2,pos3);
-        if(triangleXMin<screen_size_w && triangleXMax>=0 && triangleYMin < screen_size_h && triangleYMax >=0){
-          let Va = vec3CrossZMinus(pos1,pos2);
-          let Vb = vec3CrossZMinus(pos3,pos1);
-          let crossZ = culVecCrossZ(Va,Vb);
-          if(!(backCullingFlag == true && crossZ>0)){
-            shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3,crossZ);
-            shadowPolyLength++;
-          }        
-        }       
-      }
+      if(!(backCullingFlag == true && crossZ>0)){
+        shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3,crossZ);
+        shadowPolyLength++;
+      }          
     }
   }
   //ｚソート
@@ -992,6 +998,7 @@ function daeMekeSkinMeshBone(daeLoadPack){
   // daeLoadPack.bones[boneParentRelation].scaleXYZ[1],daeLoadPack.bones[boneParentRelation].scaleXYZ[2]);  
   matDirectMul(copyInverseBindPose,daeLoadPack.bindPosePack[0].bindPose);
   daeLoadPack.bones[0].skinmeshBone = copyInverseBindPose;
+
   let boneParentRelationRow = daeLoadPack.boneParentRelation.length;
   for(let j=0;j<boneParentRelationRow;j++){
     let boneParentRelationCol = daeLoadPack.boneParentRelation[j].length;
@@ -1055,6 +1062,8 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
         shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
         shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;   
         shadowProjectedVerts[i] = shadowVerts;   
+      }else{
+        shadowProjectedVerts[i] = null;
       }
     }
   }
@@ -1068,44 +1077,50 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     let pos1 = projectedVerts[triangleFaceIndex[0]];
+    if(pos1 == null) continue;
     let pos2 = projectedVerts[triangleFaceIndex[1]];
+    if(pos2 == null) continue;
     let pos3 = projectedVerts[triangleFaceIndex[2]];
-    if((pos1 != null && pos2 != null && pos3 != null)){
-      let triangleXMin = minXPosCul(pos1,pos2,pos3);
-      let triangleXMax = maxXPosCul(pos1,pos2,pos3);
-      let triangleYMin = minYPosCul(pos1,pos2,pos3);
-      let triangleYMax = maxYPosCul(pos1,pos2,pos3);
-      if(triangleXMin<screen_size_w && triangleXMax>=0 && triangleYMin < screen_size_h && triangleYMax >=0){
-        let Va = vec3CrossZMinus(pos1,pos2);
-        let Vb = vec3CrossZMinus(pos3,pos1);
-        let crossZ = culVecCrossZ(Va,Vb);
-        //zが-の方がこちらに近くなる座標軸だから
-        if(!(backCullingFlag == true && crossZ>0)){
-          poly[polyLength] = setPolygon(pos1,pos2,pos3,
-            worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag,crossZ);
-            polyLength++;
-        }        
-      }
-    }
+    if(pos3 == null) continue;
+    let triangleXMin = minXPosCul(pos1,pos2,pos3);
+    if(triangleXMin>=screen_size_w) continue;
+    let triangleXMax = maxXPosCul(pos1,pos2,pos3);
+    if(triangleXMax<0) continue;
+    let triangleYMin = minYPosCul(pos1,pos2,pos3);
+    if(triangleYMin >= screen_size_h) continue;
+    let triangleYMax = maxYPosCul(pos1,pos2,pos3);
+    if(triangleYMax < 0) continue;
+    let Va = vec3CrossZMinus(pos1,pos2);
+    let Vb = vec3CrossZMinus(pos3,pos1);
+    let crossZ = culVecCrossZ(Va,Vb);
+    //zが-の方がこちらに近くなる座標軸だから
+    if(!(backCullingFlag == true && crossZ>0)){
+      poly[polyLength] = setPolygon(pos1,pos2,pos3,
+        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag,crossZ);
+        polyLength++;
+    } 
     if(shadowFlag == true){
       pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
+      if(pos1 == null) continue;
       pos2 = shadowProjectedVerts[triangleFaceIndex[1]];
+      if(pos2 == null) continue;
       pos3 = shadowProjectedVerts[triangleFaceIndex[2]];
-      if((pos1 != null && pos2 != null && pos3 != null)){
-        let triangleXMin = minXPosCul(pos1,pos2,pos3);
-        let triangleXMax = maxXPosCul(pos1,pos2,pos3);
-        let triangleYMin = minYPosCul(pos1,pos2,pos3);
-        let triangleYMax = maxYPosCul(pos1,pos2,pos3);
-        if(triangleXMin<screen_size_w && triangleXMax>=0 && triangleYMin < screen_size_h && triangleYMax >=0){
-          let Va = vec3CrossZMinus(pos1,pos2);
-          let Vb = vec3CrossZMinus(pos3,pos1);
-          let crossZ = culVecCrossZ(Va,Vb);
-          if(!(backCullingFlag == true && crossZ>0)){
-            shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3,crossZ);
-            shadowPolyLength++;
-          }        
-        }        
-      }
+      if(pos3 == null) continue;
+      triangleXMin = minXPosCul(pos1,pos2,pos3);
+      if(triangleXMin>=screen_size_w) continue;
+      triangleXMax = maxXPosCul(pos1,pos2,pos3);
+      if(triangleXMax<0) continue;
+      triangleYMin = minYPosCul(pos1,pos2,pos3);
+      if(triangleYMin >= screen_size_h) continue;
+      triangleYMax = maxYPosCul(pos1,pos2,pos3);
+      if(triangleYMax < 0) continue;
+      let Va = vec3CrossZMinus(pos1,pos2);
+      let Vb = vec3CrossZMinus(pos3,pos1);
+      let crossZ = culVecCrossZ(Va,Vb);
+      if(!(backCullingFlag == true && crossZ>0)){
+        shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3,crossZ);
+        shadowPolyLength++;
+      }               
     }
   } 
   //ｚソート
@@ -1580,6 +1595,51 @@ function quaternionMatrixScaling(quaternionMatrix,x,y,z){
   quaternionMatrix[0] *= x;
   quaternionMatrix[5] *= y;
   quaternionMatrix[10] *= z;
+}
+function SIGN(x) {return (x >= 0.0) ? 1.0 : -1.0;}
+function NORM(a,b,c,d) {return Math.sqrt(a * a + b * b + c * c + d * d);}
+function matrixMakeQuaternion(m){
+let q0 = ( m[0] + m[4] + m[8] + 1.0) / 4.0;
+let q1 = ( m[0] - m[4] - m[8] + 1.0) / 4.0;
+let q2 = (-m[0] + m[4] - m[8] + 1.0) / 4.0;
+let q3 = (-m[0] - m[4] + m[8] + 1.0) / 4.0;
+if(q0 < 0.0) q0 = 0.0;
+if(q1 < 0.0) q1 = 0.0;
+if(q2 < 0.0) q2 = 0.0;
+if(q3 < 0.0) q3 = 0.0;
+q0 = Math.sqrt(q0);
+q1 = Math.sqrt(q1);
+q2 = Math.sqrt(q2);
+q3 = Math.sqrt(q3);
+if(q0 >= q1 && q0 >= q2 && q0 >= q3) {
+    q0 *= 1.0;
+    q1 *= SIGN(m[7] - m[5]);
+    q2 *= SIGN(m[2] - m[6]);
+    q3 *= SIGN(m[3] - m[1]);
+} else if(q1 >= q0 && q1 >= q2 && q1 >= q3) {
+    q0 *= SIGN(m[7] - m[5]);
+    q1 *= 1.0;
+    q2 *= SIGN(m[3] + m[1]);
+    q3 *= SIGN(m[2] + m[6]);
+} else if(q2 >= q0 && q2 >= q1 && q2 >= q3) {
+    q0 *= SIGN(m[2] - m[6]);
+    q1 *= SIGN(m[3] + m[1]);
+    q2 *= 1.0;
+    q3 *= SIGN(m[7] + m[5]);
+} else if(q3 >= q0 && q3 >= q1 && q3 >= q2) {
+    q0 *= SIGN(m[3] - m[1]);
+    q1 *= SIGN(m[6] + m[2]);
+    q2 *= SIGN(m[7] + m[5]);
+    q3 *= 1.0;
+} else {
+    return;
+}
+let r = NORM(q0, q1, q2, q3);
+q0 /= r;
+q1 /= r;
+q2 /= r;
+q3 /= r;
+return Quaternion(q1,q2,q3,q0);
 }
 //回転行列を元に作られたQuaternion行列
 function makeQuaternionMatrix(q){
