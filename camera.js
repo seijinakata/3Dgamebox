@@ -812,10 +812,10 @@ function makeProjectedObject(orgObject,polyList){
 }
 
 //ポリゴン製造
-function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,shadowFlag,crossZ){
+function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,shadowFlag){
   
   let polygonElement = [];
-  polygonElement[cross_Z] = crossZ;
+  polygonElement[cross_Z] = pos1[2];
   //sortするのはY座標のみ
 	let sortVerts = sort_YPoint(pos1,pos2,pos3);
 	polygonElement[PT] = sortVerts[0];
@@ -855,9 +855,9 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,shadow
 }
 
 //シャドウマップ用ポリゴン製造
-function setShadowPolygon(pos1,pos2,pos3,crossZ){
+function setShadowPolygon(pos1,pos2,pos3){
   let polygonElement = [];
-  polygonElement[cross_Z] = crossZ;
+  polygonElement[cross_Z] = pos1[2];
   //sortするのはY座標のみ
 	let sortVerts = sort_YPoint(pos1,pos2,pos3);
 	polygonElement[PT] = sortVerts[0];
@@ -938,15 +938,21 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
     if(triangleYMin >= screen_size_h) continue;
     let triangleYMax = maxYPosCul(pos1,pos2,pos3);
     if(triangleYMax < 0) continue;
-    let Va = vec3CrossZMinus(pos1,pos2);
-    let Vb = vec3CrossZMinus(pos3,pos1);
-    let crossZ = culVecCrossZ(Va,Vb);
-    //zが-の方がこちらに近くなる座標軸だから
-    if(!(backCullingFlag == true && crossZ>0)){
+    if(backCullingFlag == true){
+      let Va = vec3CrossZMinus(pos1,pos2);
+      let Vb = vec3CrossZMinus(pos3,pos1);
+      let crossZ = culVecCrossZ(Va,Vb);
+      //zが-の方がこちらに近くなる座標軸だから
+      if(crossZ<0){
+        poly[polyLength] = setPolygon(pos1,pos2,pos3,
+          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag);
+          polyLength++;
+      }
+    }else{
       poly[polyLength] = setPolygon(pos1,pos2,pos3,
-        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag,crossZ);
+        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag);
         polyLength++;
-    }   
+    }
     if(shadowFlag == true){
       pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
       if(pos1 == null) continue;
@@ -962,13 +968,18 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       if(triangleYMin >= screen_size_h) continue;
       triangleYMax = maxYPosCul(pos1,pos2,pos3);
       if(triangleYMax < 0) continue;
-      let Va = vec3CrossZMinus(pos1,pos2);
-      let Vb = vec3CrossZMinus(pos3,pos1);
-      let crossZ = culVecCrossZ(Va,Vb);
-      if(!(backCullingFlag == true && crossZ>0)){
-        shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3,crossZ);
-        shadowPolyLength++;
-      }          
+      if(backCullingFlag == true){
+        let Va = vec3CrossZMinus(pos1,pos2);
+        let Vb = vec3CrossZMinus(pos3,pos1);
+        let crossZ = culVecCrossZ(Va,Vb);
+        if(crossZ<0){
+          shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3);
+          shadowPolyLength++; 
+        }
+      }else{
+        shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3);
+        shadowPolyLength++; 
+      }         
     }
   }
   //ｚソート
@@ -1090,15 +1101,21 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
     if(triangleYMin >= screen_size_h) continue;
     let triangleYMax = maxYPosCul(pos1,pos2,pos3);
     if(triangleYMax < 0) continue;
-    let Va = vec3CrossZMinus(pos1,pos2);
-    let Vb = vec3CrossZMinus(pos3,pos1);
-    let crossZ = culVecCrossZ(Va,Vb);
-    //zが-の方がこちらに近くなる座標軸だから
-    if(!(backCullingFlag == true && crossZ>0)){
+    if(backCullingFlag == true){
+      let Va = vec3CrossZMinus(pos1,pos2);
+      let Vb = vec3CrossZMinus(pos3,pos1);
+      let crossZ = culVecCrossZ(Va,Vb);
+      //zが-の方がこちらに近くなる座標軸だから
+      if(crossZ<0){
+        poly[polyLength] = setPolygon(pos1,pos2,pos3,
+          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag);
+          polyLength++;
+      }
+    }else{
       poly[polyLength] = setPolygon(pos1,pos2,pos3,
-        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag,crossZ);
+        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag);
         polyLength++;
-    } 
+    }
     if(shadowFlag == true){
       pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
       if(pos1 == null) continue;
@@ -1114,13 +1131,18 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
       if(triangleYMin >= screen_size_h) continue;
       triangleYMax = maxYPosCul(pos1,pos2,pos3);
       if(triangleYMax < 0) continue;
-      let Va = vec3CrossZMinus(pos1,pos2);
-      let Vb = vec3CrossZMinus(pos3,pos1);
-      let crossZ = culVecCrossZ(Va,Vb);
-      if(!(backCullingFlag == true && crossZ>0)){
-        shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3,crossZ);
-        shadowPolyLength++;
-      }               
+      if(backCullingFlag == true){
+        let Va = vec3CrossZMinus(pos1,pos2);
+        let Vb = vec3CrossZMinus(pos3,pos1);
+        let crossZ = culVecCrossZ(Va,Vb);
+        if(crossZ<0){
+          shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3);
+          shadowPolyLength++; 
+        }
+      }else{
+        shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3);
+        shadowPolyLength++; 
+      }             
     }
   } 
   //ｚソート
