@@ -454,6 +454,7 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
                     boneContents.bindPose = tempBind;
                     boneContents.quaternionBindPose = matrixMakeQuaternion(tempBind);
                     boneContents.inverseBindPose = getInverseMatrix(tempBind);
+                    console.log(boneContents.inverseBindPose)
                     boneContents.inverseQuaternionBindPose = Conjugated(boneContents.quaternionBindPose[0],boneContents.quaternionBindPose[1],
                       boneContents.quaternionBindPose[2],boneContents.quaternionBindPose[3]);
                     tempBindPosePack.push(boneContents);
@@ -910,8 +911,6 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
         shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
         shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;   
         shadowProjectedVerts[i] = shadowVerts;   
-      }else{
-        shadowProjectedVerts[i] = null;
       }
     } 
   }
@@ -993,7 +992,6 @@ function daeMekeSkinMeshBone(daeLoadPack){
   // daeLoadPack.bones[boneParentRelation].scaleXYZ[1],daeLoadPack.bones[boneParentRelation].scaleXYZ[2]);  
   matDirectMul(copyInverseBindPose,daeLoadPack.bindPosePack[0].bindPose);
   daeLoadPack.bones[0].skinmeshBone = copyInverseBindPose;
-
   let boneParentRelationRow = daeLoadPack.boneParentRelation.length;
   for(let j=0;j<boneParentRelationRow;j++){
     let boneParentRelationCol = daeLoadPack.boneParentRelation[j].length;
@@ -1057,8 +1055,6 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
         shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
         shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;   
         shadowProjectedVerts[i] = shadowVerts;   
-      }else{
-        shadowProjectedVerts[i] = null;
       }
     }
   }
@@ -1584,51 +1580,6 @@ function quaternionMatrixScaling(quaternionMatrix,x,y,z){
   quaternionMatrix[0] *= x;
   quaternionMatrix[5] *= y;
   quaternionMatrix[10] *= z;
-}
-function SIGN(x) {return (x >= 0.0) ? 1.0 : -1.0;}
-function NORM(a,b,c,d) {return Math.sqrt(a * a + b * b + c * c + d * d);}
-function matrixMakeQuaternion(m){
-let q0 = ( m[0] + m[4] + m[8] + 1.0) / 4.0;
-let q1 = ( m[0] - m[4] - m[8] + 1.0) / 4.0;
-let q2 = (-m[0] + m[4] - m[8] + 1.0) / 4.0;
-let q3 = (-m[0] - m[4] + m[8] + 1.0) / 4.0;
-if(q0 < 0.0) q0 = 0.0;
-if(q1 < 0.0) q1 = 0.0;
-if(q2 < 0.0) q2 = 0.0;
-if(q3 < 0.0) q3 = 0.0;
-q0 = Math.sqrt(q0);
-q1 = Math.sqrt(q1);
-q2 = Math.sqrt(q2);
-q3 = Math.sqrt(q3);
-if(q0 >= q1 && q0 >= q2 && q0 >= q3) {
-    q0 *= 1.0;
-    q1 *= SIGN(m[7] - m[5]);
-    q2 *= SIGN(m[2] - m[6]);
-    q3 *= SIGN(m[3] - m[1]);
-} else if(q1 >= q0 && q1 >= q2 && q1 >= q3) {
-    q0 *= SIGN(m[7] - m[5]);
-    q1 *= 1.0;
-    q2 *= SIGN(m[3] + m[1]);
-    q3 *= SIGN(m[2] + m[6]);
-} else if(q2 >= q0 && q2 >= q1 && q2 >= q3) {
-    q0 *= SIGN(m[2] - m[6]);
-    q1 *= SIGN(m[3] + m[1]);
-    q2 *= 1.0;
-    q3 *= SIGN(m[7] + m[5]);
-} else if(q3 >= q0 && q3 >= q1 && q3 >= q2) {
-    q0 *= SIGN(m[3] - m[1]);
-    q1 *= SIGN(m[6] + m[2]);
-    q2 *= SIGN(m[7] + m[5]);
-    q3 *= 1.0;
-} else {
-    return;
-}
-let r = NORM(q0, q1, q2, q3);
-q0 /= r;
-q1 /= r;
-q2 /= r;
-q3 /= r;
-return Quaternion(q1,q2,q3,q0);
 }
 //回転行列を元に作られたQuaternion行列
 function makeQuaternionMatrix(q){

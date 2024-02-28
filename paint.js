@@ -161,30 +161,6 @@ export function delta_Noy_xz(edge,y){
 }
 // //ソート関数
 //sortするのはY座標のみ
-export function sort_Yindex(t){
-	let verts = [];
-	verts[0] = vertsCopy(t[0]);
-	verts[1] = vertsCopy(t[1]);
-	verts[2] = vertsCopy(t[2]);
-
-    if(verts[0][1]>verts[1][1]){
-		let tempVerts = verts[0];
-		verts[0] = verts[1];
-		verts[1] = tempVerts;
-	}
-    if(verts[1][1]>verts[2][1]){
-		let tempVerts = verts[1];
-		verts[1] = verts[2];
-		verts[2] = tempVerts;
-	}
-    if(verts[0][1]>verts[1][1]){
-		let tempVerts = verts[0];
-		verts[0] = verts[1];
-		verts[1] = tempVerts;
-	}
-	return verts;
-}
-//sortするのはY座標のみ
 export function sort_YPoint(pos1,pos2,pos3){
 	let verts = [];
 	verts[0] = vertsCopy(pos1);
