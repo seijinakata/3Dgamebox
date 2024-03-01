@@ -20,17 +20,16 @@ export const rot_Y = 1;
 export const rot_Z = 2;
 
 //polygon
-export const cross_Z = 0;
-export const PT = 1;
-export const PM = 2;
-export const PB = 3;
-export const AFFINE_A = 4;
-export const AFFINE_B = 5;
-export const AFFINE_C = 6;
-export const AFFINE_D = 7;
-export const AFFINE_F = 8;
-export const AFFINE_E = 9;
-export const poly_Cross_World_Vector3 = 10;
+export const PT = 0;
+export const PM = 1;
+export const PB = 2;
+export const AFFINE_A = 3;
+export const AFFINE_B = 4;
+export const AFFINE_C = 5;
+export const AFFINE_D = 6;
+export const AFFINE_F = 7;
+export const AFFINE_E = 8;
+export const poly_Cross_World_Vector3 = 9;
 
 //projectedObject
 export const poly_List = 0;
@@ -42,4 +41,3 @@ export const obj_LightShadow_Flag = 4;
 //paint
 export const delta_X = 0;
 export const delta_Z = 1;
-

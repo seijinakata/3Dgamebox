@@ -4,7 +4,7 @@ import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVec
 import {matIdentity,matDirectMul,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera, makeScalingMatrix, matWaightAndPlus, matRound, getTextureInvert} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,branch, vertsCopy, top_int, sort_YPoint, scan_ShadowVertical, scan_vertical, scan_verticalNoSunCosin} from './paint.js';
-import { cross_Z, pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, pixel_LightShadow_Flag, PT, PM, PB, AFFINE_A, AFFINE_C, AFFINE_B, AFFINE_D, AFFINE_F, AFFINE_E } from './enum.js';
+import {pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, pixel_LightShadow_Flag, PT, PM, PB, AFFINE_A, AFFINE_C, AFFINE_B, AFFINE_D, AFFINE_F, AFFINE_E } from './enum.js';
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
 
@@ -801,26 +801,21 @@ class Object{
 }
 
 //projectedObject
-function makeProjectedObject(orgObject,polyList){
+function makeProjectedObject(orgObject,shadowFlag,lightShadowFlag,polyList){
   let projectedObject = [];
   projectedObject[poly_List] = polyList;
   projectedObject[obj_Image] = orgObject.textureImage;
-  projectedObject[obj_Shadow_Flag] = orgObject.shadowFlag;
-  projectedObject[obj_LightShadow_Flag] = orgObject.lightShadowFlag;
+  projectedObject[obj_Shadow_Flag] = shadowFlag;
+  projectedObject[obj_LightShadow_Flag] = lightShadowFlag;
 
   return projectedObject;
 }
 
 //ポリゴン製造
-function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,shadowFlag){
+function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,lightShadowFlag){
   
-  let polygonElement = [];
-  polygonElement[cross_Z] = pos1[2];
   //sortするのはY座標のみ
-	let sortVerts = sort_YPoint(pos1,pos2,pos3);
-	polygonElement[PT] = sortVerts[0];
-	polygonElement[PM] = sortVerts[1];
-	polygonElement[PB] = sortVerts[2];
+	let polygonElement = sort_YPoint(pos1,pos2,pos3);
   	//基底変換　プロジェクションバーティックス＝＞テクスチャ
 	//A=テクスチャ側、_A=プロジェクションバーティックス側
 	//Ax = a*_Ax + c*_Ay	|Ax| = |_Ax _Ay| |a|		|_Ax _Ay|^-1 |Ax| = |a|
@@ -841,7 +836,7 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,shadow
   // テクスチャy = b * vertsx + d * vertsy + f アフィン変換の変形
   polygonElement[AFFINE_F] = UVVector[1] - (polygonElement[AFFINE_B] * pos1[0] + polygonElement[AFFINE_D] * pos1[1]);
   polygonElement[AFFINE_E] = UVVector[0] - (polygonElement[AFFINE_A] * pos1[0] + polygonElement[AFFINE_C] * pos1[1]);
-  if(shadowFlag == true){
+  if(lightShadowFlag == true){
     //ライトシミュレーション用
     let Va = vecMinus(worldPos1,worldPos2);
     let Vb = vecMinus(worldPos3,worldPos1);
@@ -854,36 +849,31 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,shadow
   return polygonElement;
 }
 
-//シャドウマップ用ポリゴン製造
-function setShadowPolygon(pos1,pos2,pos3){
-  let polygonElement = [];
-  polygonElement[cross_Z] = pos1[2];
-  //sortするのはY座標のみ
-	let sortVerts = sort_YPoint(pos1,pos2,pos3);
-	polygonElement[PT] = sortVerts[0];
-	polygonElement[PM] = sortVerts[1];
-	polygonElement[PB] = sortVerts[2];
-  
-  return polygonElement;
-}
-
 //スキンメッシュ用シャドウマップ付き
 function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,screen_size_h,screen_size_w){
   let worldVerts = [];
   let projectedVerts = [];
   let shadowProjectedVerts = [];
 
-  let meshVets_Length = object.meshVerts.length;
-  for (let i = 0; i < meshVets_Length; i++) {
-    let mixMatrix =  matCopy(object.bones[object.blendBoneIndex[i][0]].skinmeshBone);
-    matWaight(mixMatrix,object.bonesWeight[i][0]);
-    let blendBoneIndex_Length = object.blendBoneIndex[i].length;
+  let objectMeshVerts = object.meshVerts;
+  let meshVerts_Length = objectMeshVerts.length;
+  let shadowFlag = object.shadowFlag;
+  let objectBones = object.bones;
+  let objectBonesWeight = object.bonesWeight;
+  let objectBlendBoneIndex = object.blendBoneIndex;
+
+  for (let i = 0; i < meshVerts_Length; i++) {
+    let objectBlendBoneIndex_i  = objectBlendBoneIndex[i];
+    let blendBoneIndex_Length = objectBlendBoneIndex_i.length;
+
+    let mixMatrix =  matCopy(objectBones[objectBlendBoneIndex_i[0]].skinmeshBone);
+    matWaight(mixMatrix,objectBonesWeight[i][0]);
     //頂点のboneの影響度
     for(let j=1;j<blendBoneIndex_Length;j++){
-      matWaightAndPlus(mixMatrix,object.bones[object.blendBoneIndex[i][j]].skinmeshBone,object.bonesWeight[i][j])
+      matWaightAndPlus(mixMatrix,objectBones[objectBlendBoneIndex_i[j]].skinmeshBone,objectBonesWeight[i][j])
     }
 
-    let boneWeightVerts = matVecMul(mixMatrix,object.meshVerts[i]);
+    let boneWeightVerts = matVecMul(mixMatrix,objectMeshVerts[i]);
    
     let viewZ = matMulVertsZCamera(viewMatrix,boneWeightVerts);
     if(viewZ > 0){
@@ -900,7 +890,7 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       projectedVerts[i] = null;
       worldVerts[i] = null;
     }
-    if(object.shadowFlag == true){
+    if(shadowFlag == true){
       let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,boneWeightVerts);
       if(shadowViewZ > 0){
         let shadowProjectionMatrix =  matPers(shadowViewZ);
@@ -919,9 +909,11 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
   let shadowPoly = [];
   let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
   let backCullingFlag = object.backCullingFlag;
-  let shadowFlag = object.shadowFlag;
+  let objectUVVector = object.UVVector
+  let lightShadowFlag = object.lightShadowFlag;
   let polyLength = 0;
   let shadowPolyLength = 0;
+
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     let pos1 = projectedVerts[triangleFaceIndex[0]];
@@ -945,12 +937,12 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       //zが-の方がこちらに近くなる座標軸だから
       if(crossZ<0){
         poly[polyLength] = setPolygon(pos1,pos2,pos3,
-          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag);
+          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],lightShadowFlag);
           polyLength++;
       }
     }else{
       poly[polyLength] = setPolygon(pos1,pos2,pos3,
-        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag);
+        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],lightShadowFlag);
         polyLength++;
     }
     if(shadowFlag == true){
@@ -972,21 +964,20 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
         let Va = vec3CrossZMinus(pos1,pos2);
         let Vb = vec3CrossZMinus(pos3,pos1);
         let crossZ = culVecCrossZ(Va,Vb);
+        //シャドウマップ用ポリゴン製造3点をYでソートした情報だけていける。
         if(crossZ<0){
-          shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3);
+          shadowPoly[shadowPolyLength] = sort_YPoint(pos1,pos2,pos3);
           shadowPolyLength++; 
         }
       }else{
-        shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3);
+        shadowPoly[shadowPolyLength] = sort_YPoint(pos1,pos2,pos3);
         shadowPolyLength++; 
       }         
     }
   }
-  //ｚソート
-  objectZsort(projectedObjects,object,poly);
-  if(object.shadowFlag == true){
-   objectShadowZsort(shadowPprojectedObjects,shadowPoly);   
-  }
+  lightShadowFlag = object.lightShadowFlag;
+  projectedObjects.push(makeProjectedObject(object,shadowFlag,lightShadowFlag,poly));
+  shadowPprojectedObjects.push(shadowPoly);
 }
 function daeMekeSkinMeshBone(daeLoadPack){
   //rootBone
@@ -1041,12 +1032,19 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   let projectedVerts = [];
   let shadowProjectedVerts = [];
 
-  let meshVerts_Length = object.meshVerts.length;
+  let objectMeshVerts = object.meshVerts;
+  let meshVerts_Length = objectMeshVerts.length;
+  let shadowFlag = object.shadowFlag;
+
+  let worldTranslationScaleXYZ = worldTranslation.scaleXYZ;
+  let worldTranslationSQuaternion = worldTranslation.quaternion;
+  let worldTranslationPosition = worldTranslation.position;
+
   for (let i = 0; i < meshVerts_Length; i++) {
     //w=0は意味なしクォータニオンの計算するため
-    let verts = Quaternion(object.meshVerts[i][0]*worldTranslation.scaleXYZ[position_X],object.meshVerts[i][1]*worldTranslation.scaleXYZ[position_Y],object.meshVerts[i][2]*worldTranslation.scaleXYZ[position_Z],0);
-    Vector3QuaternionMul(worldTranslation.quaternion,verts);
-    vecPlus(verts,worldTranslation.position);
+    let verts = Quaternion(objectMeshVerts[i][0]*worldTranslationScaleXYZ[position_X],objectMeshVerts[i][1]*worldTranslationScaleXYZ[position_Y],objectMeshVerts[i][2]*worldTranslationScaleXYZ[position_Z],0);
+    Vector3QuaternionMul(worldTranslationSQuaternion,verts);
+    vecPlus(verts,worldTranslationPosition);
     //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
 
     let viewZ = matMulVertsZCamera(viewMatrix,verts);
@@ -1064,7 +1062,7 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
       projectedVerts[i] = null;
       worldVerts[i] = null;
     }
-    if(object.shadowFlag == true){
+    if(shadowFlag == true){
       let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,verts);
       if(shadowViewZ > 0){
         let shadowProjectionMatrix =  matPers(shadowViewZ);
@@ -1082,9 +1080,11 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   let shadowPoly = [];
   let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
   let backCullingFlag = object.backCullingFlag;
-  let shadowFlag = object.shadowFlag;
+  let objectUVVector = object.UVVector
+  let lightShadowFlag = object.shadowFlag;
   let polyLength = 0;
   let shadowPolyLength = 0;
+  
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     let pos1 = projectedVerts[triangleFaceIndex[0]];
@@ -1108,12 +1108,12 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
       //zが-の方がこちらに近くなる座標軸だから
       if(crossZ<0){
         poly[polyLength] = setPolygon(pos1,pos2,pos3,
-          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag);
+          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],lightShadowFlag);
           polyLength++;
       }
     }else{
       poly[polyLength] = setPolygon(pos1,pos2,pos3,
-        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],object.UVVector[i],object.shadowFlag);
+        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],lightShadowFlag);
         polyLength++;
     }
     if(shadowFlag == true){
@@ -1135,61 +1135,22 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
         let Va = vec3CrossZMinus(pos1,pos2);
         let Vb = vec3CrossZMinus(pos3,pos1);
         let crossZ = culVecCrossZ(Va,Vb);
+        //シャドウマップ用ポリゴン製造3点をYでソートした情報だけていける。
         if(crossZ<0){
-          shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3);
+          shadowPoly[shadowPolyLength] = sort_YPoint(pos1,pos2,pos3);
           shadowPolyLength++; 
         }
       }else{
-        shadowPoly[shadowPolyLength] = setShadowPolygon(pos1,pos2,pos3);
+        shadowPoly[shadowPolyLength] = sort_YPoint(pos1,pos2,pos3);
         shadowPolyLength++; 
       }             
     }
-  } 
-  //ｚソート
-  objectZsort(projectedObjects,object,poly);
-  if(object.shadowFlag == true){
-    objectShadowZsort(shadowPprojectedObjects,shadowPoly);   
   }
+  lightShadowFlag = object.lightShadowFlag;
+  projectedObjects.push(makeProjectedObject(object,shadowFlag,lightShadowFlag,poly));
+  shadowPprojectedObjects.push(shadowPoly);
 }
 
-//ｚソート
-function objectZsort(projectedObjects,object,poly){
-  if(poly.length == 0) return;
-    let projectedObjectLength = projectedObjects.length;
-    if(projectedObjectLength == 0){
-      projectedObjects[0] = makeProjectedObject(object,poly);
-      return;
-    }
-    for(let j=0;j<projectedObjectLength;j++){
-      // if(projectedObjects[j][poly_List][0][projected_Verts][0][position_Z]>poly[0][projected_Verts][0][position_Z])
-      if(projectedObjects[j][poly_List][0][cross_Z]>poly[0][cross_Z]){
-        for(let i=projectedObjectLength-1;j<=i;i--){
-          projectedObjects[i+1] = projectedObjects[i]
-        }
-        projectedObjects[j] = makeProjectedObject(object,poly);
-        return;
-      }
-    }
-    projectedObjects[projectedObjectLength] = makeProjectedObject(object,poly);
-}
-function objectShadowZsort(shadowPprojectedObjects,shadowPoly){
-  if(shadowPoly.length == 0) return;
-  let shadowPprojectedObjectsLength = shadowPprojectedObjects.length;
-  if(shadowPprojectedObjectsLength == 0){
-    shadowPprojectedObjects[0] = shadowPoly;
-    return;
-  }
-  for(let j=0;j<shadowPprojectedObjectsLength;j++){
-    if(shadowPprojectedObjects[j][0][cross_Z]>shadowPoly[0][cross_Z]){
-      for(let i=shadowPprojectedObjectsLength-1;j<=i;i--){
-        shadowPprojectedObjects[i+1] = shadowPprojectedObjects[i]
-      }
-      shadowPprojectedObjects[j] = shadowPoly;
-      return;
-    }
-  }
-  shadowPprojectedObjects[shadowPprojectedObjectsLength] = shadowPoly;
-}
 //ループに入る前に生成 z = 99999;pushを使わないようにするため
 function renderBufferInit(buffer,pixelY,pixelX){
   for(let y=0;y<pixelY;y++){
