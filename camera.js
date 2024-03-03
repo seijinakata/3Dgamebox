@@ -839,8 +839,6 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,sunVec
     let Vb = vecMinus(worldPos3,worldPos1);
     let polyWorldCross = culVecCross(Va,Vb);
     culVecNormalize(polyWorldCross);
-    round100(polyWorldCross[0]);
-    round100(polyWorldCross[1]);
     let sunCosin = culVecDot(sunVec, polyWorldCross)*1.5;//1.5掛けるのは明るさの調節
     sunCosin = ((sunCosin * 100)|0) / 100;
     polygonElement[SUNCOSIN] = sunCosin;
@@ -863,20 +861,17 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
   let objectBones = object.bones;
   let objectBonesWeight = object.bonesWeight;
   let objectBlendBoneIndex = object.blendBoneIndex;
-
-  for (let i = 0; i < meshVerts_Length; i++) {
+if(shadowFlag == true){
+  for (let i=0; i < meshVerts_Length; i++) {
     let objectBlendBoneIndex_i  = objectBlendBoneIndex[i];
     let blendBoneIndex_Length = objectBlendBoneIndex_i.length;
-
     let mixMatrix =  matCopy(objectBones[objectBlendBoneIndex_i[0]].skinmeshBone);
     matWaight(mixMatrix,objectBonesWeight[i][0]);
     //頂点のboneの影響度
     for(let j=1;j<blendBoneIndex_Length;j++){
       matWaightAndPlus(mixMatrix,objectBones[objectBlendBoneIndex_i[j]].skinmeshBone,objectBonesWeight[i][j])
     }
-
     let boneWeightVerts = matVecMul(mixMatrix,objectMeshVerts[i]);
-   
     let viewZ = matMulVertsZCamera(viewMatrix,boneWeightVerts);
     if(viewZ > 0){
       worldVerts[i] = boneWeightVerts;
@@ -892,20 +887,46 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       projectedVerts[i] = null;
       worldVerts[i] = null;
     }
-    if(shadowFlag == true){
-      let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,boneWeightVerts);
-      if(shadowViewZ > 0){
+    let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,boneWeightVerts);
+    if(shadowViewZ > 0){
         let shadowProjectionMatrix =  matPers(shadowViewZ);
         let shadowVerts = matMulVertsXYZCamera(shadowViewMatrix,boneWeightVerts,shadowViewZ);
         protMatVecMul(shadowProjectionMatrix,shadowVerts); 
         shadowVerts[0] = ((shadowVerts[0] + 0.5)*screen_size_w)|0;
         shadowVerts[1] = ((shadowVerts[1] + 0.5)*screen_size_h)|0;   
-        shadowProjectedVerts[i] = shadowVerts;   
-      }else{
-        shadowProjectedVerts[i] = null;
-      }
-    } 
+      shadowProjectedVerts[i] = shadowVerts;   
+    }else{
+      shadowProjectedVerts[i] = null;
+    }
   }
+}else{
+  for (let i=0; i < meshVerts_Length; i++) {
+    let objectBlendBoneIndex_i  = objectBlendBoneIndex[i];
+    let blendBoneIndex_Length = objectBlendBoneIndex_i.length;
+    let mixMatrix =  matCopy(objectBones[objectBlendBoneIndex_i[0]].skinmeshBone);
+    matWaight(mixMatrix,objectBonesWeight[i][0]);
+    //頂点のboneの影響度
+    for(let j=1;j<blendBoneIndex_Length;j++){
+      matWaightAndPlus(mixMatrix,objectBones[objectBlendBoneIndex_i[j]].skinmeshBone,objectBonesWeight[i][j])
+    }
+    let boneWeightVerts = matVecMul(mixMatrix,objectMeshVerts[i]);
+    let viewZ = matMulVertsZCamera(viewMatrix,boneWeightVerts);
+    if(viewZ > 0){
+      worldVerts[i] = boneWeightVerts;
+      let projectionMatrix =  matPers(viewZ);
+      let cameraBoneWeightVerts = matMulVertsXYZCamera(viewMatrix,boneWeightVerts,viewZ);
+      protMatVecMul(projectionMatrix,cameraBoneWeightVerts);
+      //boneWeightVerts = matVecMul(viewPortMatrix,boneWeightVerts);
+      cameraBoneWeightVerts[0] = ((cameraBoneWeightVerts[0] + 0.5)*screen_size_w)|0;
+      cameraBoneWeightVerts[1] = ((cameraBoneWeightVerts[1] + 0.5)*screen_size_h)|0;
+      projectedVerts[i] = cameraBoneWeightVerts;
+    }else{
+      //ラスタライズしないのでnull、ポリゴンのuv値を合わせたいので飛ばさない。
+      projectedVerts[i] = null;
+      worldVerts[i] = null;
+    }
+  }
+}
  
   let poly = [];
   let shadowPoly = [];
@@ -1040,30 +1061,30 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   let worldTranslationScaleXYZ = worldTranslation.scaleXYZ;
   let worldTranslationSQuaternion = worldTranslation.quaternion;
   let worldTranslationPosition = worldTranslation.position;
+  if(shadowFlag == true){
+    for (let i=0; i < meshVerts_Length; i++) {
+      //w=0は意味なしクォータニオンの計算するため
+      let verts = Quaternion(objectMeshVerts[i][0]*worldTranslationScaleXYZ[position_X],objectMeshVerts[i][1]*worldTranslationScaleXYZ[position_Y],
+        objectMeshVerts[i][2]*worldTranslationScaleXYZ[position_Z],0);
+      Vector3QuaternionMul(worldTranslationSQuaternion,verts);
+      vecPlus(verts,worldTranslationPosition);
+      //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
+      let viewZ = matMulVertsZCamera(viewMatrix,verts);
 
-  for (let i = 0; i < meshVerts_Length; i++) {
-    //w=0は意味なしクォータニオンの計算するため
-    let verts = Quaternion(objectMeshVerts[i][0]*worldTranslationScaleXYZ[position_X],objectMeshVerts[i][1]*worldTranslationScaleXYZ[position_Y],objectMeshVerts[i][2]*worldTranslationScaleXYZ[position_Z],0);
-    Vector3QuaternionMul(worldTranslationSQuaternion,verts);
-    vecPlus(verts,worldTranslationPosition);
-    //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
-
-    let viewZ = matMulVertsZCamera(viewMatrix,verts);
-    if(viewZ > 0){
-      worldVerts[i] = verts;
-      let projectionMatrix =  matPers(viewZ);
-      let cameraVerts = matMulVertsXYZCamera(viewMatrix,verts,viewZ);
-      protMatVecMul(projectionMatrix,cameraVerts);
-      //normalVerts = matVecMul(viewPortMatrix,normalVerts);
-      cameraVerts[0] = ((cameraVerts[0] + 0.5)*screen_size_w)|0;
-      cameraVerts[1] = ((cameraVerts[1] + 0.5)*screen_size_h)|0;
-      projectedVerts[i] = cameraVerts;    
-    }else{
-      //ラスタライズしないのでnull、ポリゴンのuv値を合わせたいので飛ばさない。
-      projectedVerts[i] = null;
-      worldVerts[i] = null;
-    }
-    if(shadowFlag == true){
+      if(viewZ > 0){
+        worldVerts[i] = verts;
+        let projectionMatrix =  matPers(viewZ);
+        let cameraVerts = matMulVertsXYZCamera(viewMatrix,verts,viewZ);
+        protMatVecMul(projectionMatrix,cameraVerts);
+        //normalVerts = matVecMul(viewPortMatrix,normalVerts);
+        cameraVerts[0] = ((cameraVerts[0] + 0.5)*screen_size_w)|0;
+        cameraVerts[1] = ((cameraVerts[1] + 0.5)*screen_size_h)|0;
+        projectedVerts[i] = cameraVerts;    
+      }else{
+        //ラスタライズしないのでnull、ポリゴンのuv値を合わせたいので飛ばさない。
+        projectedVerts[i] = null;
+        worldVerts[i] = null;
+      }
       let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,verts);
       if(shadowViewZ > 0){
         let shadowProjectionMatrix =  matPers(shadowViewZ);
@@ -1076,7 +1097,33 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
         shadowProjectedVerts[i] = null;
       }
     }
+  }else{
+    for (let i=0; i < meshVerts_Length; i++) {
+      //w=0は意味なしクォータニオンの計算するため
+      let verts = Quaternion(objectMeshVerts[i][0]*worldTranslationScaleXYZ[position_X],objectMeshVerts[i][1]*worldTranslationScaleXYZ[position_Y],
+        objectMeshVerts[i][2]*worldTranslationScaleXYZ[position_Z],0);
+      Vector3QuaternionMul(worldTranslationSQuaternion,verts);
+      vecPlus(verts,worldTranslationPosition);
+      //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
+      let viewZ = matMulVertsZCamera(viewMatrix,verts);
+      
+      if(viewZ > 0){
+        worldVerts[i] = verts;
+        let projectionMatrix =  matPers(viewZ);
+        let cameraVerts = matMulVertsXYZCamera(viewMatrix,verts,viewZ);
+        protMatVecMul(projectionMatrix,cameraVerts);
+        //normalVerts = matVecMul(viewPortMatrix,normalVerts);
+        cameraVerts[0] = ((cameraVerts[0] + 0.5)*screen_size_w)|0;
+        cameraVerts[1] = ((cameraVerts[1] + 0.5)*screen_size_h)|0;
+        projectedVerts[i] = cameraVerts;    
+      }else{
+        //ラスタライズしないのでnull、ポリゴンのuv値を合わせたいので飛ばさない。
+        projectedVerts[i] = null;
+        worldVerts[i] = null;
+      }
+    }
   }
+
   let poly = [];
   let shadowPoly = [];
   let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
@@ -2136,7 +2183,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         let sunCosin = pixel[pixel_SunCosin];
         pixelR *= sunCosin;
         pixelG *= sunCosin;
-        pixelB *= sunCosin; 
+        pixelB *= sunCosin;
       }
       if(pixel[pixel_shadow_Flag] == true){
         //let pixela = pixel[4];
