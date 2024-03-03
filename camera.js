@@ -4,7 +4,7 @@ import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVec
 import {matIdentity,matDirectMul,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera, makeScalingMatrix, matWaightAndPlus, matRound, getTextureInvert} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,branch, vertsCopy, top_int, sort_YPoint, scan_ShadowVertical, scan_vertical, scan_verticalNoSunCosin} from './paint.js';
-import {pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,poly_Cross_World_Vector3, position_X, position_Y, position_Z, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, pixel_LightShadow_Flag, PT, PM, PB, AFFINE_A, AFFINE_C, AFFINE_B, AFFINE_D, AFFINE_F, AFFINE_E } from './enum.js';
+import {pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,SUNCOSIN, position_X, position_Y, position_Z, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, pixel_LightShadow_Flag, PT, PM, PB, AFFINE_A, AFFINE_C, AFFINE_B, AFFINE_D, AFFINE_F, AFFINE_E } from './enum.js';
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
 
@@ -452,10 +452,7 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
                   if(tempBind.length >= 4*4){
                     let boneContents = {};
                     boneContents.bindPose = tempBind;
-                    boneContents.quaternionBindPose = matrixMakeQuaternion(tempBind);
                     boneContents.inverseBindPose = getInverseMatrix(tempBind);
-                    boneContents.inverseQuaternionBindPose = Conjugated(boneContents.quaternionBindPose[0],boneContents.quaternionBindPose[1],
-                      boneContents.quaternionBindPose[2],boneContents.quaternionBindPose[3]);
                     tempBindPosePack.push(boneContents);
                     tempBind = [];  
             
@@ -812,7 +809,7 @@ function makeProjectedObject(orgObject,shadowFlag,lightShadowFlag,polyList){
 }
 
 //ポリゴン製造
-function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,lightShadowFlag){
+function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,sunVec,lightShadowFlag){
   
   //sortするのはY座標のみ
 	let polygonElement = sort_YPoint(pos1,pos2,pos3);
@@ -840,17 +837,22 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,lightS
     //ライトシミュレーション用
     let Va = vecMinus(worldPos1,worldPos2);
     let Vb = vecMinus(worldPos3,worldPos1);
-    polygonElement[poly_Cross_World_Vector3] = culVecCross(Va,Vb);
-    culVecNormalize(polygonElement[poly_Cross_World_Vector3]);
-    round100(polygonElement[poly_Cross_World_Vector3][0]);
-    round100(polygonElement[poly_Cross_World_Vector3][1]);   
+    let polyWorldCross = culVecCross(Va,Vb);
+    culVecNormalize(polyWorldCross);
+    round100(polyWorldCross[0]);
+    round100(polyWorldCross[1]);
+    let sunCosin = culVecDot(sunVec, polyWorldCross)*1.5;//1.5掛けるのは明るさの調節
+    sunCosin = ((sunCosin * 100)|0) / 100;
+    polygonElement[SUNCOSIN] = sunCosin;
+  }else{
+    polygonElement[SUNCOSIN] = null
   }
 
   return polygonElement;
 }
 
 //スキンメッシュ用シャドウマップ付き
-function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,screen_size_h,screen_size_w){
+function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,sunVec,screen_size_h,screen_size_w){
   let worldVerts = [];
   let projectedVerts = [];
   let shadowProjectedVerts = [];
@@ -937,12 +939,12 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       //zが-の方がこちらに近くなる座標軸だから
       if(crossZ<0){
         poly[polyLength] = setPolygon(pos1,pos2,pos3,
-          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],lightShadowFlag);
+          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],sunVec,lightShadowFlag);
           polyLength++;
       }
     }else{
       poly[polyLength] = setPolygon(pos1,pos2,pos3,
-        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],lightShadowFlag);
+        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],sunVec,lightShadowFlag);
         polyLength++;
     }
     if(shadowFlag == true){
@@ -975,7 +977,6 @@ function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjec
       }         
     }
   }
-  lightShadowFlag = object.lightShadowFlag;
   projectedObjects.push(makeProjectedObject(object,shadowFlag,lightShadowFlag,poly));
   shadowPprojectedObjects.push(shadowPoly);
 }
@@ -1026,7 +1027,7 @@ function daeMekeSkinMeshBone(daeLoadPack){
   }
 }
 //ボーンなしシャドウマップ付き
-function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,screen_size_h,screen_size_w){
+function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,sunVec,screen_size_h,screen_size_w){
 
   let worldVerts = [];
   let projectedVerts = [];
@@ -1081,7 +1082,7 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
   let backCullingFlag = object.backCullingFlag;
   let objectUVVector = object.UVVector
-  let lightShadowFlag = object.shadowFlag;
+  let lightShadowFlag = object.lightShadowFlag;
   let polyLength = 0;
   let shadowPolyLength = 0;
   
@@ -1108,12 +1109,12 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
       //zが-の方がこちらに近くなる座標軸だから
       if(crossZ<0){
         poly[polyLength] = setPolygon(pos1,pos2,pos3,
-          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],lightShadowFlag);
+          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],sunVec,lightShadowFlag);
           polyLength++;
       }
     }else{
       poly[polyLength] = setPolygon(pos1,pos2,pos3,
-        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],lightShadowFlag);
+        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],sunVec,lightShadowFlag);
         polyLength++;
     }
     if(shadowFlag == true){
@@ -1146,7 +1147,6 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
       }             
     }
   }
-  lightShadowFlag = object.lightShadowFlag;
   projectedObjects.push(makeProjectedObject(object,shadowFlag,lightShadowFlag,poly));
   shadowPprojectedObjects.push(shadowPoly);
 }
@@ -1579,51 +1579,7 @@ function quaternionMatrixScaling(quaternionMatrix,x,y,z){
   quaternionMatrix[5] *= y;
   quaternionMatrix[10] *= z;
 }
-function SIGN(x) {return (x >= 0.0) ? 1.0 : -1.0;}
-function NORM(a,b,c,d) {return Math.sqrt(a * a + b * b + c * c + d * d);}
-function matrixMakeQuaternion(m){
-let q0 = ( m[0] + m[4] + m[8] + 1.0) / 4.0;
-let q1 = ( m[0] - m[4] - m[8] + 1.0) / 4.0;
-let q2 = (-m[0] + m[4] - m[8] + 1.0) / 4.0;
-let q3 = (-m[0] - m[4] + m[8] + 1.0) / 4.0;
-if(q0 < 0.0) q0 = 0.0;
-if(q1 < 0.0) q1 = 0.0;
-if(q2 < 0.0) q2 = 0.0;
-if(q3 < 0.0) q3 = 0.0;
-q0 = Math.sqrt(q0);
-q1 = Math.sqrt(q1);
-q2 = Math.sqrt(q2);
-q3 = Math.sqrt(q3);
-if(q0 >= q1 && q0 >= q2 && q0 >= q3) {
-    q0 *= 1.0;
-    q1 *= SIGN(m[7] - m[5]);
-    q2 *= SIGN(m[2] - m[6]);
-    q3 *= SIGN(m[3] - m[1]);
-} else if(q1 >= q0 && q1 >= q2 && q1 >= q3) {
-    q0 *= SIGN(m[7] - m[5]);
-    q1 *= 1.0;
-    q2 *= SIGN(m[3] + m[1]);
-    q3 *= SIGN(m[2] + m[6]);
-} else if(q2 >= q0 && q2 >= q1 && q2 >= q3) {
-    q0 *= SIGN(m[2] - m[6]);
-    q1 *= SIGN(m[3] + m[1]);
-    q2 *= 1.0;
-    q3 *= SIGN(m[7] + m[5]);
-} else if(q3 >= q0 && q3 >= q1 && q3 >= q2) {
-    q0 *= SIGN(m[3] - m[1]);
-    q1 *= SIGN(m[6] + m[2]);
-    q2 *= SIGN(m[7] + m[5]);
-    q3 *= 1.0;
-} else {
-    return;
-}
-let r = NORM(q0, q1, q2, q3);
-q0 /= r;
-q1 /= r;
-q2 /= r;
-q3 /= r;
-return Quaternion(q1,q2,q3,q0);
-}
+
 //回転行列を元に作られたQuaternion行列
 function makeQuaternionMatrix(q){
   let mul2q0 = 2*q[0];
@@ -1867,8 +1823,8 @@ if(dataLoad == false){
     for(let i=0;i<cube1Loadpack[0].objectNumber;i++){
       cube1Loadpack[i].textureImage = cubePixelImage;
       cube1Loadpack[i].backCullingFlag = true;
-      cube1Loadpack[i].shadowFlag = false;
-      cube1Loadpack[i].lightShadowFlag = false;
+      cube1Loadpack[i].shadowFlag = true;
+      cube1Loadpack[i].lightShadowFlag = true;
       cube1Loadpack[i].bones[0].position[position_Y] = 0;
       cube1Loadpack[i].bones[0].position[position_Z] = 2.5;
       cube1Loadpack[i].bones[0].scaleXYZ = setVector3(0.1,0.1,0.1)
@@ -2039,6 +1995,11 @@ for(let j=0;j<steves.length;j++){
   inverseViewMatrix = getInverseMatrix(viewMatrix);
   sunViewMatrix = matCamera(sunPos,sunLookat,up);
 
+  let sunVec = vecMinus(sunPos,sunLookat);
+  culVecNormalize(sunVec);
+  round100(sunVec[0]);
+  round100(sunVec[1]);
+
   var tmpQuaternionXYZRoll = quaternionXYZRoll;
   var tmpQbjectPolygonPush = objectPolygonPush;
   //dicesregister
@@ -2055,7 +2016,7 @@ for(let j=0;j<steves.length;j++){
     worldTranslation.quaternion = tmpQuaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
     worldTranslation.position = object.bones[0].position;
     worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
-    tmpQbjectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    tmpQbjectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,sunVec,screen_size_h,screen_size_w);
     }
   }
   //cuberegister
@@ -2072,7 +2033,7 @@ for(let j=0;j<steves.length;j++){
     worldTranslation.quaternion = tmpQuaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
     worldTranslation.position = object.bones[0].position;
     worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
-    tmpQbjectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+    tmpQbjectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,sunVec,screen_size_h,screen_size_w);
     }
   }
   var tmpQbjectSkinMeshPolygonPush = objectSkinMeshPolygonPush;
@@ -2080,7 +2041,7 @@ for(let j=0;j<steves.length;j++){
   for(let j=0;j<steves.length;j++){
     for(let i=0;i<steves[j].length;i++){
       let object = steves[j][i];
-      tmpQbjectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,screen_size_h,screen_size_w);
+      tmpQbjectSkinMeshPolygonPush(object,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,sunVec,screen_size_h,screen_size_w);
     }
   }
   //AABB
@@ -2105,15 +2066,11 @@ for(let j=0;j<steves.length;j++){
 //ピクセル処理がボトルネック、ラスタライズ
 setZmaxShdowBufferInit(shadowMap,screen_size_h,screen_size_w);
 setZmaxRenderBuffer(zBuffering,screen_size_h,screen_size_w);
-let sunVec = vecMinus(sunPos,sunLookat);
-culVecNormalize(sunVec);
-round100(sunVec[0]);
-round100(sunVec[1]);
+
 //camera
 //lengthが高さ、length[0]が横
 var tmpScan_vertical = scan_vertical;
 var tmpScan_verticalNoSunCosin = scan_verticalNoSunCosin;
-var tmpCulVecDot = culVecDot;
 let projectedObjectsLength  = projectedObjects.length;
 for(let j=0;j<projectedObjectsLength;j++){
   let currentProjectedObject = projectedObjects[j];
@@ -2125,13 +2082,11 @@ for(let j=0;j<projectedObjectsLength;j++){
     let currentTextureImage = currentProjectedObject[obj_Image];
     let imageHeight = currentTextureImage.length;
     let imageWidth = currentTextureImage[1].length;
-    if(shadowFlag == true){
-      let sunCosin = tmpCulVecDot(sunVec, polygonElement[poly_Cross_World_Vector3])*1.5;//1.5掛けるのは明るさの調節
-      sunCosin = ((sunCosin * 100)|0) / 100;
+    if(shadowFlag == true || lightShadowFlag == true){
       tmpScan_vertical(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
       polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
       polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
-      currentTextureImage,imageHeight,imageWidth,shadowFlag,lightShadowFlag,sunCosin);
+      currentTextureImage,imageHeight,imageWidth,shadowFlag,lightShadowFlag,polygonElement[SUNCOSIN]);
     }else{
       tmpScan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
       polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],

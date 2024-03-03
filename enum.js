@@ -29,7 +29,7 @@ export const AFFINE_C = 5;
 export const AFFINE_D = 6;
 export const AFFINE_F = 7;
 export const AFFINE_E = 8;
-export const poly_Cross_World_Vector3 = 9;
+export const SUNCOSIN = 9;
 
 //projectedObject
 export const poly_List = 0;
