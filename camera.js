@@ -2120,14 +2120,14 @@ for(let j=0;j<projectedObjectsLength;j++){
   let shadowFlag = currentProjectedObject[obj_Shadow_Flag];
   let lightShadowFlag = currentProjectedObject[obj_LightShadow_Flag];
   let projectedObjects_j_polygonNum = currentProjectedObject[poly_List].length;
-	for(let projectedPolyNum=0;projectedPolyNum<projectedObjects_j_polygonNum;projectedPolyNum++){
-    
+	for(let projectedPolyNum=0;projectedPolyNum<projectedObjects_j_polygonNum;projectedPolyNum++){   
     let polygonElement = currentProjectedObject[poly_List][projectedPolyNum];
     let currentTextureImage = currentProjectedObject[obj_Image];
     let imageHeight = currentTextureImage.length;
     let imageWidth = currentTextureImage[1].length;
     if(shadowFlag == true){
       let sunCosin = tmpCulVecDot(sunVec, polygonElement[poly_Cross_World_Vector3])*1.5;//1.5掛けるのは明るさの調節
+      sunCosin = ((sunCosin * 100)|0) / 100;
       tmpScan_vertical(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
       polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
       polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
@@ -2178,7 +2178,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       let pixelB = pixel[pixel_B];
       if(pixel[pixel_LightShadow_Flag] == true){
         //ライトシミュレーション色はIntだから深い小数点演算は意味ない
-        let sunCosin = ((pixel[pixel_SunCosin] * 100)|0) / 100;
+        let sunCosin = pixel[pixel_SunCosin];
         pixelR *= sunCosin;
         pixelG *= sunCosin;
         pixelB *= sunCosin; 
