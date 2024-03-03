@@ -2121,6 +2121,7 @@ for(let j=0;j<projectedObjectsLength;j++){
   let lightShadowFlag = currentProjectedObject[obj_LightShadow_Flag];
   let projectedObjects_j_polygonNum = currentProjectedObject[poly_List].length;
 	for(let projectedPolyNum=0;projectedPolyNum<projectedObjects_j_polygonNum;projectedPolyNum++){
+    
     let polygonElement = currentProjectedObject[poly_List][projectedPolyNum];
     let currentTextureImage = currentProjectedObject[obj_Image];
     let imageHeight = currentTextureImage.length;
@@ -2130,7 +2131,7 @@ for(let j=0;j<projectedObjectsLength;j++){
       tmpScan_vertical(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
       polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
       polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
-      currentTextureImage,imageHeight,imageWidth,true,lightShadowFlag,sunCosin);
+      currentTextureImage,imageHeight,imageWidth,shadowFlag,lightShadowFlag,sunCosin);
     }else{
       tmpScan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
       polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
@@ -2171,11 +2172,18 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
     let pixel = zBufferingY[pixelX];
     let pixelZ = pixel[pixel_Z];
     if(pixelZ<99999){
+      pixelZ = tmpMul1000Round(pixelZ);
+      let pixelR = pixel[pixel_R];
+      let pixelG = pixel[pixel_G];
+      let pixelB = pixel[pixel_B];
+      if(pixel[pixel_LightShadow_Flag] == true){
+        //ライトシミュレーション色はIntだから深い小数点演算は意味ない
+        let sunCosin = ((pixel[pixel_SunCosin] * 100)|0) / 100;
+        pixelR *= sunCosin;
+        pixelG *= sunCosin;
+        pixelB *= sunCosin; 
+      }
       if(pixel[pixel_shadow_Flag] == true){
-        pixelZ = tmpMul1000Round(pixelZ);
-        let pixelR = pixel[pixel_R];
-        let pixelG = pixel[pixel_G];
-        let pixelB = pixel[pixel_B];
         //let pixela = pixel[4];
         //シャドウマップに照らし合わせる。
         //camera=>world
@@ -2217,28 +2225,13 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
             }
           }
         }
-        if(pixel[pixel_LightShadow_Flag] == true){
-          //ライトシミュレーション色はIntだから深い小数点演算は意味ない
-          let sunCosin = ((pixel[pixel_SunCosin] * 100)|0) / 100;
-          pixelR *= sunCosin;
-          pixelG *= sunCosin;
-          pixelB *= sunCosin; 
-        }
-        myImageDataDataImage[base[RED]] = pixelR;  // Red
-        myImageDataDataImage[base[GREEN]] = pixelG;  // Green
-        myImageDataDataImage[base[BLUE]] = pixelB;  // Blue
-        //myImageDataDataImage[base[ALPHA]] = 255; // Alpha  
-      }else{
-        myImageDataDataImage[base[RED]] = pixel[pixel_R];  // Red
-        myImageDataDataImage[base[GREEN]] = pixel[pixel_G];  // Green
-        myImageDataDataImage[base[BLUE]] = pixel[pixel_B]; // Blue
-        //let pixela = pixel[4];
-        //myImageDataDataImage[base[ALPHA]] = 255; // Alpha         
-      }
-    //dotPaint(j,i,getPixel.r,getPixel.g,getPixel.b,getPixel.a,ctx);    
+      } 
+      myImageDataDataImage[base[RED]] = pixelR;  // Red
+      myImageDataDataImage[base[GREEN]] = pixelG;  // Green
+      myImageDataDataImage[base[BLUE]] = pixelB;  // Blue
+      //myImageDataDataImage[base[ALPHA]] = 255; // Alpha  
     }else{
       //何もないところは黒
-      //dotPaint(j,i,0,0,0,255,ctx);
       myImageDataDataImage[base[RED]] = 0;  // Red
       myImageDataDataImage[base[GREEN]] = 0;  // Green
       myImageDataDataImage[base[BLUE]] = 0;  // Blue
