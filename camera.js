@@ -809,7 +809,7 @@ function makeProjectedObject(orgObject,shadowFlag,lightShadowFlag,polyList){
 }
 
 //ポリゴン製造
-function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,sunVec,lightShadowFlag){
+function setPolygon(pos1,pos2,pos3,UVVector){
   
   //sortするのはY座標のみ
 	let polygonElement = sort_YPoint(pos1,pos2,pos3);
@@ -833,7 +833,10 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,sunVec
   // テクスチャy = b * vertsx + d * vertsy + f アフィン変換の変形
   polygonElement[AFFINE_F] = UVVector[1] - (polygonElement[AFFINE_B] * pos1[0] + polygonElement[AFFINE_D] * pos1[1]);
   polygonElement[AFFINE_E] = UVVector[0] - (polygonElement[AFFINE_A] * pos1[0] + polygonElement[AFFINE_C] * pos1[1]);
-  if(lightShadowFlag == true){
+
+  return polygonElement;
+}
+function setLightShadow(polygonElement,worldPos1,worldPos2,worldPos3,sunVec){
     //ライトシミュレーション用
     let Va = vecMinus(worldPos1,worldPos2);
     let Vb = vecMinus(worldPos3,worldPos1);
@@ -842,13 +845,220 @@ function setPolygon(pos1,pos2,pos3,worldPos1,worldPos2,worldPos3,UVVector,sunVec
     let sunCosin = culVecDot(sunVec, polyWorldCross)*1.5;//1.5掛けるのは明るさの調節
     sunCosin = ((sunCosin * 100)|0) / 100;
     polygonElement[SUNCOSIN] = sunCosin;
-  }else{
-    polygonElement[SUNCOSIN] = null
+  
+    return polygonElement;
+}
+function polygonDecisionShadowFlagAndLightShadowFlag(object,poly,projectedVerts,worldVerts,shadowPoly,shadowProjectedVerts,meshVertsFaceIndex_Length,
+  backCullingFlag,objectUVVector,sunVec){
+  let polyLength = 0;
+  let shadowPolyLength = 0;
+  for(let i=0;i<meshVertsFaceIndex_Length;i++){
+    let triangleFaceIndex = object.meshVertsFaceIndex[i];
+    let pos1 = projectedVerts[triangleFaceIndex[0]];
+    if(pos1 == null) continue;
+    let pos2 = projectedVerts[triangleFaceIndex[1]];
+    if(pos2 == null) continue;
+    let pos3 = projectedVerts[triangleFaceIndex[2]];
+    if(pos3 == null) continue;
+    let triangleXMin = minXPosCul(pos1,pos2,pos3);
+    if(triangleXMin>=screen_size_w) continue;
+    let triangleXMax = maxXPosCul(pos1,pos2,pos3);
+    if(triangleXMax<0) continue;
+    let triangleYMin = minYPosCul(pos1,pos2,pos3);
+    if(triangleYMin >= screen_size_h) continue;
+    let triangleYMax = maxYPosCul(pos1,pos2,pos3);
+    if(triangleYMax < 0) continue;
+    if(backCullingFlag == true){
+      let Va = vec3CrossZMinus(pos1,pos2);
+      let Vb = vec3CrossZMinus(pos3,pos1);
+      let crossZ = culVecCrossZ(Va,Vb);
+      //zが-の方がこちらに近くなる座標軸だから
+      if(crossZ<0){
+        let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
+          poly[polyLength] = setLightShadow(polygonElement,worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],
+            worldVerts[triangleFaceIndex[2]],sunVec);
+          polyLength++;
+      }
+    }else{
+      let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
+        poly[polyLength] = setLightShadow(polygonElement,worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],
+          worldVerts[triangleFaceIndex[2]],sunVec);
+        polyLength++;
+    }
+    pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
+    if(pos1 == null) continue;
+    pos2 = shadowProjectedVerts[triangleFaceIndex[1]];
+    if(pos2 == null) continue;
+    pos3 = shadowProjectedVerts[triangleFaceIndex[2]];
+    if(pos3 == null) continue;
+    triangleXMin = minXPosCul(pos1,pos2,pos3);
+    if(triangleXMin>=screen_size_w) continue;
+    triangleXMax = maxXPosCul(pos1,pos2,pos3);
+    if(triangleXMax<0) continue;
+    triangleYMin = minYPosCul(pos1,pos2,pos3);
+    if(triangleYMin >= screen_size_h) continue;
+    triangleYMax = maxYPosCul(pos1,pos2,pos3);
+    if(triangleYMax < 0) continue;
+    if(backCullingFlag == true){
+      let Va = vec3CrossZMinus(pos1,pos2);
+      let Vb = vec3CrossZMinus(pos3,pos1);
+      let crossZ = culVecCrossZ(Va,Vb);
+      //シャドウマップ用ポリゴン製造3点をYでソートした情報だけていける。
+      if(crossZ<0){
+        shadowPoly[shadowPolyLength] = sort_YPoint(pos1,pos2,pos3);
+        shadowPolyLength++; 
+      }
+    }else{
+      shadowPoly[shadowPolyLength] = sort_YPoint(pos1,pos2,pos3);
+      shadowPolyLength++; 
+    }         
   }
-
-  return polygonElement;
 }
 
+function polygonDecisionShadowFlag(object,poly,projectedVerts,shadowPoly,shadowProjectedVerts,meshVertsFaceIndex_Length,
+  backCullingFlag,objectUVVector){
+  let polyLength = 0;
+  let shadowPolyLength = 0;
+  for(let i=0;i<meshVertsFaceIndex_Length;i++){
+    let triangleFaceIndex = object.meshVertsFaceIndex[i];
+    let pos1 = projectedVerts[triangleFaceIndex[0]];
+    if(pos1 == null) continue;
+    let pos2 = projectedVerts[triangleFaceIndex[1]];
+    if(pos2 == null) continue;
+    let pos3 = projectedVerts[triangleFaceIndex[2]];
+    if(pos3 == null) continue;
+    let triangleXMin = minXPosCul(pos1,pos2,pos3);
+    if(triangleXMin>=screen_size_w) continue;
+    let triangleXMax = maxXPosCul(pos1,pos2,pos3);
+    if(triangleXMax<0) continue;
+    let triangleYMin = minYPosCul(pos1,pos2,pos3);
+    if(triangleYMin >= screen_size_h) continue;
+    let triangleYMax = maxYPosCul(pos1,pos2,pos3);
+    if(triangleYMax < 0) continue;
+    if(backCullingFlag == true){
+      let Va = vec3CrossZMinus(pos1,pos2);
+      let Vb = vec3CrossZMinus(pos3,pos1);
+      let crossZ = culVecCrossZ(Va,Vb);
+      //zが-の方がこちらに近くなる座標軸だから
+      if(crossZ<0){
+        let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
+        polygonElement[SUNCOSIN] = null;
+        poly[polyLength] = polygonElement
+        polyLength++;
+      }
+    }else{
+      let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
+      polygonElement[SUNCOSIN] = null;
+      poly[polyLength] = polygonElement
+      polyLength++;
+    }
+    pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
+    if(pos1 == null) continue;
+    pos2 = shadowProjectedVerts[triangleFaceIndex[1]];
+    if(pos2 == null) continue;
+    pos3 = shadowProjectedVerts[triangleFaceIndex[2]];
+    if(pos3 == null) continue;
+    triangleXMin = minXPosCul(pos1,pos2,pos3);
+    if(triangleXMin>=screen_size_w) continue;
+    triangleXMax = maxXPosCul(pos1,pos2,pos3);
+    if(triangleXMax<0) continue;
+    triangleYMin = minYPosCul(pos1,pos2,pos3);
+    if(triangleYMin >= screen_size_h) continue;
+    triangleYMax = maxYPosCul(pos1,pos2,pos3);
+    if(triangleYMax < 0) continue;
+    if(backCullingFlag == true){
+      let Va = vec3CrossZMinus(pos1,pos2);
+      let Vb = vec3CrossZMinus(pos3,pos1);
+      let crossZ = culVecCrossZ(Va,Vb);
+      //シャドウマップ用ポリゴン製造3点をYでソートした情報だけていける。
+      if(crossZ<0){
+        shadowPoly[shadowPolyLength] = sort_YPoint(pos1,pos2,pos3);
+        shadowPolyLength++; 
+      }
+    }else{
+      shadowPoly[shadowPolyLength] = sort_YPoint(pos1,pos2,pos3);
+      shadowPolyLength++; 
+    }         
+  }
+}
+
+function polygonDecisionLightShadowFlag(object,poly,projectedVerts,worldVerts,meshVertsFaceIndex_Length,
+  backCullingFlag,objectUVVector,sunVec){
+  let polyLength = 0;
+  for(let i=0;i<meshVertsFaceIndex_Length;i++){
+    let triangleFaceIndex = object.meshVertsFaceIndex[i];
+    let pos1 = projectedVerts[triangleFaceIndex[0]];
+    if(pos1 == null) continue;
+    let pos2 = projectedVerts[triangleFaceIndex[1]];
+    if(pos2 == null) continue;
+    let pos3 = projectedVerts[triangleFaceIndex[2]];
+    if(pos3 == null) continue;
+    let triangleXMin = minXPosCul(pos1,pos2,pos3);
+    if(triangleXMin>=screen_size_w) continue;
+    let triangleXMax = maxXPosCul(pos1,pos2,pos3);
+    if(triangleXMax<0) continue;
+    let triangleYMin = minYPosCul(pos1,pos2,pos3);
+    if(triangleYMin >= screen_size_h) continue;
+    let triangleYMax = maxYPosCul(pos1,pos2,pos3);
+    if(triangleYMax < 0) continue;
+    if(backCullingFlag == true){
+      let Va = vec3CrossZMinus(pos1,pos2);
+      let Vb = vec3CrossZMinus(pos3,pos1);
+      let crossZ = culVecCrossZ(Va,Vb);
+      //zが-の方がこちらに近くなる座標軸だから
+      if(crossZ<0){
+        let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
+          poly[polyLength] = setLightShadow(polygonElement,worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],
+            worldVerts[triangleFaceIndex[2]],sunVec);
+          polyLength++;
+      }
+    }else{
+      let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
+        poly[polyLength] = setLightShadow(polygonElement,worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],
+          worldVerts[triangleFaceIndex[2]],sunVec);
+        polyLength++;
+    }        
+  }
+}
+
+function polygonDecision(object,poly,projectedVerts,worldVerts,meshVertsFaceIndex_Length,
+  backCullingFlag,objectUVVector,sunVec){
+  let polyLength = 0;
+  for(let i=0;i<meshVertsFaceIndex_Length;i++){
+    let triangleFaceIndex = object.meshVertsFaceIndex[i];
+    let pos1 = projectedVerts[triangleFaceIndex[0]];
+    if(pos1 == null) continue;
+    let pos2 = projectedVerts[triangleFaceIndex[1]];
+    if(pos2 == null) continue;
+    let pos3 = projectedVerts[triangleFaceIndex[2]];
+    if(pos3 == null) continue;
+    let triangleXMin = minXPosCul(pos1,pos2,pos3);
+    if(triangleXMin>=screen_size_w) continue;
+    let triangleXMax = maxXPosCul(pos1,pos2,pos3);
+    if(triangleXMax<0) continue;
+    let triangleYMin = minYPosCul(pos1,pos2,pos3);
+    if(triangleYMin >= screen_size_h) continue;
+    let triangleYMax = maxYPosCul(pos1,pos2,pos3);
+    if(triangleYMax < 0) continue;
+    if(backCullingFlag == true){
+      let Va = vec3CrossZMinus(pos1,pos2);
+      let Vb = vec3CrossZMinus(pos3,pos1);
+      let crossZ = culVecCrossZ(Va,Vb);
+      //zが-の方がこちらに近くなる座標軸だから
+      if(crossZ<0){
+        let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
+          poly[polyLength] = setLightShadow(polygonElement,worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],
+            worldVerts[triangleFaceIndex[2]],sunVec);
+          polyLength++;
+      }
+    }else{
+      let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
+        poly[polyLength] = setLightShadow(polygonElement,worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],
+          worldVerts[triangleFaceIndex[2]],sunVec);
+        polyLength++;
+    }        
+  }
+}
 //スキンメッシュ用シャドウマップ付き
 function objectSkinMeshPolygonPush(object,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,sunVec,screen_size_h,screen_size_w){
   let worldVerts = [];
@@ -928,78 +1138,28 @@ if(shadowFlag == true){
   }
 }
  
-  let poly = [];
-  let shadowPoly = [];
-  let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
-  let backCullingFlag = object.backCullingFlag;
-  let objectUVVector = object.UVVector
-  let lightShadowFlag = object.lightShadowFlag;
-  let polyLength = 0;
-  let shadowPolyLength = 0;
+let poly = [];
+let shadowPoly = [];
+let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
+let backCullingFlag = object.backCullingFlag;
+let objectUVVector = object.UVVector
+let lightShadowFlag = object.lightShadowFlag;
 
-  for(let i=0;i<meshVertsFaceIndex_Length;i++){
-    let triangleFaceIndex = object.meshVertsFaceIndex[i];
-    let pos1 = projectedVerts[triangleFaceIndex[0]];
-    if(pos1 == null) continue;
-    let pos2 = projectedVerts[triangleFaceIndex[1]];
-    if(pos2 == null) continue;
-    let pos3 = projectedVerts[triangleFaceIndex[2]];
-    if(pos3 == null) continue;
-    let triangleXMin = minXPosCul(pos1,pos2,pos3);
-    if(triangleXMin>=screen_size_w) continue;
-    let triangleXMax = maxXPosCul(pos1,pos2,pos3);
-    if(triangleXMax<0) continue;
-    let triangleYMin = minYPosCul(pos1,pos2,pos3);
-    if(triangleYMin >= screen_size_h) continue;
-    let triangleYMax = maxYPosCul(pos1,pos2,pos3);
-    if(triangleYMax < 0) continue;
-    if(backCullingFlag == true){
-      let Va = vec3CrossZMinus(pos1,pos2);
-      let Vb = vec3CrossZMinus(pos3,pos1);
-      let crossZ = culVecCrossZ(Va,Vb);
-      //zが-の方がこちらに近くなる座標軸だから
-      if(crossZ<0){
-        poly[polyLength] = setPolygon(pos1,pos2,pos3,
-          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],sunVec,lightShadowFlag);
-          polyLength++;
-      }
-    }else{
-      poly[polyLength] = setPolygon(pos1,pos2,pos3,
-        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],sunVec,lightShadowFlag);
-        polyLength++;
-    }
-    if(shadowFlag == true){
-      pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
-      if(pos1 == null) continue;
-      pos2 = shadowProjectedVerts[triangleFaceIndex[1]];
-      if(pos2 == null) continue;
-      pos3 = shadowProjectedVerts[triangleFaceIndex[2]];
-      if(pos3 == null) continue;
-      triangleXMin = minXPosCul(pos1,pos2,pos3);
-      if(triangleXMin>=screen_size_w) continue;
-      triangleXMax = maxXPosCul(pos1,pos2,pos3);
-      if(triangleXMax<0) continue;
-      triangleYMin = minYPosCul(pos1,pos2,pos3);
-      if(triangleYMin >= screen_size_h) continue;
-      triangleYMax = maxYPosCul(pos1,pos2,pos3);
-      if(triangleYMax < 0) continue;
-      if(backCullingFlag == true){
-        let Va = vec3CrossZMinus(pos1,pos2);
-        let Vb = vec3CrossZMinus(pos3,pos1);
-        let crossZ = culVecCrossZ(Va,Vb);
-        //シャドウマップ用ポリゴン製造3点をYでソートした情報だけていける。
-        if(crossZ<0){
-          shadowPoly[shadowPolyLength] = sort_YPoint(pos1,pos2,pos3);
-          shadowPolyLength++; 
-        }
-      }else{
-        shadowPoly[shadowPolyLength] = sort_YPoint(pos1,pos2,pos3);
-        shadowPolyLength++; 
-      }         
-    }
-  }
-  projectedObjects.push(makeProjectedObject(object,shadowFlag,lightShadowFlag,poly));
-  shadowPprojectedObjects.push(shadowPoly);
+if(shadowFlag == true && lightShadowFlag == true){
+  polygonDecisionShadowFlagAndLightShadowFlag(object,poly,projectedVerts,worldVerts,shadowPoly,shadowProjectedVerts,
+    meshVertsFaceIndex_Length,backCullingFlag,objectUVVector,sunVec);
+}else if(shadowFlag == true){
+  polygonDecisionShadowFlag(object,poly,projectedVerts,shadowPoly,shadowProjectedVerts,meshVertsFaceIndex_Length,
+    backCullingFlag,objectUVVector);
+}else if(lightShadowFlag == true){
+  polygonDecisionLightShadowFlag(object,poly,projectedVerts,worldVerts,meshVertsFaceIndex_Length,
+    backCullingFlag,objectUVVector,sunVec);
+}else{
+  polygonDecision(object,poly,projectedVerts,worldVerts,
+    meshVertsFaceIndex_Length,backCullingFlag,objectUVVector,sunVec);
+}
+projectedObjects.push(makeProjectedObject(object,shadowFlag,lightShadowFlag,poly));
+shadowPprojectedObjects.push(shadowPoly);
 }
 function daeMekeSkinMeshBone(daeLoadPack){
   //rootBone
@@ -1130,69 +1290,19 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   let backCullingFlag = object.backCullingFlag;
   let objectUVVector = object.UVVector
   let lightShadowFlag = object.lightShadowFlag;
-  let polyLength = 0;
-  let shadowPolyLength = 0;
   
-  for(let i=0;i<meshVertsFaceIndex_Length;i++){
-    let triangleFaceIndex = object.meshVertsFaceIndex[i];
-    let pos1 = projectedVerts[triangleFaceIndex[0]];
-    if(pos1 == null) continue;
-    let pos2 = projectedVerts[triangleFaceIndex[1]];
-    if(pos2 == null) continue;
-    let pos3 = projectedVerts[triangleFaceIndex[2]];
-    if(pos3 == null) continue;
-    let triangleXMin = minXPosCul(pos1,pos2,pos3);
-    if(triangleXMin>=screen_size_w) continue;
-    let triangleXMax = maxXPosCul(pos1,pos2,pos3);
-    if(triangleXMax<0) continue;
-    let triangleYMin = minYPosCul(pos1,pos2,pos3);
-    if(triangleYMin >= screen_size_h) continue;
-    let triangleYMax = maxYPosCul(pos1,pos2,pos3);
-    if(triangleYMax < 0) continue;
-    if(backCullingFlag == true){
-      let Va = vec3CrossZMinus(pos1,pos2);
-      let Vb = vec3CrossZMinus(pos3,pos1);
-      let crossZ = culVecCrossZ(Va,Vb);
-      //zが-の方がこちらに近くなる座標軸だから
-      if(crossZ<0){
-        poly[polyLength] = setPolygon(pos1,pos2,pos3,
-          worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],sunVec,lightShadowFlag);
-          polyLength++;
-      }
-    }else{
-      poly[polyLength] = setPolygon(pos1,pos2,pos3,
-        worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],worldVerts[triangleFaceIndex[2]],objectUVVector[i],sunVec,lightShadowFlag);
-        polyLength++;
-    }
-    if(shadowFlag == true){
-      pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
-      if(pos1 == null) continue;
-      pos2 = shadowProjectedVerts[triangleFaceIndex[1]];
-      if(pos2 == null) continue;
-      pos3 = shadowProjectedVerts[triangleFaceIndex[2]];
-      if(pos3 == null) continue;
-      triangleXMin = minXPosCul(pos1,pos2,pos3);
-      if(triangleXMin>=screen_size_w) continue;
-      triangleXMax = maxXPosCul(pos1,pos2,pos3);
-      if(triangleXMax<0) continue;
-      triangleYMin = minYPosCul(pos1,pos2,pos3);
-      if(triangleYMin >= screen_size_h) continue;
-      triangleYMax = maxYPosCul(pos1,pos2,pos3);
-      if(triangleYMax < 0) continue;
-      if(backCullingFlag == true){
-        let Va = vec3CrossZMinus(pos1,pos2);
-        let Vb = vec3CrossZMinus(pos3,pos1);
-        let crossZ = culVecCrossZ(Va,Vb);
-        //シャドウマップ用ポリゴン製造3点をYでソートした情報だけていける。
-        if(crossZ<0){
-          shadowPoly[shadowPolyLength] = sort_YPoint(pos1,pos2,pos3);
-          shadowPolyLength++; 
-        }
-      }else{
-        shadowPoly[shadowPolyLength] = sort_YPoint(pos1,pos2,pos3);
-        shadowPolyLength++; 
-      }             
-    }
+  if(shadowFlag == true && lightShadowFlag == true){
+    polygonDecisionShadowFlagAndLightShadowFlag(object,poly,projectedVerts,worldVerts,shadowPoly,shadowProjectedVerts,
+      meshVertsFaceIndex_Length,backCullingFlag,objectUVVector,sunVec);
+  }else if(shadowFlag == true){
+    polygonDecisionShadowFlag(object,poly,projectedVerts,shadowPoly,shadowProjectedVerts,meshVertsFaceIndex_Length,
+      backCullingFlag,objectUVVector);
+  }else if(lightShadowFlag == true){
+    polygonDecisionLightShadowFlag(object,poly,projectedVerts,worldVerts,meshVertsFaceIndex_Length,
+      backCullingFlag,objectUVVector,sunVec);
+  }else{
+    polygonDecision(object,poly,projectedVerts,worldVerts,
+      meshVertsFaceIndex_Length,backCullingFlag,objectUVVector,sunVec);
   }
   projectedObjects.push(makeProjectedObject(object,shadowFlag,lightShadowFlag,poly));
   shadowPprojectedObjects.push(shadowPoly);
@@ -1909,7 +2019,7 @@ if(dataLoad == false){
     for(let i=0;i<steve1Loadpack[0].objectNumber;i++){
       steve1Loadpack[i].textureImage = dicePixelImage;
       steve1Loadpack[i].backCullingFlag = true;
-      steve1Loadpack[i].shadowFlag = true;
+      steve1Loadpack[i].shadowFlag = false;
       steve1Loadpack[i].lightShadowFlag = true;
       // steve1Loadpack[i].bones[0].position[position_Y] = 0;
       // steve1Loadpack[i].bones[0].position[position_Z] = 1.5;
