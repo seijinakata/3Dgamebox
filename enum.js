@@ -4,8 +4,7 @@ export const pixel_G = 2;
 export const pixel_B = 3;
 //export const pixel_A = 4;
 export const pixel_shadow_Flag = 4;
-export const pixel_LightShadow_Flag = 5;
-export const pixel_SunCosin = 6;
+export const pixel_SunCosin = 5;
 
 export const position_X = 0;
 export const position_Y = 1;

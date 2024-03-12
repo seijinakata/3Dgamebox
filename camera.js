@@ -4,7 +4,7 @@ import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVec
 import {matIdentity,matDirectMul,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera, makeScalingMatrix, matWaightAndPlus, matRound, getTextureInvert} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,branch, vertsCopy, top_int, sort_YPoint, scan_ShadowVertical, scan_vertical, scan_verticalNoSunCosin} from './paint.js';
-import {pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,SUNCOSIN, position_X, position_Y, position_Z, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, pixel_LightShadow_Flag, PT, PM, PB, AFFINE_A, AFFINE_C, AFFINE_B, AFFINE_D, AFFINE_F, AFFINE_E } from './enum.js';
+import {pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,SUNCOSIN, position_X, position_Y, position_Z, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, PT, PM, PB, AFFINE_A, AFFINE_C, AFFINE_B, AFFINE_D, AFFINE_F, AFFINE_E } from './enum.js';
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
 
@@ -941,15 +941,11 @@ function polygonDecisionShadowFlag(object,poly,projectedVerts,shadowPoly,shadowP
       let crossZ = culVecCrossZ(Va,Vb);
       //zが-の方がこちらに近くなる座標軸だから
       if(crossZ<0){
-        let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
-        polygonElement[SUNCOSIN] = null;
-        poly[polyLength] = polygonElement
+        poly[polyLength] = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
         polyLength++;
       }
     }else{
-      let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
-      polygonElement[SUNCOSIN] = null;
-      poly[polyLength] = polygonElement
+      poly[polyLength] = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
       polyLength++;
     }
     pos1 = shadowProjectedVerts[triangleFaceIndex[0]];
@@ -1021,8 +1017,8 @@ function polygonDecisionLightShadowFlag(object,poly,projectedVerts,worldVerts,me
   }
 }
 
-function polygonDecision(object,poly,projectedVerts,worldVerts,meshVertsFaceIndex_Length,
-  backCullingFlag,objectUVVector,sunVec){
+function polygonDecision(object,poly,projectedVerts,meshVertsFaceIndex_Length,
+  backCullingFlag,objectUVVector){
   let polyLength = 0;
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
@@ -1046,16 +1042,12 @@ function polygonDecision(object,poly,projectedVerts,worldVerts,meshVertsFaceInde
       let crossZ = culVecCrossZ(Va,Vb);
       //zが-の方がこちらに近くなる座標軸だから
       if(crossZ<0){
-        let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
-          poly[polyLength] = setLightShadow(polygonElement,worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],
-            worldVerts[triangleFaceIndex[2]],sunVec);
-          polyLength++;
+        poly[polyLength] = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
+        polyLength++;
       }
     }else{
-      let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
-        poly[polyLength] = setLightShadow(polygonElement,worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],
-          worldVerts[triangleFaceIndex[2]],sunVec);
-        polyLength++;
+      poly[polyLength] = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
+      polyLength++;
     }        
   }
 }
@@ -1155,8 +1147,7 @@ if(shadowFlag == true && lightShadowFlag == true){
   polygonDecisionLightShadowFlag(object,poly,projectedVerts,worldVerts,meshVertsFaceIndex_Length,
     backCullingFlag,objectUVVector,sunVec);
 }else{
-  polygonDecision(object,poly,projectedVerts,worldVerts,
-    meshVertsFaceIndex_Length,backCullingFlag,objectUVVector,sunVec);
+  polygonDecision(object,poly,projectedVerts,meshVertsFaceIndex_Length,backCullingFlag,objectUVVector);
 }
 projectedObjects.push(makeProjectedObject(object,shadowFlag,lightShadowFlag,poly));
 shadowPprojectedObjects.push(shadowPoly);
@@ -1301,8 +1292,7 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
     polygonDecisionLightShadowFlag(object,poly,projectedVerts,worldVerts,meshVertsFaceIndex_Length,
       backCullingFlag,objectUVVector,sunVec);
   }else{
-    polygonDecision(object,poly,projectedVerts,worldVerts,
-      meshVertsFaceIndex_Length,backCullingFlag,objectUVVector,sunVec);
+    polygonDecision(object,poly,projectedVerts,meshVertsFaceIndex_Length,backCullingFlag,objectUVVector);
   }
   projectedObjects.push(makeProjectedObject(object,shadowFlag,lightShadowFlag,poly));
   shadowPprojectedObjects.push(shadowPoly);
@@ -2249,7 +2239,7 @@ for(let j=0;j<projectedObjectsLength;j++){
       tmpScan_vertical(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
       polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
       polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
-      currentTextureImage,imageHeight,imageWidth,shadowFlag,lightShadowFlag,polygonElement[SUNCOSIN]);
+      currentTextureImage,imageHeight,imageWidth,shadowFlag,polygonElement[SUNCOSIN]);
     }else{
       tmpScan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
       polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
@@ -2302,7 +2292,7 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
       let pixelR = pixel[pixel_R];
       let pixelG = pixel[pixel_G];
       let pixelB = pixel[pixel_B];
-      if(pixel[pixel_LightShadow_Flag] == true){
+      if(pixel[pixel_SunCosin] != null){
         //ライトシミュレーション色はIntだから深い小数点演算は意味ない
         let sunCosin = pixel[pixel_SunCosin];
         pixelR *= sunCosin;

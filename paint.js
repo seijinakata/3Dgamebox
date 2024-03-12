@@ -30,12 +30,12 @@ export class renderBuffer{
 		return this.pixelBuffer[0];
 	}
 }
-export function setPixel(z,r,g,b,shadowFlag,lightShadowFlag,crossWorldVector3){
-	let pixel = [z,r,g,b,shadowFlag,lightShadowFlag,crossWorldVector3];
+export function setPixel(z,r,g,b,shadowFlag,suncosin){
+	let pixel = [z,r,g,b,shadowFlag,suncosin];
 	return pixel;
 }
-export function setPixelNoCrossWorldVector3(z,r,g,b,shadowFlag,lightShadowFlag){
-	let pixel = [z,r,g,b,shadowFlag,lightShadowFlag];
+export function setPixelNoCrossWorldVector3(z,r,g,b,shadowFlag,suncosin){
+	let pixel = [z,r,g,b,shadowFlag,suncosin];
 	return pixel;
 }
 //minZはminXのZ値、maxZはmaxXのZ値,Y列で管理
@@ -876,7 +876,7 @@ export function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,p
 			//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
 			let imageDataRGBA = imageData[selectOrgy][selectOrgx];
 			zBufferingY[startX] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-				imageDataRGBA[BLUE],false,false);
+				imageDataRGBA[BLUE],false,null);
 			}
 			startZ+=dz;
 		}
@@ -982,7 +982,7 @@ export function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,p
 			//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
 			let imageDataRGBA = imageData[selectOrgy][selectOrgx];
 			zBufferingY[startX] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-				imageDataRGBA[BLUE],false,false);
+				imageDataRGBA[BLUE],false,null);
 			}
 			startZ+=dz;
 		}
@@ -1165,7 +1165,7 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 				//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
 				let imageDataRGBA = imageData[selectOrgy][selectOrgx];
 				zBufferingY[startX] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-					imageDataRGBA[BLUE],false,false);
+					imageDataRGBA[BLUE],false,null);
 
 			}
 		startZ+=dz;	
@@ -1173,7 +1173,7 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 }
 
 //x,yの最初の初期値を０にするのはダメ差分を取るため。
-export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,c,b,d,f,e,imageData,imageHeight,imageWidth,shadowFlag,lightShadowFlag,sunCosin){
+export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,c,b,d,f,e,imageData,imageHeight,imageWidth,shadowFlag,sunCosin){
 	let topDistance = pb[1] - pt[1];
 	//2以上は3角形
 	if(topDistance == 0){
@@ -1266,7 +1266,7 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
 			let imageDataRGBA = imageData[selectOrgy][selectOrgx];
 			zBufferingY[startX] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-				imageDataRGBA[BLUE],shadowFlag,lightShadowFlag,sunCosin);
+				imageDataRGBA[BLUE],shadowFlag,sunCosin);
 			}
 			startZ+=dz;
 		}
@@ -1373,7 +1373,7 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
 			let imageDataRGBA = imageData[selectOrgy][selectOrgx];
 			zBufferingY[startX] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-				imageDataRGBA[BLUE],shadowFlag,lightShadowFlag,sunCosin);
+				imageDataRGBA[BLUE],shadowFlag,sunCosin);
 			}
 			startZ+=dz;
 		}
@@ -1432,7 +1432,7 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 				let endX = top_int(sr[0]);
 				let startZ = sl[1];
 				let endZ = sr[1];
-				scan_horizontal(zBuffering,screen_size_w,triangleTop,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,a,b,imageData,imageHeight,imageWidth,shadowFlag,lightShadowFlag,sunCosin);
+				scan_horizontal(zBuffering,screen_size_w,triangleTop,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,a,b,imageData,imageHeight,imageWidth,shadowFlag,sunCosin);
 				vec2Plus(sl,dl);//
 				//endX,startXが画面外でも増分では画面内に入ってくる。
 				if(triangleStartXOver(sl,dl,screen_size_w)) break;
@@ -1474,7 +1474,7 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 				let endX = top_int(pr[0]);
 				let startZ = pl[1];
 				let endZ = pr[1];
-				scan_horizontal(zBuffering,screen_size_w,mid,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,a,b,imageData,imageHeight,imageWidth,shadowFlag,lightShadowFlag,sunCosin);
+				scan_horizontal(zBuffering,screen_size_w,mid,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,a,b,imageData,imageHeight,imageWidth,shadowFlag,sunCosin);
 				vec2Plus(pl,dl);//
 				//endX,startXが画面外でも増分では画面内に入ってくる。
 				if(triangleStartXOver(pl,dl,screen_size_w)) break;
@@ -1487,7 +1487,7 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
     }
 }
 
-function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,iA_0,iA_2,imageData,imageHeight,imageWidth,shadowFlag,lightShadowFlag,sunCosin){
+function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,iA_0,iA_2,imageData,imageHeight,imageWidth,shadowFlag,sunCosin){
 
 	//アフィン変換の平行移動ベクトル
 	//縦移動、transform関数のf
@@ -1554,7 +1554,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 			//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
 			let imageDataRGBA = imageData[selectOrgy][selectOrgx];
 			zBufferingY[startX] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-				imageDataRGBA[BLUE],shadowFlag,lightShadowFlag,sunCosin);
+				imageDataRGBA[BLUE],shadowFlag,sunCosin);
 
 		}
 		startZ+=dz;	
