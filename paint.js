@@ -34,10 +34,6 @@ export function setPixel(z,r,g,b,shadowFlag,suncosin){
 	let pixel = [z,r,g,b,shadowFlag,suncosin];
 	return pixel;
 }
-export function setPixelNoCrossWorldVector3(z,r,g,b,shadowFlag,suncosin){
-	let pixel = [z,r,g,b,shadowFlag,suncosin];
-	return pixel;
-}
 //minZはminXのZ値、maxZはmaxXのZ値,Y列で管理
 export class lineYItem{
   setMaxX(maxX){
@@ -875,7 +871,7 @@ export function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,p
 			
 			//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
 			let imageDataRGBA = imageData[selectOrgy][selectOrgx];
-			zBufferingY[startX] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+			zBufferingY[startX] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
 				imageDataRGBA[BLUE],false,null);
 			}
 			startZ+=dz;
@@ -981,7 +977,7 @@ export function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,p
 			}				
 			//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
 			let imageDataRGBA = imageData[selectOrgy][selectOrgx];
-			zBufferingY[startX] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+			zBufferingY[startX] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
 				imageDataRGBA[BLUE],false,null);
 			}
 			startZ+=dz;
@@ -1164,7 +1160,7 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 				
 				//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
 				let imageDataRGBA = imageData[selectOrgy][selectOrgx];
-				zBufferingY[startX] = setPixelNoCrossWorldVector3(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+				zBufferingY[startX] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
 					imageDataRGBA[BLUE],false,null);
 
 			}
