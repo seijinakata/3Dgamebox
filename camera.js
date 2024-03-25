@@ -1314,7 +1314,7 @@ function daeMekeSkinMeshBone(daeLoadPack){
   }
 }
 //ボーンなしシャドウマップ付き
-function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,sunVec,screen_size_h,screen_size_w){
+function objectPolygonPush(object,projectedObjects,shadowPprojectedObjects,viewMatrix,shadowViewMatrix,sunVec,screen_size_h,screen_size_w){
 
   let worldVerts = [];
   let projectedVerts = [];
@@ -1324,9 +1324,9 @@ function objectPolygonPush(object,worldTranslation,projectedObjects,shadowPproje
   let meshVerts_Length = objectMeshVerts.length;
   let shadowFlag = object.shadowFlag;
 
-  let worldTranslationScaleXYZ = worldTranslation.scaleXYZ;
-  let worldTranslationSQuaternion = worldTranslation.quaternion;
-  let worldTranslationPosition = worldTranslation.position;
+  let worldTranslationScaleXYZ = object.bones[0].scaleXYZ;
+  let worldTranslationSQuaternion = quaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
+  let worldTranslationPosition = object.bones[0].position;
   if(shadowFlag == true){
     for (let i=0; i < meshVerts_Length; i++) {
       //w=0は意味なしクォータニオンの計算するため
@@ -2287,7 +2287,6 @@ for(let j=0;j<steves.length;j++){
   round100(sunVec[0]);
   round100(sunVec[1]);
 
-  var tmpQuaternionXYZRoll = quaternionXYZRoll;
   var tmpQbjectPolygonPush = objectPolygonPush;
   //dicesregister
   for(let Object of dices){
@@ -2298,12 +2297,7 @@ for(let j=0;j<steves.length;j++){
     // mulMatRotateZ(worldMatrix,object.bones[0].rotXYZ[rot_Z]); 
     // mulMatScaling(worldMatrix,object.bones[0].scaleXYZ[scale_X],object.bones[0].scaleXYZ[scale_Y],object.bones[0].scaleXYZ[scale_Z]);
     for(let i=0;i<Object[0].objectNumber;i++){
-    let object = Object[i];
-    let worldTranslation = {};
-    worldTranslation.quaternion = tmpQuaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
-    worldTranslation.position = object.bones[0].position;
-    worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
-    tmpQbjectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,sunVec,screen_size_h,screen_size_w);
+      tmpQbjectPolygonPush(Object[i],projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,sunVec,screen_size_h,screen_size_w);
     }
   }
   //cuberegister
@@ -2315,12 +2309,7 @@ for(let j=0;j<steves.length;j++){
     // mulMatRotateZ(worldMatrix,object.bones[0].rotXYZ[rot_Z]); 
     // mulMatScaling(worldMatrix,object.bones[0].scaleXYZ[scale_X],object.bones[0].scaleXYZ[scale_Y],object.bones[0].scaleXYZ[scale_Z]);
     for(let i=0;i<Object[0].objectNumber;i++){
-    let object = Object[i];
-    let worldTranslation = {};
-    worldTranslation.quaternion = tmpQuaternionXYZRoll(object.bones[0].rotXYZ[0],object.bones[0].rotXYZ[1],object.bones[0].rotXYZ[2]);
-    worldTranslation.position = object.bones[0].position;
-    worldTranslation.scaleXYZ = object.bones[0].scaleXYZ;
-    tmpQbjectPolygonPush(object,worldTranslation,projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,sunVec,screen_size_h,screen_size_w);
+      tmpQbjectPolygonPush(Object[i],projectedObjects,shadowProjectedObjects,viewMatrix,sunViewMatrix,sunVec,screen_size_h,screen_size_w);
     }
   }
   var tmpQbjectSkinMeshPolygonPush = objectSkinMeshPolygonPush;
