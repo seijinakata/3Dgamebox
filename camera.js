@@ -837,7 +837,7 @@ function setLightShadow(worldPos1,worldPos2,worldPos3,sunVec){
     return sunCosin;
 }
 function polygonDecisionShadowFlagAndLightShadowFlagBackCullingOn(object,zBuffering,shadowMap,projectedVerts,worldVerts,shadowProjectedVerts,meshVertsFaceIndex_Length,
-  objectUVVector,sunVec){
+  objectUVVector,sunVec,screen_size_h,screen_size_w){
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     let pos1 = projectedVerts[triangleFaceIndex[0]];
@@ -897,7 +897,7 @@ function polygonDecisionShadowFlagAndLightShadowFlagBackCullingOn(object,zBuffer
   }
 }
 function polygonDecisionShadowFlagAndLightShadowFlag(object,zBuffering,shadowMap,projectedVerts,worldVerts,shadowProjectedVerts,meshVertsFaceIndex_Length,
-  objectUVVector,sunVec){
+  objectUVVector,sunVec,screen_size_h,screen_size_w){
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     let pos1 = projectedVerts[triangleFaceIndex[0]];
@@ -945,7 +945,7 @@ function polygonDecisionShadowFlagAndLightShadowFlag(object,zBuffering,shadowMap
   }
 }
 
-function polygonDecisionShadowFlagBackCullingOn(object,zBuffering,shadowMap,projectedVerts,shadowProjectedVerts,meshVertsFaceIndex_Length,objectUVVector){
+function polygonDecisionShadowFlagBackCullingOn(object,zBuffering,shadowMap,projectedVerts,shadowProjectedVerts,meshVertsFaceIndex_Length,objectUVVector,screen_size_h,screen_size_w){
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     let pos1 = projectedVerts[triangleFaceIndex[0]];
@@ -1002,7 +1002,7 @@ function polygonDecisionShadowFlagBackCullingOn(object,zBuffering,shadowMap,proj
     }         
   }
 }
-function polygonDecisionShadowFlag(object,zBuffering,shadowMap,projectedVerts,shadowProjectedVerts,meshVertsFaceIndex_Length,objectUVVector){
+function polygonDecisionShadowFlag(object,zBuffering,shadowMap,projectedVerts,shadowProjectedVerts,meshVertsFaceIndex_Length,objectUVVector,screen_size_h,screen_size_w){
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     let pos1 = projectedVerts[triangleFaceIndex[0]];
@@ -1047,7 +1047,7 @@ function polygonDecisionShadowFlag(object,zBuffering,shadowMap,projectedVerts,sh
     polygonElement[PB]);   
   }
 }
-function polygonDecisionLightShadowFlagBackCullingOn(object,zBuffering,projectedVerts,worldVerts,meshVertsFaceIndex_Length,objectUVVector,sunVec){
+function polygonDecisionLightShadowFlagBackCullingOn(object,zBuffering,projectedVerts,worldVerts,meshVertsFaceIndex_Length,objectUVVector,sunVec,screen_size_h,screen_size_w){
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     let pos1 = projectedVerts[triangleFaceIndex[0]];
@@ -1083,7 +1083,7 @@ function polygonDecisionLightShadowFlagBackCullingOn(object,zBuffering,projected
   }
 }
 
-function polygonDecisionLightShadowFlag(object,zBuffering,projectedVerts,worldVerts,meshVertsFaceIndex_Length,objectUVVector,sunVec){
+function polygonDecisionLightShadowFlag(object,zBuffering,projectedVerts,worldVerts,meshVertsFaceIndex_Length,objectUVVector,sunVec,screen_size_h,screen_size_w){
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     let pos1 = projectedVerts[triangleFaceIndex[0]];
@@ -1113,7 +1113,7 @@ function polygonDecisionLightShadowFlag(object,zBuffering,projectedVerts,worldVe
   }
 }
 
-function polygonDecisionBackCullingOn(object,zBuffering,projectedVerts,meshVertsFaceIndex_Length,objectUVVector){
+function polygonDecisionBackCullingOn(object,zBuffering,projectedVerts,meshVertsFaceIndex_Length,objectUVVector,screen_size_h,screen_size_w){
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     let pos1 = projectedVerts[triangleFaceIndex[0]];
@@ -1146,7 +1146,7 @@ function polygonDecisionBackCullingOn(object,zBuffering,projectedVerts,meshVerts
     } 
   }
 }
-function polygonDecision(object,zBuffering,projectedVerts,meshVertsFaceIndex_Length,objectUVVector){
+function polygonDecision(object,zBuffering,projectedVerts,meshVertsFaceIndex_Length,objectUVVector,screen_size_h,screen_size_w){
   for(let i=0;i<meshVertsFaceIndex_Length;i++){
     let triangleFaceIndex = object.meshVertsFaceIndex[i];
     let pos1 = projectedVerts[triangleFaceIndex[0]];
@@ -1252,7 +1252,7 @@ function objectSkinMeshPolygonPush(object,zBuffering,shadowMap,viewMatrix,shadow
       }
     }
   }
- 
+  
   let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
   let backCullingFlag = object.backCullingFlag;
   let objectUVVector = object.UVVector
@@ -1261,32 +1261,32 @@ function objectSkinMeshPolygonPush(object,zBuffering,shadowMap,viewMatrix,shadow
   if(shadowFlag == true && lightShadowFlag == true){
     if(backCullingFlag == true){
       polygonDecisionShadowFlagAndLightShadowFlagBackCullingOn(object,zBuffering,shadowMap,projectedVerts,worldVerts,shadowProjectedVerts,
-        meshVertsFaceIndex_Length,objectUVVector,sunVec); 
+        meshVertsFaceIndex_Length,objectUVVector,sunVec,screen_size_h,screen_size_w); 
     }else{
       polygonDecisionShadowFlagAndLightShadowFlag(object,zBuffering,shadowMap,projectedVerts,worldVerts,shadowProjectedVerts,
-      meshVertsFaceIndex_Length,objectUVVector,sunVec);  
+      meshVertsFaceIndex_Length,objectUVVector,sunVec,screen_size_h,screen_size_w);  
     }
   }else if(shadowFlag == true){
     if(backCullingFlag == true){
       polygonDecisionShadowFlagBackCullingOn(object,zBuffering,shadowMap,projectedVerts,shadowProjectedVerts,meshVertsFaceIndex_Length,
-        objectUVVector); 
+        objectUVVector,screen_size_h,screen_size_w); 
     }else{
        polygonDecisionShadowFlag(object,zBuffering,shadowMap,projectedVerts,shadowProjectedVerts,meshVertsFaceIndex_Length,
-      objectUVVector); 
+      objectUVVector,screen_size_h,screen_size_w); 
     }
   }else if(lightShadowFlag == true){
     if(backCullingFlag == true){
       polygonDecisionLightShadowFlagBackCullingOn(object,zBuffering,projectedVerts,worldVerts,meshVertsFaceIndex_Length,
-        objectUVVector,sunVec);
+        objectUVVector,sunVec,screen_size_h,screen_size_w);
     }else{
       polygonDecisionLightShadowFlag(object,zBuffering,projectedVerts,worldVerts,meshVertsFaceIndex_Length,
-        objectUVVector,sunVec);
+        objectUVVector,sunVec,screen_size_h,screen_size_w);
     }
   }else{
     if(backCullingFlag == true){
-      polygonDecisionBackCullingOn(object,zBuffering,projectedVerts,meshVertsFaceIndex_Length,objectUVVector); 
+      polygonDecisionBackCullingOn(object,zBuffering,projectedVerts,meshVertsFaceIndex_Length,objectUVVector,screen_size_h,screen_size_w); 
     }else{
-      polygonDecision(object,zBuffering,projectedVerts,meshVertsFaceIndex_Length,objectUVVector);  
+      polygonDecision(object,zBuffering,projectedVerts,meshVertsFaceIndex_Length,objectUVVector,screen_size_h,screen_size_w);  
     }
   }
 }
@@ -1413,6 +1413,7 @@ function objectPolygonPush(object,zBuffering,shadowMap,viewMatrix,shadowViewMatr
       }
     }
   }
+
   let meshVertsFaceIndex_Length = object.meshVertsFaceIndex.length;
   let backCullingFlag = object.backCullingFlag;
   let objectUVVector = object.UVVector
@@ -1421,32 +1422,32 @@ function objectPolygonPush(object,zBuffering,shadowMap,viewMatrix,shadowViewMatr
   if(shadowFlag == true && lightShadowFlag == true){
     if(backCullingFlag == true){
       polygonDecisionShadowFlagAndLightShadowFlagBackCullingOn(object,zBuffering,shadowMap,projectedVerts,worldVerts,shadowProjectedVerts,
-        meshVertsFaceIndex_Length,objectUVVector,sunVec); 
+        meshVertsFaceIndex_Length,objectUVVector,sunVec,screen_size_h,screen_size_w); 
     }else{
       polygonDecisionShadowFlagAndLightShadowFlag(object,zBuffering,shadowMap,projectedVerts,worldVerts,shadowProjectedVerts,
-      meshVertsFaceIndex_Length,objectUVVector,sunVec);  
+      meshVertsFaceIndex_Length,objectUVVector,sunVec,screen_size_h,screen_size_w);  
     }
   }else if(shadowFlag == true){
     if(backCullingFlag == true){
       polygonDecisionShadowFlagBackCullingOn(object,zBuffering,shadowMap,projectedVerts,shadowProjectedVerts,meshVertsFaceIndex_Length,
-        objectUVVector); 
+        objectUVVector,screen_size_h,screen_size_w); 
     }else{
        polygonDecisionShadowFlag(object,zBuffering,shadowMap,projectedVerts,shadowProjectedVerts,meshVertsFaceIndex_Length,
-      objectUVVector); 
+      objectUVVector,screen_size_h,screen_size_w); 
     }
   }else if(lightShadowFlag == true){
     if(backCullingFlag == true){
       polygonDecisionLightShadowFlagBackCullingOn(object,zBuffering,projectedVerts,worldVerts,meshVertsFaceIndex_Length,
-        objectUVVector,sunVec);
+        objectUVVector,sunVec,screen_size_h,screen_size_w);
     }else{
       polygonDecisionLightShadowFlag(object,zBuffering,projectedVerts,worldVerts,meshVertsFaceIndex_Length,
-        objectUVVector,sunVec);
+        objectUVVector,sunVec,screen_size_h,screen_size_w);
     }
   }else{
     if(backCullingFlag == true){
-      polygonDecisionBackCullingOn(object,zBuffering,projectedVerts,meshVertsFaceIndex_Length,objectUVVector); 
+      polygonDecisionBackCullingOn(object,zBuffering,projectedVerts,meshVertsFaceIndex_Length,objectUVVector,screen_size_h,screen_size_w); 
     }else{
-      polygonDecision(object,zBuffering,projectedVerts,meshVertsFaceIndex_Length,objectUVVector);  
+      polygonDecision(object,zBuffering,projectedVerts,meshVertsFaceIndex_Length,objectUVVector,screen_size_h,screen_size_w);  
     }
   }
 }
