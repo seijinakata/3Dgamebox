@@ -270,9 +270,9 @@ export function matCamera(camPos,lookat,up) {
         let x = culVecCross(up, z)
         culVecNormalize(x);
         let y = culVecCross(z, x);
-        return [x[0], x[1], x[2], (x[0] * -camPos[0] + x[1] * -camPos[1] + x[2] * -camPos[2]),
-                y[0], y[1], y[2], (y[0] * -camPos[0] + y[1] * -camPos[1] + y[2] * -camPos[2]),
-                z[0], z[1], z[2], (z[0] * -camPos[0] + z[1] * -camPos[1] + z[2] * -camPos[2])];
+        return [x[0], x[1], x[2], -(x[0] * camPos[0] + x[1] * camPos[1] + x[2] * camPos[2]),
+                y[0], y[1], y[2], -(y[0] * camPos[0] + y[1] * camPos[1] + y[2] * camPos[2]),
+                z[0], z[1], z[2], -(z[0] * camPos[0] + z[1] * camPos[1] + z[2] * camPos[2])];
 
     }
 export function matMulVertsZCamera(matCamera,verts) {
