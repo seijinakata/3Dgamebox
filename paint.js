@@ -837,7 +837,8 @@ export function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,p
 			/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 			//let selectOrgy = startX * iA[2] + y * iA[3]
 			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-
+			if(selectOrgy>=imageHeight) continue;
+			if(selectOrgy<=-1) continue;
 			if(selectOrgy != imageHeight-1 || selectOrgy != 0){
 				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
 				if(selectOrgy > imageHeight-1){
@@ -856,7 +857,8 @@ export function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,p
 			/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 			//let selectOrgx = startX * iA[0] + y * iA[1]
 			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-
+			if(selectOrgx>=imageWidth) continue;
+			if(selectOrgx<=-1) continue;
 			if(selectOrgx != imageWidth-1 || selectOrgx != 0){
 				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
 				if(selectOrgx > imageWidth-1){
@@ -944,7 +946,8 @@ export function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,p
 			/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 			//let selectOrgy = startX * iA[2] + y * iA[3]
 			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-
+			if(selectOrgy>=imageHeight) continue;
+			if(selectOrgy<=-1) continue;
 			if(selectOrgy != imageHeight-1 || selectOrgy != 0){
 				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
 				if(selectOrgy > imageHeight-1){
@@ -963,7 +966,8 @@ export function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,p
 			/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 			//let selectOrgx = startX * iA[0] + y * iA[1]
 			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-
+			if(selectOrgx>=imageWidth) continue;
+			if(selectOrgx<=-1) continue;
 			if(selectOrgx != imageWidth-1 || selectOrgx != 0){
 				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
 				if(selectOrgx > imageWidth-1){
@@ -1126,7 +1130,8 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 				/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 				//let selectOrgy = startX * iA[2] + y * iA[3]
 				//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-
+				if(selectOrgy>=imageHeight) continue;
+				if(selectOrgy<=-1) continue;
 				if(selectOrgy != imageHeight-1 || selectOrgy != 0){
 					/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
 					if(selectOrgy > imageHeight-1){
@@ -1145,7 +1150,8 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 				/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 				//let selectOrgx = startX * iA[0] + y * iA[1]
 				//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-
+				if(selectOrgx>=imageWidth) continue;
+				if(selectOrgx<=-1) continue;
 				if(selectOrgx != imageWidth-1 || selectOrgx != 0){
 					/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
 					if(selectOrgx > imageWidth-1){
@@ -1227,7 +1233,8 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 			//let selectOrgy = startX * iA[2] + y * iA[3]
 			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-
+			if(selectOrgy>=imageHeight) continue;
+			if(selectOrgy<=-1) continue;
 			if(selectOrgy != imageHeight-1 || selectOrgy != 0){
 				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
 				if(selectOrgy > imageHeight-1){
@@ -1246,7 +1253,8 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 			//let selectOrgx = startX * iA[0] + y * iA[1]
 			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-
+			if(selectOrgx>=imageWidth) continue;
+			if(selectOrgx<=-1) continue;
 			if(selectOrgx != imageWidth-1 || selectOrgx != 0){
 				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
 				if(selectOrgx > imageWidth-1){
@@ -1335,7 +1343,8 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 			//let selectOrgy = startX * iA[2] + y * iA[3]
 			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-
+			if(selectOrgy>=imageHeight) continue;
+			if(selectOrgy<=-1) continue;
 			if(selectOrgy != imageHeight-1 || selectOrgy != 0){
 				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
 				if(selectOrgy > imageHeight-1){
@@ -1354,7 +1363,8 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 			//let selectOrgx = startX * iA[0] + y * iA[1]
 			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-
+			if(selectOrgx>=imageWidth) continue;
+			if(selectOrgx<=-1) continue;
 			if(selectOrgx != imageWidth-1 || selectOrgx != 0){
 				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
 				if(selectOrgx > imageWidth-1){
@@ -1518,6 +1528,8 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 			/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 			//let selectOrgy = startX * iA[2] + y * iA[3]
 			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
+			if(selectOrgy>=imageHeight) continue;
+			if(selectOrgy<=-1) continue;
 			if(selectOrgy != imageHeight-1 || selectOrgy != 0){
 				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
 				if(selectOrgy > imageHeight-1){
@@ -1535,7 +1547,8 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 			/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 			//let selectOrgx = startX * iA[0] + y * iA[1]
 			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-
+			if(selectOrgx>=imageWidth) continue;
+			if(selectOrgx<=-1) continue;
 			if(selectOrgx != imageWidth-1 || selectOrgx != 0){
 				/* 元画像をはみ出る画素の場合ラスタライズは端のピクセルを頂く */
 				if(selectOrgx > imageWidth-1){
