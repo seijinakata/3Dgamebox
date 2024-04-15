@@ -832,42 +832,26 @@ export function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,p
 		let zBufferingY = zBuffering[startY];
 		//Xが０未満でのｚ値の加算
 		if(startX<0){
+			//startX = 0;
 			//絶対値にしてる
 			// let offset = -startX;
 			// startZ += (offset * dz);
 			startZ -= (startX * dz);
 			let z = zBufferingY[0][0];
 			if(z>startZ){
-				// if(tmpOrgy == null){
-				// 	tmpOrgy = y * iA[3] + f;
-				// 	tmpOrgx = y * iA[1] + e;
-				// }
-
-				/* 元画像における縦方向座標を計算 */
-				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-				/* 最近傍補間した元画像の座標 */
 				let selectOrgy = tmpOrgy |0;
-				/* アフィン後の座標に対応した元画像の座標 超重要な式 */
-				//let selectOrgy = startX * iA[2] + y * iA[3]
-				//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-				if(selectOrgy>imageHeight-1) {selectOrgy = imageHeight-1;}
-				if(selectOrgy<0) {selectOrgy = 0}
-				
-				/* 元画像における横方向座標を計算 */
-				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-				/* 最近傍補間した元画像の座標 */
-				let selectOrgx = tmpOrgx |0;
-				/* アフィン後の座標に対応した元画像の座標 超重要な式*/
-				//let selectOrgx = startX * iA[0] + y * iA[1]
-				//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-				if(selectOrgx>imageWidth-1) {selectOrgx=imageWidth-1;}
-				if(selectOrgx<0) {selectOrgx=0;}				
-				
-				//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
-				let imageDataRGBA = imageData[selectOrgy][selectOrgx];
-				zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-					imageDataRGBA[BLUE],false,null);
-
+				if(selectOrgy<=imageHeight-1){
+					if(selectOrgy>=0){
+						let selectOrgx = tmpOrgx |0;
+						if(selectOrgx<=imageWidth-1){
+							if(selectOrgx>=0){
+								let imageDataRGBA = imageData[selectOrgy][selectOrgx];
+								zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+								imageDataRGBA[BLUE],false,null);
+							}
+						}
+					}	
+				}
 			}
 			startZ+=dz;	
 			startX = 1;
@@ -957,42 +941,26 @@ export function scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,p
 		let zBufferingY = zBuffering[startY];
 		//Xが０未満でのｚ値の加算
 		if(startX<0){
+			//startX = 0;
 			//絶対値にしてる
 			// let offset = -startX;
 			// startZ += (offset * dz);
 			startZ -= (startX * dz);
 			let z = zBufferingY[0][0];
 			if(z>startZ){
-				// if(tmpOrgy == null){
-				// 	tmpOrgy = y * iA[3] + f;
-				// 	tmpOrgx = y * iA[1] + e;
-				// }
-
-				/* 元画像における縦方向座標を計算 */
-				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-				/* 最近傍補間した元画像の座標 */
 				let selectOrgy = tmpOrgy |0;
-				/* アフィン後の座標に対応した元画像の座標 超重要な式 */
-				//let selectOrgy = startX * iA[2] + y * iA[3]
-				//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-				if(selectOrgy>imageHeight-1) {selectOrgy = imageHeight-1;}
-				if(selectOrgy<0) {selectOrgy = 0}
-				
-				/* 元画像における横方向座標を計算 */
-				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-				/* 最近傍補間した元画像の座標 */
-				let selectOrgx = tmpOrgx |0;
-				/* アフィン後の座標に対応した元画像の座標 超重要な式*/
-				//let selectOrgx = startX * iA[0] + y * iA[1]
-				//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-				if(selectOrgx>imageWidth-1) {selectOrgx=imageWidth-1;}
-				if(selectOrgx<0) {selectOrgx=0;}				
-				
-				//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
-				let imageDataRGBA = imageData[selectOrgy][selectOrgx];
-				zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-					imageDataRGBA[BLUE],false,null);
-
+				if(selectOrgy<=imageHeight-1){
+					if(selectOrgy>=0){
+						let selectOrgx = tmpOrgx |0;
+						if(selectOrgx<=imageWidth-1){
+							if(selectOrgx>=0){
+								let imageDataRGBA = imageData[selectOrgy][selectOrgx];
+								zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+								imageDataRGBA[BLUE],false,null);
+							}
+						}
+					}	
+				}
 			}
 			startZ+=dz;	
 			startX = 1;
@@ -1157,42 +1125,26 @@ function scan_horizontalNoSunCosin(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,st
 	let zBufferingY = zBuffering[y];
 	//Xが０未満でのｚ値の加算
 	if(startX<0){
+		//startX = 0;
 		//絶対値にしてる
 		// let offset = -startX;
 		// startZ += (offset * dz);
 		startZ -= (startX * dz);
 		let z = zBufferingY[0][0];
 		if(z>startZ){
-			// if(tmpOrgy == null){
-			// 	tmpOrgy = y * iA[3] + f;
-			// 	tmpOrgx = y * iA[1] + e;
-			// }
-
-			/* 元画像における縦方向座標を計算 */
-			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-			/* 最近傍補間した元画像の座標 */
 			let selectOrgy = tmpOrgy |0;
-			/* アフィン後の座標に対応した元画像の座標 超重要な式 */
-			//let selectOrgy = startX * iA[2] + y * iA[3]
-			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-			if(selectOrgy>imageHeight-1) {selectOrgy = imageHeight-1;}
-			if(selectOrgy<0) {selectOrgy = 0}
-			
-			/* 元画像における横方向座標を計算 */
-			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-			/* 最近傍補間した元画像の座標 */
-			let selectOrgx = tmpOrgx |0;
-			/* アフィン後の座標に対応した元画像の座標 超重要な式*/
-			//let selectOrgx = startX * iA[0] + y * iA[1]
-			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-			if(selectOrgx>imageWidth-1) {selectOrgx=imageWidth-1;}
-			if(selectOrgx<0) {selectOrgx=0;}				
-			
-			//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
-			let imageDataRGBA = imageData[selectOrgy][selectOrgx];
-			zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-				imageDataRGBA[BLUE],false,null);
-
+			if(selectOrgy<=imageHeight-1){
+				if(selectOrgy>=0){
+					let selectOrgx = tmpOrgx |0;
+					if(selectOrgx<=imageWidth-1){
+						if(selectOrgx>=0){
+							let imageDataRGBA = imageData[selectOrgy][selectOrgx];
+							zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+							imageDataRGBA[BLUE],false,null);
+						}
+					}
+				}	
+			}
 		}
 		startZ+=dz;	
 		startX = 1;
@@ -1275,44 +1227,27 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 		let dz = zStep/xStep;
 		let zBufferingY = zBuffering[startY];
 		//Xが０未満でのｚ値の加算
-		//Xが０未満でのｚ値の加算
 		if(startX<0){
+			//startX = 0;
 			//絶対値にしてる
 			// let offset = -startX;
 			// startZ += (offset * dz);
 			startZ -= (startX * dz);
 			let z = zBufferingY[0][0];
 			if(z>startZ){
-				// if(tmpOrgy == null){
-				// 	tmpOrgy = y * iA[3] + f;
-				// 	tmpOrgx = y * iA[1] + e;
-				// }
-
-				/* 元画像における縦方向座標を計算 */
-				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-				/* 最近傍補間した元画像の座標 */
 				let selectOrgy = tmpOrgy |0;
-				/* アフィン後の座標に対応した元画像の座標 超重要な式 */
-				//let selectOrgy = startX * iA[2] + y * iA[3]
-				//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-				if(selectOrgy>imageHeight-1) {selectOrgy = imageHeight-1;}
-				if(selectOrgy<0) {selectOrgy = 0}		
-				
-				/* 元画像における横方向座標を計算 */
-				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-						/* 最近傍補間した元画像の座標 */
-				let selectOrgx = tmpOrgx |0;
-				/* アフィン後の座標に対応した元画像の座標 超重要な式*/
-				//let selectOrgx = startX * iA[0] + y * iA[1]
-				//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-				if(selectOrgx>imageWidth-1) {selectOrgx=imageWidth-1;}
-				if(selectOrgx<0) {selectOrgx=0;}					
-				
-				//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
-				let imageDataRGBA = imageData[selectOrgy][selectOrgx];
-				zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-					imageDataRGBA[BLUE],false,null);
-
+				if(selectOrgy<=imageHeight-1){
+					if(selectOrgy>=0){
+						let selectOrgx = tmpOrgx |0;
+						if(selectOrgx<=imageWidth-1){
+							if(selectOrgx>=0){
+								let imageDataRGBA = imageData[selectOrgy][selectOrgx];
+								zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+								imageDataRGBA[BLUE],false,null);
+							}
+						}
+					}	
+				}
 			}
 			startZ+=dz;	
 			startX = 1;
@@ -1403,42 +1338,26 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 		let zBufferingY = zBuffering[startY];
 		//Xが０未満でのｚ値の加算
 		if(startX<0){
+			//startX = 0;
 			//絶対値にしてる
 			// let offset = -startX;
 			// startZ += (offset * dz);
 			startZ -= (startX * dz);
 			let z = zBufferingY[0][0];
 			if(z>startZ){
-				// if(tmpOrgy == null){
-				// 	tmpOrgy = y * iA[3] + f;
-				// 	tmpOrgx = y * iA[1] + e;
-				// }
-
-				/* 元画像における縦方向座標を計算 */
-				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-				/* 最近傍補間した元画像の座標 */
 				let selectOrgy = tmpOrgy |0;
-				/* アフィン後の座標に対応した元画像の座標 超重要な式 */
-				//let selectOrgy = startX * iA[2] + y * iA[3]
-				//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-				if(selectOrgy>imageHeight-1) {selectOrgy = imageHeight-1;}
-				if(selectOrgy<0) {selectOrgy = 0}
-				
-				/* 元画像における横方向座標を計算 */
-				/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-				/* 最近傍補間した元画像の座標 */
-				let selectOrgx = tmpOrgx |0;
-				/* アフィン後の座標に対応した元画像の座標 超重要な式*/
-				//let selectOrgx = startX * iA[0] + y * iA[1]
-				//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-				if(selectOrgx>imageWidth-1) {selectOrgx=imageWidth-1;}
-				if(selectOrgx<0) {selectOrgx=0;}				
-				
-				//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
-				let imageDataRGBA = imageData[selectOrgy][selectOrgx];
-				zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-					imageDataRGBA[BLUE],false,null);
-
+				if(selectOrgy<=imageHeight-1){
+					if(selectOrgy>=0){
+						let selectOrgx = tmpOrgx |0;
+						if(selectOrgx<=imageWidth-1){
+							if(selectOrgx>=0){
+								let imageDataRGBA = imageData[selectOrgy][selectOrgx];
+								zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+								imageDataRGBA[BLUE],false,null);
+							}
+						}
+					}	
+				}
 			}
 			startZ+=dz;	
 			startX = 1;
@@ -1605,42 +1524,26 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 	let zBufferingY = zBuffering[y];
 	//Xが０未満でのｚ値の加算
 	if(startX<0){
+		//startX = 0;
 		//絶対値にしてる
 		// let offset = -startX;
 		// startZ += (offset * dz);
 		startZ -= (startX * dz);
 		let z = zBufferingY[0][0];
 		if(z>startZ){
-			// if(tmpOrgy == null){
-			// 	tmpOrgy = y * iA[3] + f;
-			// 	tmpOrgx = y * iA[1] + e;
-			// }
-
-			/* 元画像における縦方向座標を計算 */
-			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-			/* 最近傍補間した元画像の座標 */
 			let selectOrgy = tmpOrgy |0;
-			/* アフィン後の座標に対応した元画像の座標 超重要な式 */
-			//let selectOrgy = startX * iA[2] + y * iA[3]
-			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-			if(selectOrgy>imageHeight-1) {selectOrgy = imageHeight-1;}
-			if(selectOrgy<0) {selectOrgy = 0}
-			
-			/* 元画像における横方向座標を計算 */
-			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-			/* 最近傍補間した元画像の座標 */
-			let selectOrgx = tmpOrgx |0;
-			/* アフィン後の座標に対応した元画像の座標 超重要な式*/
-			//let selectOrgx = startX * iA[0] + y * iA[1]
-			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-			if(selectOrgx>imageWidth-1) {selectOrgx=imageWidth-1;}
-			if(selectOrgx<0) {selectOrgx=0;}				
-			
-			//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
-			let imageDataRGBA = imageData[selectOrgy][selectOrgx];
-			zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-				imageDataRGBA[BLUE],false,null);
-
+			if(selectOrgy<=imageHeight-1){
+				if(selectOrgy>=0){
+					let selectOrgx = tmpOrgx |0;
+					if(selectOrgx<=imageWidth-1){
+						if(selectOrgx>=0){
+							let imageDataRGBA = imageData[selectOrgy][selectOrgx];
+							zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+							imageDataRGBA[BLUE],false,null);
+						}
+					}
+				}	
+			}
 		}
 		startZ+=dz;	
 		startX = 1;
