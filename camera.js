@@ -100,6 +100,8 @@ function daeLoadcopy(daeLoadPack){
     //テクスチャは使いまわすから参照型
     tempCopyDae.faceIndexMeshUV = object.faceIndexMeshUV;
     tempCopyDae.textureImage = object.textureImage;
+    tempCopyDae.textureImageHeight = object.textureImageHeight
+    tempCopyDae.textureImageWidth = object.textureImageWidth
     tempCopyDae.UVVector = JSON.parse(JSON.stringify(object.UVVector));
     tempCopyDae.backCullingFlag = object.backCullingFlag;
     tempCopyDae.shadowFlag = object.shadowFlag;
@@ -863,8 +865,8 @@ function polygonDecisionShadowFlagAndLightShadowFlagBackCullingOn(object,zBuffer
       let sunCosin = setLightShadow(worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],
       worldVerts[triangleFaceIndex[2]],sunVec);
       let currentTextureImage = object.textureImage;
-      let imageHeight = currentTextureImage.length;
-      let imageWidth = currentTextureImage[1].length;
+      let imageHeight = object.textureImageHeight;
+      let imageWidth = object.textureImageWidth;
       scan_vertical(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
       polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
       polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
@@ -918,8 +920,8 @@ function polygonDecisionShadowFlagAndLightShadowFlag(object,zBuffering,shadowMap
     let sunCosin = setLightShadow(worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],
     worldVerts[triangleFaceIndex[2]],sunVec);
     let currentTextureImage = object.textureImage;
-    let imageHeight = currentTextureImage.length;
-    let imageWidth = currentTextureImage[1].length;
+    let imageHeight = object.textureImageHeight;
+    let imageWidth = object.textureImageWidth;
     scan_vertical(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
     polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
     polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
@@ -969,8 +971,8 @@ function polygonDecisionShadowFlagBackCullingOn(object,zBuffering,shadowMap,proj
     if(crossZ<0){
       let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
       let currentTextureImage = object.textureImage;
-      let imageHeight = currentTextureImage.length;
-      let imageWidth = currentTextureImage[1].length;
+      let imageHeight = object.textureImageHeight;
+      let imageWidth = object.textureImageWidth;
       scan_vertical(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
         polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
         polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
@@ -1021,8 +1023,8 @@ function polygonDecisionShadowFlag(object,zBuffering,shadowMap,projectedVerts,sh
     if(triangleYMax < 0) continue;
     let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
     let currentTextureImage = object.textureImage;
-    let imageHeight = currentTextureImage.length;
-    let imageWidth = currentTextureImage[1].length;
+    let imageHeight = object.textureImageHeight;
+    let imageWidth = object.textureImageWidth;
     scan_vertical(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
       polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
       polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
@@ -1073,8 +1075,8 @@ function polygonDecisionLightShadowFlagBackCullingOn(object,zBuffering,projected
       let sunCosin = setLightShadow(worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],
       worldVerts[triangleFaceIndex[2]],sunVec);
       let currentTextureImage = object.textureImage;
-      let imageHeight = currentTextureImage.length;
-      let imageWidth = currentTextureImage[1].length;
+      let imageHeight = object.textureImageHeight;
+      let imageWidth = object.textureImageWidth;
       scan_vertical(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
       polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
       polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
@@ -1104,8 +1106,8 @@ function polygonDecisionLightShadowFlag(object,zBuffering,projectedVerts,worldVe
     let sunCosin = setLightShadow(worldVerts[triangleFaceIndex[0]],worldVerts[triangleFaceIndex[1]],
     worldVerts[triangleFaceIndex[2]],sunVec);
     let currentTextureImage = object.textureImage;
-    let imageHeight = currentTextureImage.length;
-    let imageWidth = currentTextureImage[1].length;
+    let imageHeight = object.textureImageHeight;
+    let imageWidth = object.textureImageWidth;
     scan_vertical(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
     polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
     polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
@@ -1137,8 +1139,8 @@ function polygonDecisionBackCullingOn(object,zBuffering,projectedVerts,meshVerts
     if(crossZ<0){
       let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
       let currentTextureImage = object.textureImage;
-      let imageHeight = currentTextureImage.length;
-      let imageWidth = currentTextureImage[1].length;
+      let imageHeight = object.textureImageHeight;
+      let imageWidth = object.textureImageWidth;
       scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
       polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
       polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
@@ -1165,8 +1167,8 @@ function polygonDecision(object,zBuffering,projectedVerts,meshVertsFaceIndex_Len
     if(triangleYMax < 0) continue;
     let polygonElement = setPolygon(pos1,pos2,pos3,objectUVVector[i]);
     let currentTextureImage = object.textureImage;
-    let imageHeight = currentTextureImage.length;
-    let imageWidth = currentTextureImage[1].length;
+    let imageHeight = object.textureImageHeight;
+    let imageWidth = object.textureImageWidth;
     scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
     polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
     polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
@@ -2085,6 +2087,8 @@ if(dataLoad == false){
   if(sandPixelImageLoad == true && sandLoadPack.daeLoad == true && sandLoad == false){
     for(let i=0;i<sandLoadpack[0].objectNumber;i++){
       sandLoadpack[i].textureImage = sandPixelImage;
+      sandLoadpack[i].textureImageHeight = sandPixelImage.length;
+      sandLoadpack[i].textureImageWidth = sandPixelImage[0].length;
       sandLoadpack[i].backCullingFlag = true;
       sandLoadpack[i].shadowFlag = true;
       sandLoadpack[i].lightShadowFlag = false;
@@ -2128,6 +2132,8 @@ if(dataLoad == false){
   if(skyPixelImageLoad == true && cubePixelImageLoad == true && cube1LoadPack.daeLoad == true && cube1Load == false){
     for(let i=0;i<cube1Loadpack[0].objectNumber;i++){
       cube1Loadpack[i].textureImage = cubePixelImage;
+      cube1Loadpack[i].textureImageHeight = cubePixelImage.length;
+      cube1Loadpack[i].textureImageWidth = cubePixelImage[0].length;
       cube1Loadpack[i].backCullingFlag = true;
       cube1Loadpack[i].shadowFlag = true;
       cube1Loadpack[i].lightShadowFlag = true;
@@ -2148,6 +2154,8 @@ if(dataLoad == false){
   if(skyPixelImageLoad == true && sphere1LoadPack.daeLoad == true && sphere1Load == false){
     for(let i=0;i<sphere1Loadpack[0].objectNumber;i++){
       sphere1Loadpack[i].textureImage = skyPixelImage;
+      sphere1Loadpack[i].textureImageHeight = skyPixelImage.length;
+      sphere1Loadpack[i].textureImageWidth = skyPixelImage[0].length;
       sphere1Loadpack[i].backCullingFlag = false;
       sphere1Loadpack[i].shadowFlag = false;
       sphere1Loadpack[i].lightShadowFlag = false;
@@ -2166,6 +2174,8 @@ if(dataLoad == false){
   if(dicePixelImageLoad == true && steve1LoadPack.daeLoad == true && steve1Load == false){
     for(let i=0;i<steve1Loadpack[0].objectNumber;i++){
       steve1Loadpack[i].textureImage = dicePixelImage;
+      steve1Loadpack[i].textureImageHeight = dicePixelImage.length;
+      steve1Loadpack[i].textureImageWidth = dicePixelImage[0].length;
       steve1Loadpack[i].backCullingFlag = true;
       steve1Loadpack[i].shadowFlag = false;
       steve1Loadpack[i].lightShadowFlag = true;
