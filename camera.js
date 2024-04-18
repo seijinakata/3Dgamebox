@@ -3,7 +3,7 @@
 import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,round100,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul, minXCul, maxXCul, minYCul, maxYCul, vec3CrossZMinus, mul1000Round, minXPosCul, maxXPosCul, minYPosCul, maxYPosCul} from './vector.js';
 import {matIdentity,matDirectMul,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera, makeScalingMatrix, matWaightAndPlus, matRound, getTextureInvert} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
-import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,branch, vertsCopy, top_int, sort_YPoint, scan_ShadowVertical, scan_vertical, scan_verticalNoSunCosin} from './paint.js';
+import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,branch, vertsCopy, top_int, sort_YPoint, scan_ShadowVertical, scan_vertical} from './paint.js';
 import {pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,SUNCOSIN, position_X, position_Y, position_Z, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, PT, PM, PB, AFFINE_A, AFFINE_C, AFFINE_B, AFFINE_D, AFFINE_F, AFFINE_E } from './enum.js';
 export const SCREEN_SIZE_W = 1000;
 export const SCREEN_SIZE_H = 800;
@@ -1141,10 +1141,10 @@ function polygonDecisionBackCullingOn(object,zBuffering,projectedVerts,meshVerts
       let currentTextureImage = object.textureImage;
       let imageHeight = object.textureImageHeight;
       let imageWidth = object.textureImageWidth;
-      scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
-      polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
-      polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
-      currentTextureImage,imageHeight,imageWidth);
+      scan_vertical(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
+        polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
+        polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
+        currentTextureImage,imageHeight,imageWidth,false,null); 
     } 
   }
 }
@@ -1169,10 +1169,10 @@ function polygonDecision(object,zBuffering,projectedVerts,meshVertsFaceIndex_Len
     let currentTextureImage = object.textureImage;
     let imageHeight = object.textureImageHeight;
     let imageWidth = object.textureImageWidth;
-    scan_verticalNoSunCosin(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
-    polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
-    polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
-    currentTextureImage,imageHeight,imageWidth);
+    scan_vertical(zBuffering,screen_size_h,screen_size_w,polygonElement[PT],polygonElement[PM],polygonElement[PB],
+      polygonElement[AFFINE_A],polygonElement[AFFINE_C],polygonElement[AFFINE_B],
+      polygonElement[AFFINE_D],polygonElement[AFFINE_F],polygonElement[AFFINE_E],
+      currentTextureImage,imageHeight,imageWidth,false,null); 
   }
 }
 
