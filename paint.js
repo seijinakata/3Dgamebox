@@ -590,7 +590,7 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 			startZ+=dz;
 			startX = 1;
 		}
-		for(;startX<endX;startX++){
+		for(;startX<=endX;startX++){
 			let z = zBufferingY[startX];
 			if(z>startZ){
 				zBufferingY[startX] = startZ;
@@ -653,7 +653,7 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 			startZ+=dz;
 			startX = 1;
 		}
-		for(;startX<endX;startX++){
+		for(;startX<=endX;startX++){
 			let z = zBufferingY[startX];
 			if(z>startZ){
 				zBufferingY[startX] = startZ;
@@ -783,7 +783,7 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 		startZ+=dz;
 		startX = 1;
 	}
-	for(;startX<endX;startX++){
+	for(;startX<=endX;startX++){
 		let z = zBufferingY[startX];
 		if(z>startZ){
 			zBufferingY[startX] = startZ;
