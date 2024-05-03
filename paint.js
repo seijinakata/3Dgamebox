@@ -1151,8 +1151,8 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 		startZ+=dz;	
 		startX = 1;
 	}
-	let tmpStartY = startX * b;
-	let tmpStartX = startX * a;
+	let tmpStartX = startX * b;
+	let tmpStartY = startX * a;
 	for(;startX<=endX;startX++){
 		let z = zBufferingY[startX][0];
 		if(z>startZ){
@@ -1163,22 +1163,42 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 
 			/* 元画像における縦方向座標を計算 */
 			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-			let selectOrgy = tmpOrgy + tmpStartY;
+			let selectOrgy = tmpOrgy + tmpStartX;
 			/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 			//let selectOrgy = startX * iA[2] + y * iA[3]
 			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-			if(selectOrgy>=imageHeight) {startZ+=dz; continue;}
-			if(selectOrgy<=-1) {startZ+=dz; continue;}
+			if(selectOrgy>=imageHeight) {
+				startZ+=dz;
+				tmpStartX += b;
+				tmpStartY += a;
+				continue;
+			}
+			if(selectOrgy<=-1) {
+				startZ+=dz;	
+				tmpStartX += b;
+				tmpStartY += a;
+				continue;
+			}
 			/* 最近傍補間した元画像の座標 */
 			selectOrgy |= 0;	
 			/* 元画像における横方向座標を計算 */
 			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-			let selectOrgx = tmpOrgx + tmpStartX;
+			let selectOrgx = tmpOrgx + tmpStartY;
 			/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 			//let selectOrgx = startX * iA[0] + y * iA[1]
 			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-			if(selectOrgx>=imageWidth) {startZ+=dz; continue;}
-			if(selectOrgx<=-1) {startZ+=dz; continue;}
+			if(selectOrgx>=imageWidth) {
+				startZ+=dz;
+				tmpStartX += b;
+				tmpStartY += a; 
+				continue;
+			}
+			if(selectOrgx<=-1) {
+				startZ+=dz;	
+				tmpStartX += b;
+				tmpStartY += a;
+				continue;
+			}
 			/* 最近傍補間した元画像の座標 */
 			selectOrgx |= 0;	
 			//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
@@ -1187,8 +1207,8 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 				imageDataRGBA[BLUE],shadowFlag,sunCosin);
 
 		}
-		tmpStartY += b;
-		tmpStartX += a;
+		tmpStartX += b;
+		tmpStartY += a;
 		startZ+=dz;	
 	}
 }
