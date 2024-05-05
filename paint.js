@@ -1125,6 +1125,8 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 
 	let dz = zStep/xStep;
 	let zBufferingY = zBuffering[y];
+	let tmpStartX;
+	let tmpStartY;
 	//Xが０未満でのｚ値の加算
 	if(startX<0){
 		//startX = 0;
@@ -1150,9 +1152,13 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 		}
 		startZ+=dz;	
 		startX = 1;
+		tmpStartX = b;
+		tmpStartY = a;
+	}else{
+		tmpStartX = startX * b;
+		tmpStartY = startX * a;
 	}
-	let tmpStartX = startX * b;
-	let tmpStartY = startX * a;
+
 	for(;startX<=endX;startX++){
 		let z = zBufferingY[startX][0];
 		if(z>startZ){
