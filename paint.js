@@ -1174,12 +1174,14 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 			//let selectOrgy = startX * iA[2] + y * iA[3]
 			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
 			if(selectOrgy>=imageHeight) {
+				if(b>=0) break;
 				startZ+=dz;
 				tmpStartX += b;
 				tmpStartY += a;
 				continue;
 			}
 			if(selectOrgy<=-1) {
+				if(b<=0) break;
 				startZ+=dz;	
 				tmpStartX += b;
 				tmpStartY += a;
@@ -1194,12 +1196,14 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 			//let selectOrgx = startX * iA[0] + y * iA[1]
 			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
 			if(selectOrgx>=imageWidth) {
+				if(a>=0) break;
 				startZ+=dz;
 				tmpStartX += b;
 				tmpStartY += a; 
 				continue;
 			}
 			if(selectOrgx<=-1) {
+				if(a<=0) break;
 				startZ+=dz;	
 				tmpStartX += b;
 				tmpStartY += a;
