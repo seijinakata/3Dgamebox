@@ -553,10 +553,12 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 		let startZ = pt[2];
 		if(startX>pm[0]){
 			startX = pm[0];
+			if(startX>screen_size_w) return;
 			startZ = pm[2];
 		}
 		if(startX>pb[0]){
 			startX = pb[0];
+			if(startX>screen_size_w) return;
 			startZ = pb[2];
 		}
 		let endX = pt[0];
@@ -609,11 +611,13 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 			if(pm[1] < 0 || pm[1] > screen_size_h-1) return;
 			if(pm[0]>pt[0]){
 				startX = pt[0];
+				if(startX>screen_size_w) return;
 				startZ = pt[2];
 				endX = pm[0];
 				endZ = pm[2];
 			}else{
 				startX = pm[0];
+				if(startX>screen_size_w) return;
 				startZ = pm[2];
 				endX = pt[0];
 				endZ = pt[2];
@@ -623,11 +627,13 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 			if(pm[1] < 0 || pm[1] > screen_size_h-1) return;
 			if(pm[0]>pb[0]){
 				startX = pb[0];
+				if(startX>screen_size_w) return;
 				startZ = pb[2];
 				endX = pm[0];
 				endZ = pm[2];
 			}else{
 				startX = pm[0];
+				if(startX>screen_size_w) return;
 				startZ = pm[2];
 				endX = pb[0];
 				endZ = pb[2];
@@ -783,6 +789,10 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 		startZ+=dz;
 		startX = 1;
 	}
+	if(startX>screen_size_w){
+		//console.log(444444)
+		return;
+	}
 	for(;startX<=endX;startX++){
 		let z = zBufferingY[startX];
 		if(z>startZ){
@@ -803,10 +813,12 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 		let startZ = pt[2];
 		if(startX>pm[0]){
 			startX = pm[0];
+			if(startX>screen_size_w) return;
 			startZ = pm[2];
 		}
 		if(startX>pb[0]){
 			startX = pb[0];
+			if(startX>screen_size_w) return;
 			startZ = pb[2];
 		}
 		let endX = pt[0];
@@ -905,11 +917,13 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			if(pm[1] < 0 || pm[1] > screen_size_h-1) return;
 			if(pm[0]>pt[0]){
 				startX = pt[0];
+				if(startX>screen_size_w) return;
 				startZ = pt[2];
 				endX = pm[0];
 				endZ = pm[2];
 			}else{
 				startX = pm[0];
+				if(startX>screen_size_w) return;
 				startZ = pm[2];
 				endX = pt[0];
 				endZ = pt[2];
@@ -919,11 +933,13 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			if(pm[1] < 0 || pm[1] > screen_size_h-1) return;
 			if(pm[0]>pb[0]){
 				startX = pb[0];
+				if(startX>screen_size_w) return;
 				startZ = pb[2];
 				endX = pm[0];
 				endZ = pm[2];
 			}else{
 				startX = pm[0];
+				if(startX>screen_size_w) return;
 				startZ = pm[2];
 				endX = pb[0];
 				endZ = pb[2];
@@ -965,6 +981,7 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			startZ+=dz;	
 			startX = 1;
 		}
+
 		for(;startX<endX;startX++){
 			let z = zBufferingY[startX][0];
 			if(z>startZ){
@@ -1158,7 +1175,10 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 		tmpStartX = startX * b;
 		tmpStartY = startX * a;
 	}
-
+	if(startX>screen_size_w){
+		//console.log(555555)
+		return;
+	}
 	for(;startX<=endX;startX++){
 		let z = zBufferingY[startX][0];
 		if(z>startZ){
