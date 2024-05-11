@@ -719,11 +719,18 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 				let endX = top_int(sr[0]);
 				let startZ = sl[1];
 				let endZ = sr[1];
-				scan_ShadowHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ);					
+				if(startX<screen_size_w && endX>=0){
+					scan_ShadowHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ);	
+				}
 				vec2Plus(sl,dl);//
-				if(triangleStartXOver(sl,dl,screen_size_w)) break;
+				//endX,startXが画面外でも増分では画面内に入ってくる。
+				if(triangleStartXOver(sl,dl,screen_size_w)){
+					break;
+				}
 				vec2Plus(sr,dr);//
-				if(triangleEndXOver(sr,dr)) break;
+				if(triangleEndXOver(sr,dr)){
+					break;
+				}
 			}			
 		}
     }
@@ -756,12 +763,18 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 				let endX = top_int(pr[0]);
 				let startZ = pl[1];
 				let endZ = pr[1];
-				scan_ShadowHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ);
-				//endX,startXが画面外でも増分では画面内に入ってくる。
+				if(startX<screen_size_w && endX>=0){
+					scan_ShadowHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ);
+				}
 				vec2Plus(pl,dl);//
-				if(triangleStartXOver(pl,dl,screen_size_w)) break;
+				//endX,startXが画面外でも増分では画面内に入ってくる。
+				if(triangleStartXOver(pl,dl,screen_size_w)){
+					return;
+				}
 				vec2Plus(pr,dr);//
-				if(triangleEndXOver(pr,dr)) break;
+				if(triangleEndXOver(pr,dr)){
+					return;
+				}
 			}			
 		}
     }
@@ -786,19 +799,20 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 		if(z>startZ){
 			zBufferingY[0] = startZ;
 		}
-		startZ+=dz;
 		startX = 1;
-	}
-	if(startX>screen_size_w){
-		//console.log(444444)
-		return;
-	}
-	for(;startX<=endX;startX++){
+	}else{
 		let z = zBufferingY[startX];
 		if(z>startZ){
 			zBufferingY[startX] = startZ;
 		}
+		startX += 1;	
+	}
+	for(;startX<=endX;startX++){
 		startZ+=dz;
+		let z = zBufferingY[startX];
+		if(z>startZ){
+			zBufferingY[startX] = startZ;
+		}
 	}
 }
 
@@ -1073,12 +1087,18 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 				let endX = top_int(sr[0]);
 				let startZ = sl[1];
 				let endZ = sr[1];
-				scan_horizontal(zBuffering,screen_size_w,triangleTop,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,a,b,imageData,imageHeight,imageWidth,shadowFlag,sunCosin);
+				if(startX<screen_size_w && endX>=0){
+					scan_horizontal(zBuffering,screen_size_w,triangleTop,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,a,b,imageData,imageHeight,imageWidth,shadowFlag,sunCosin);
+				}
 				vec2Plus(sl,dl);//
 				//endX,startXが画面外でも増分では画面内に入ってくる。
-				if(triangleStartXOver(sl,dl,screen_size_w)) break;
+				if(triangleStartXOver(sl,dl,screen_size_w)){
+					break;
+				}
 				vec2Plus(sr,dr);//
-				if(triangleEndXOver(sr,dr)) break;
+				if(triangleEndXOver(sr,dr)){
+					break;
+				}
 				tmpOrgy += d;
 				tmpOrgx += c;		
 			}			
@@ -1115,12 +1135,18 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 				let endX = top_int(pr[0]);
 				let startZ = pl[1];
 				let endZ = pr[1];
-				scan_horizontal(zBuffering,screen_size_w,mid,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,a,b,imageData,imageHeight,imageWidth,shadowFlag,sunCosin);
+				if(startX<screen_size_w && endX>=0){
+					scan_horizontal(zBuffering,screen_size_w,mid,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,a,b,imageData,imageHeight,imageWidth,shadowFlag,sunCosin);	
+				}
 				vec2Plus(pl,dl);//
 				//endX,startXが画面外でも増分では画面内に入ってくる。
-				if(triangleStartXOver(pl,dl,screen_size_w)) break;
+				if(triangleStartXOver(pl,dl,screen_size_w)){
+					return;
+				}
 				vec2Plus(pr,dr);//
-				if(triangleEndXOver(pr,dr)) break;
+				if(triangleEndXOver(pr,dr)){
+					return;
+				}
 				tmpOrgy += d;
 				tmpOrgx += c;						
 			}	
@@ -1174,10 +1200,6 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 	}else{
 		tmpStartX = startX * b;
 		tmpStartY = startX * a;
-	}
-	if(startX>screen_size_w){
-		//console.log(555555)
-		return;
 	}
 	for(;startX<=endX;startX++){
 		let z = zBufferingY[startX][0];
