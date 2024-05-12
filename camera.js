@@ -454,7 +454,7 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
                   if(tempBind.length >= 4*4){
                     let boneContents = {};
                     boneContents.bindPose = tempBind;
-                    boneContents.inverseBindPose = getInverseMatrix(tempBind);
+                    boneContents.inverseBindPose = CalInvMat4x4(tempBind);
                     tempBindPosePack.push(boneContents);
                     tempBind = [];  
             
@@ -640,6 +640,7 @@ let canvas = document.getElementById('backmyCanvas');
 let backCtx = canvas.getContext('2d',{willReadFrequently: true});
 canvas.width = SCREEN_SIZE_W*5;
 canvas.height = SCREEN_SIZE_H*7;
+
 //viewPortMat
 let viewPortMatrix = [
    SCREEN_SIZE_W, 0, 0, SCREEN_SIZE_W/2,
@@ -814,16 +815,16 @@ function setPolygon(pos1,pos2,pos3,UVVector){
 	let _Bx = pos3[0] - pos1[0];
 	let _By = pos3[1] - pos1[1];
 	let invMat = getTextureInvert(_Ax,_Ay,_Bx,_By);
+  //ちっちゃな数はいらない
+	polygonElement[AFFINE_A] = round(invMat[0] * UVVector[4] + invMat[1] * UVVector[6]);
+	polygonElement[AFFINE_C] = round(invMat[2] * UVVector[4] + invMat[3] * UVVector[6]);
 
-	polygonElement[AFFINE_A] = invMat[0] * UVVector[4] + invMat[1] * UVVector[6];
-	polygonElement[AFFINE_C] = invMat[2] * UVVector[4] + invMat[3] * UVVector[6];
-
-	polygonElement[AFFINE_B] = invMat[0] * UVVector[5] + invMat[1] * UVVector[7];
-	polygonElement[AFFINE_D] = invMat[2] * UVVector[5] + invMat[3] * UVVector[7];
+	polygonElement[AFFINE_B] = round(invMat[0] * UVVector[5] + invMat[1] * UVVector[7]);
+	polygonElement[AFFINE_D] = round(invMat[2] * UVVector[5] + invMat[3] * UVVector[7]);
 
   // テクスチャy = b * vertsx + d * vertsy + f アフィン変換の変形
-  polygonElement[AFFINE_F] = UVVector[1] - (polygonElement[AFFINE_B] * pos1[0] + polygonElement[AFFINE_D] * pos1[1]);
-  polygonElement[AFFINE_E] = UVVector[0] - (polygonElement[AFFINE_A] * pos1[0] + polygonElement[AFFINE_C] * pos1[1]);
+  polygonElement[AFFINE_F] = round(UVVector[1] - (polygonElement[AFFINE_B] * pos1[0] + polygonElement[AFFINE_D] * pos1[1]));
+  polygonElement[AFFINE_E] = round(UVVector[0] - (polygonElement[AFFINE_A] * pos1[0] + polygonElement[AFFINE_C] * pos1[1]));
 
   return polygonElement;
 }
@@ -2303,6 +2304,7 @@ for(let j=0;j<steves.length;j++){
   //     cameraSort[j].cameraLength = length;
   //   }
   // }
+  //inverseViewMatrix = CalInvMat4x4(viewMatrix);
 
   inverseViewMatrix = getInverseMatrix(viewMatrix);
   sunViewMatrix = matCamera(sunPos,sunLookat,up);
