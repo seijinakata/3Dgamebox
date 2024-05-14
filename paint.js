@@ -1165,44 +1165,43 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 	let xStep = endX - startX;
 
 	if(screen_size_w<=endX)endX=screen_size_w-1;
-
+	let z;
 	let dz = zStep/xStep;
 	let zBufferingY = zBuffering[y];
+	let selectOrgy;
+	let selectOrgx;
 	let tmpStartX;
 	let tmpStartY;
-	//Xが０未満でのｚ値の加算
-	if(startX<0){
+	//Xが０以下でのｚ値の加算
+	if(startX<=0){
 		//startX = 0;
 		//絶対値にしてる
 		// let offset = -startX;
 		// startZ += (offset * dz);
 		startZ -= (startX * dz);
-		let z = zBufferingY[0][0];
+		z = zBufferingY[0][0];
 		if(z>startZ){
-			let selectOrgy = tmpOrgy |0;
-			if(selectOrgy<=imageHeight-1){
-				if(selectOrgy>=0){
-					let selectOrgx = tmpOrgx |0;
-					if(selectOrgx<=imageWidth-1){
-						if(selectOrgx>=0){
-							let imageDataRGBA = imageData[selectOrgy][selectOrgx];
-							zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-								imageDataRGBA[BLUE],shadowFlag,sunCosin);
-						}
-					}
-				}	
+			if(tmpOrgy<imageHeight && tmpOrgy>-1){
+				selectOrgy = tmpOrgy |0;
+				if(tmpOrgx<imageWidth && tmpOrgx>-1){
+					selectOrgx = tmpOrgx |0;
+					let imageDataRGBA = imageData[selectOrgy][selectOrgx];
+					zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+						imageDataRGBA[BLUE],shadowFlag,sunCosin);
+				}
 			}
 		}
 		startZ+=dz;	
 		startX = 1;
-		tmpStartX = b;
-		tmpStartY = a;
+		tmpStartY = b;
+		tmpStartX = a;
 	}else{
-		tmpStartX = startX * b;
-		tmpStartY = startX * a;
+		tmpStartY = startX * b;
+		tmpStartX = startX * a;
 	}
+
 	for(;startX<=endX;startX++){
-		let z = zBufferingY[startX][0];
+		z = zBufferingY[startX][0];
 		if(z>startZ){
 			// if(tmpOrgy == null){
 			// 	tmpOrgy = y * iA[3] + f;
@@ -1211,44 +1210,44 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 
 			/* 元画像における縦方向座標を計算 */
 			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-			let selectOrgy = tmpOrgy + tmpStartX;
+			selectOrgy = tmpOrgy + tmpStartY;
 			/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 			//let selectOrgy = startX * iA[2] + y * iA[3]
 			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
 			if(selectOrgy>=imageHeight) {
 				if(b>=0) break;
 				startZ+=dz;
-				tmpStartX += b;
-				tmpStartY += a;
+				tmpStartY += b;
+				tmpStartX += a;
 				continue;
 			}
 			if(selectOrgy<=-1) {
 				if(b<=0) break;
 				startZ+=dz;	
-				tmpStartX += b;
-				tmpStartY += a;
+				tmpStartY += b;
+				tmpStartX += a;
 				continue;
 			}
 			/* 最近傍補間した元画像の座標 */
 			selectOrgy |= 0;	
 			/* 元画像における横方向座標を計算 */
 			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-			let selectOrgx = tmpOrgx + tmpStartY;
+			selectOrgx = tmpOrgx + tmpStartX;
 			/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 			//let selectOrgx = startX * iA[0] + y * iA[1]
 			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
 			if(selectOrgx>=imageWidth) {
 				if(a>=0) break;
 				startZ+=dz;
-				tmpStartX += b;
-				tmpStartY += a; 
+				tmpStartY += b;
+				tmpStartX += a; 
 				continue;
 			}
 			if(selectOrgx<=-1) {
 				if(a<=0) break;
 				startZ+=dz;	
-				tmpStartX += b;
-				tmpStartY += a;
+				tmpStartY += b;
+				tmpStartX += a;
 				continue;
 			}
 			/* 最近傍補間した元画像の座標 */
@@ -1259,8 +1258,8 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 				imageDataRGBA[BLUE],shadowFlag,sunCosin);
 
 		}
-		tmpStartX += b;
-		tmpStartY += a;
+		tmpStartY += b;
+		tmpStartX += a;
 		startZ+=dz;	
 	}
 }
