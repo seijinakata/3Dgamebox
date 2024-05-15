@@ -1181,14 +1181,22 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 		startZ -= (startX * dz);
 		z = zBufferingY[0][0];
 		if(z>startZ){
-			if(tmpOrgy<imageHeight && tmpOrgy>-1){
+			if(startX == -1 || startX == 0){
+				if(tmpOrgy<imageHeight && tmpOrgy>-1){
+					selectOrgy = tmpOrgy |0;
+					if(tmpOrgx<imageWidth && tmpOrgx>-1){
+						selectOrgx = tmpOrgx |0;
+						let imageDataRGBA = imageData[selectOrgy][selectOrgx];
+						zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+							imageDataRGBA[BLUE],shadowFlag,sunCosin);
+					}
+				}				
+			}else{
 				selectOrgy = tmpOrgy |0;
-				if(tmpOrgx<imageWidth && tmpOrgx>-1){
-					selectOrgx = tmpOrgx |0;
-					let imageDataRGBA = imageData[selectOrgy][selectOrgx];
-					zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
-						imageDataRGBA[BLUE],shadowFlag,sunCosin);
-				}
+				selectOrgx = tmpOrgx |0;
+				let imageDataRGBA = imageData[selectOrgy][selectOrgx];
+				zBufferingY[0] = setPixel(startZ,imageDataRGBA[RED],imageDataRGBA[GREEN],
+					imageDataRGBA[BLUE],shadowFlag,sunCosin);
 			}
 		}
 		startZ+=dz;	
