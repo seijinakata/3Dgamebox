@@ -1,6 +1,6 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
-import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,round100,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul, minXCul, maxXCul, minYCul, maxYCul, vec3CrossZMinus, mul1000Round, minXPosCul, maxXPosCul, minYPosCul, maxYPosCul} from './vector.js';
+import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,round100,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul, minXCul, maxXCul, minYCul, maxYCul, vec3CrossZMinus, mul1000Round, minXPosCul, maxXPosCul, minYPosCul, maxYPosCul, affineRound} from './vector.js';
 import {matIdentity,matDirectMul,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera, makeScalingMatrix, matWaightAndPlus, matRound, getTextureInvert} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,branch, vertsCopy, top_int, sort_YPoint, scan_ShadowVertical, scan_vertical} from './paint.js';
@@ -816,15 +816,15 @@ function setPolygon(pos1,pos2,pos3,UVVector){
 	let _By = pos3[1] - pos1[1];
 	let invMat = getTextureInvert(_Ax,_Ay,_Bx,_By);
   //ちっちゃな数はいらない
-	polygonElement[AFFINE_A] = round(invMat[0] * UVVector[4] + invMat[1] * UVVector[6]);
-	polygonElement[AFFINE_C] = round(invMat[2] * UVVector[4] + invMat[3] * UVVector[6]);
+	polygonElement[AFFINE_A] = affineRound(invMat[0] * UVVector[4] + invMat[1] * UVVector[6]);
+	polygonElement[AFFINE_C] = affineRound(invMat[2] * UVVector[4] + invMat[3] * UVVector[6]);
 
-	polygonElement[AFFINE_B] = round(invMat[0] * UVVector[5] + invMat[1] * UVVector[7]);
-	polygonElement[AFFINE_D] = round(invMat[2] * UVVector[5] + invMat[3] * UVVector[7]);
+	polygonElement[AFFINE_B] = affineRound(invMat[0] * UVVector[5] + invMat[1] * UVVector[7]);
+	polygonElement[AFFINE_D] = affineRound(invMat[2] * UVVector[5] + invMat[3] * UVVector[7]);
 
   // テクスチャy = b * vertsx + d * vertsy + f アフィン変換の変形
-  polygonElement[AFFINE_F] = round(UVVector[1] - (polygonElement[AFFINE_B] * pos1[0] + polygonElement[AFFINE_D] * pos1[1]));
-  polygonElement[AFFINE_E] = round(UVVector[0] - (polygonElement[AFFINE_A] * pos1[0] + polygonElement[AFFINE_C] * pos1[1]));
+  polygonElement[AFFINE_F] = affineRound(UVVector[1] - (polygonElement[AFFINE_B] * pos1[0] + polygonElement[AFFINE_D] * pos1[1]));
+  polygonElement[AFFINE_E] = affineRound(UVVector[0] - (polygonElement[AFFINE_A] * pos1[0] + polygonElement[AFFINE_C] * pos1[1]));
 
   return polygonElement;
 }
