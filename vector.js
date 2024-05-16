@@ -85,6 +85,9 @@ export function minZPosCul(pos1,pos2,pos3){
 export function round(orgValue){
     return ((orgValue * 1000)|0) / 1000;
 }
+export function affineRound(orgValue){
+    return ((orgValue * 100000)|0) / 100000;
+}
 export function mul1000Round(orgValue){
     return ((orgValue * 1000)|0);
 }
