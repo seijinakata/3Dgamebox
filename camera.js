@@ -818,7 +818,6 @@ function setPolygon(pos1,pos2,pos3,UVVector){
   //ちっちゃな数はいらない
 	polygonElement[AFFINE_A] = affineRound(invMat[0] * UVVector[4] + invMat[1] * UVVector[6]);
 	polygonElement[AFFINE_C] = affineRound(invMat[2] * UVVector[4] + invMat[3] * UVVector[6]);
-
 	polygonElement[AFFINE_B] = affineRound(invMat[0] * UVVector[5] + invMat[1] * UVVector[7]);
 	polygonElement[AFFINE_D] = affineRound(invMat[2] * UVVector[5] + invMat[3] * UVVector[7]);
 
@@ -2436,13 +2435,14 @@ for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
         //sunViewMatrixrixmul and projection(/shadowPixelZ) and viewPort (+ 0.5)*screen_size_wh)|0;
         //シャドウマップに照らし合わせるために製造した合成関数行列の掛け算のアンローリングの変形
         // original let shadowPixelZ = (sunViewMatrix[8]*shadowPixelX + sunViewMatrix[9]*shadowPixelY + sunViewMatrix[10]*pixelZ + sunViewMatrix[11] * 1000)/1000000;
+        //0.5はビューポートの中央に寄せる値
         let shadowPixelZ = ((sunViewMatrix8MulShadowViewPortX[pixelX] + sunViewMatrix9MulShadowViewPortY)*pixelZ + sunViewMatrix[11]);
         let shadowMatrixPixelY = ((((((sunViewMatrix4MulShadowViewPortX[pixelX] + sunViewMatrix5MulShadowViewPortY)*pixelZ + sunViewMatrix[7]))/shadowPixelZ) + 0.5) * screen_size_h)|0;
         if(shadowMatrixPixelY>=0 && shadowMatrixPixelY<screen_size_h){
           let shadowMatrixPixelX = ((((((sunViewMatrix0MulShadowViewPortX[pixelX] + sunViewMatrix1MulShadowViewPortY)*pixelZ + sunViewMatrix[3]))/shadowPixelZ) + 0.5) * screen_size_w)|0;
           if(shadowMatrixPixelX>=0 && shadowMatrixPixelX<screen_size_w){
-            shadowPixelZ /= 1000000;
-            if(shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.5<shadowPixelZ){
+            //0.5はシャドウマップのバイアス値
+            if((shadowMap[shadowMatrixPixelY][shadowMatrixPixelX]+0.5) * 1000000<shadowPixelZ){
               pixelR *= 0.5;
               pixelG *= 0.5;
               pixelB *= 0.5;	
