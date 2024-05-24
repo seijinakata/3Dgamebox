@@ -1,5 +1,5 @@
 //newをすると重くなる構造体はjson,配列に置き換え中
-import { matVecMul,matIdentity,matPers,getInverseMatrix, matMul,getInvert2, CalInvMat4x4,protMatVecMul, getTextureInvert } from "./matrix.js";
+import { matVecMul,matIdentity,matPers,getInverseMatrix, matMul,getInvert2, CalInvMat4x4,protMatVecMul} from "./matrix.js";
 import { XRound, culVecDot, round, setVector2,setVector3, vec2Minus, vec2NoYVec3Minus, vec2OffsetMulAfterMinus, vec2Plus, vec3NoYVec2Minus, vec3notYMinus, vecMinus, vecMul } from "./vector.js";
 import { SCREEN_SIZE_W,SCREEN_SIZE_H} from "./camera.js";
 import { delta_X, delta_Z, position_X, position_Y, position_Z } from './enum.js';
@@ -190,7 +190,16 @@ export function branchNoY(a,b,Y){
 	let invt = (1-t);
 	return [a[0]*invt+b[0]*t,a[2]*invt+b[2]*t];
 }
-
+function triangleEndXOver1(x,dx){
+	if(x<0 && dx<=0){				
+		 return true;
+	}
+}
+function triangleStartXOver1(x,dx,screen_size_w){
+	if(x>screen_size_w && dx>=0){			
+		 return true;
+	}
+}
 function triangleEndXOver(pr,dr){
 	if(pr[0]<0 && dr[0]<=0){				
 		 return true;
@@ -703,9 +712,9 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 			dl = dlDeltaXZ;
 		}
         //start position
-        let sl = setVector2(pt[position_X],pt[position_Z]);
-        let sr = setVector2(pt[position_X],pt[position_Z]);
-		if(!(triangleEndXOver(sr,dr)) && !(triangleStartXOver(sl,dl,screen_size_w))){
+		if(!(triangleEndXOver1(pt[position_X],dr[0])) && !(triangleStartXOver1(pt[position_X],dl[0],screen_size_w))){
+			let sl = setVector2(pt[position_X],pt[position_Z]);
+			let sr = setVector2(pt[position_X],pt[position_Z]);
 			if(triangleTop<0){
 				//horizonのXのoffsetと同じ考え方。
 				vec2OffsetMulAfterMinus(sl,dl,triangleTop);
@@ -1069,9 +1078,9 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			dl = dlDeltaXZ;
 		}
         //start position
-        let sl = setVector2(pt[position_X],pt[position_Z]);
-        let sr = setVector2(pt[position_X],pt[position_Z]);
-		if(!(triangleEndXOver(sr,dr)) && !(triangleStartXOver(sl,dl,screen_size_w))){
+		if(!(triangleEndXOver1(pt[position_X],dr[0])) && !(triangleStartXOver1(pt[position_X],dl[0],screen_size_w))){
+			let sl = setVector2(pt[position_X],pt[position_Z]);
+			let sr = setVector2(pt[position_X],pt[position_Z]);
 			if(triangleTop<0){
 				//horizonのXのoffsetと同じ考え方。
 				vec2OffsetMulAfterMinus(sl,dl,triangleTop);
