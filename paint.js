@@ -201,12 +201,12 @@ function triangleStartXOver(pl,dl,screen_size_w){
 	}
 }
 function triangleNotEndXOver(pr,dr){
-	if(pr[0]>=0 || dr[0]>=0){				
+	if(pr[0]>=0 || dr[0]>0){				
 		return true;
    }
 }
 function triangleNotStartXOver(pl,dl,screen_size_w){
-	if(pl[0]<=screen_size_w-1 || dl[0]<=0){			
+	if(pl[0]<=screen_size_w-1 || dl[0]<0){			
 		return true;
    }
 }
