@@ -196,11 +196,20 @@ function triangleEndXOver(pr,dr){
 	}
 }
 function triangleStartXOver(pl,dl,screen_size_w){
-	if(pl[0]>screen_size_w && dl[0]>=0){			
+	if(pl[0]>screen_size_w-1 && dl[0]>=0){			
 		 return true;
 	}
 }
-
+function triangleNotEndXOver(pr,dr){
+	if(pr[0]>=0 || dr[0]>=0){				
+		return true;
+   }
+}
+function triangleNotStartXOver(pl,dl,screen_size_w){
+	if(pl[0]<=screen_size_w-1 || dl[0]<=0){			
+		return true;
+   }
+}
 export function pictureToPixelMap(ctx,image){
 
 	const image_Width = image.width;
@@ -701,7 +710,7 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 			dl = dlDeltaXZ;
 		}
         //start position
-		if(!(triangleEndXOver(pt,dr)) && !(triangleStartXOver(pt,dl,screen_size_w))){
+		if(triangleNotEndXOver(pt,dr) && triangleNotStartXOver(pt,dl,screen_size_w)){
 			let triangleTop = pt[position_Y];
 			let sl = setVector2(pt[position_X],pt[position_Z]);
 			let sr = setVector2(pt[position_X],pt[position_Z]);
@@ -747,7 +756,7 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 			dr = delta_Noy_xz(er,deltaY);
 			dl = dlDeltaXZ;
 		}
-		if(!(triangleEndXOver(pr,dr)) && !(triangleStartXOver(pl,dl,screen_size_w))){
+		if(triangleNotEndXOver(pr,dr) && triangleNotStartXOver(pl,dl,screen_size_w)){
 			if(mid<0){
 				//horizonのXのoffsetと同じ考え方。
 				vec2OffsetMulAfterMinus(pl,dl,mid);
@@ -1066,7 +1075,7 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			dl = dlDeltaXZ;
 		}
         //start position
-		if(!(triangleEndXOver(pt,dr)) && !(triangleStartXOver(pt,dl,screen_size_w))){
+		if(triangleNotEndXOver(pt,dr) && triangleNotStartXOver(pt,dl,screen_size_w)){
 			let triangleTop = pt[position_Y];
 			let sl = setVector2(pt[position_X],pt[position_Z]);
 			let sr = setVector2(pt[position_X],pt[position_Z]);
@@ -1115,7 +1124,7 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			dr = delta_Noy_xz(er,deltaY);
 			dl = dlDeltaXZ;
 		}
-		if(!(triangleEndXOver(pr,dr)) && !(triangleStartXOver(pl,dl,screen_size_w))){
+		if(triangleNotEndXOver(pr,dr) && triangleNotStartXOver(pl,dl,screen_size_w)){
 			if(mid<0){
 				//horizonのXのoffsetと同じ考え方。
 				vec2OffsetMulAfterMinus(pl,dl,mid);
