@@ -787,10 +787,11 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
     }
 }
 
-function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,startY){
-	if(y == startY){
-		let zBufferingY = zBuffering[y];
-		let z = zBufferingY[startX];
+function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,endZ,startEndY){
+	let zBufferingY = zBuffering[y];
+	let z;
+	if(y == startEndY){
+		z = zBufferingY[startX];
 		if(z>startZ){
 			zBufferingY[startX] = startZ;
 		}
@@ -802,20 +803,20 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 	if(screen_size_w<=endX)endX=screen_size_w-1;
 
 	let dz = zStep/xStep;
-	let zBufferingY = zBuffering[y];
+	
 	//Xが０未満でのｚ値の加算
 	if(startX<0){
 		//絶対値にしてる
 		// let offset = -startX;
 		// startZ += (offset * dz);
 		startZ -= (startX * dz);
-		let z = zBufferingY[0];
+		z = zBufferingY[0];
 		if(z>startZ){
 			zBufferingY[0] = startZ;
 		}
 		startX = 1;
 	}else{
-		let z = zBufferingY[startX];
+		z = zBufferingY[startX];
 		if(z>startZ){
 			zBufferingY[startX] = startZ;
 		}
@@ -823,7 +824,7 @@ function scan_ShadowHorizontal(zBuffering,screen_size_w,y,startX,endX,startZ,end
 	}
 	for(;startX<=endX;startX++){
 		startZ+=dz;
-		let z = zBufferingY[startX];
+		z = zBufferingY[startX];
 		if(z>startZ){
 			zBufferingY[startX] = startZ;
 		}
@@ -1166,7 +1167,7 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
     }
 }
 
-function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,a,b,imageData,imageHeight,imageWidth,shadowFlag,sunCosin,startY){
+function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,a,b,imageData,imageHeight,imageWidth,shadowFlag,sunCosin,startEndY){
 
 	//アフィン変換の平行移動ベクトル
 	//縦移動、transform関数のf
@@ -1175,9 +1176,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 	let zBufferingY = zBuffering[y];
 	let selectOrgy;
 	let selectOrgx;
-	let tmpStartX;
-	let tmpStartY;
-	if(y == startY){
+	if(y == startEndY){
 		z = zBufferingY[startX][0];
 		if(z>startZ){
 			// if(tmpOrgy == null){
@@ -1187,7 +1186,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 
 			/* 元画像における縦方向座標を計算 */
 			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-			selectOrgy = tmpOrgy + tmpStartY;
+			selectOrgy = tmpOrgy + startX * b;
 			/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 			//let selectOrgy = startX * iA[2] + y * iA[3]
 			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
@@ -1201,7 +1200,7 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 			selectOrgy |= 0;	
 			/* 元画像における横方向座標を計算 */
 			/* 座標変換を行ってから原点(width / 2, height / 2)基準の値に変換 */
-			selectOrgx = tmpOrgx + tmpStartX;
+			selectOrgx = tmpOrgx + startX * a;
 			/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 			//let selectOrgx = startX * iA[0] + y * iA[1]
 			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
@@ -1221,6 +1220,8 @@ function scan_horizontal(zBuffering,screen_size_w,y,tmpOrgy,tmpOrgx,startX,endX,
 		return;
 	}
 	//if(l<0)l=0;
+	let tmpStartX;
+	let tmpStartY;
 	let zStep = endZ - startZ;
 	let xStep = endX - startX;
 
