@@ -688,36 +688,34 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 	}
 
 	let mid = pm[position_Y];
-	let drDeltaXZ = null;
-	let dlDeltaXZ = null;
 	//tmp[0]がpm[0]より大きい時の初期値
 	let pl = branchNoY(pt,pb,mid);//pt->mid
 	let pr;
+	let dl,dr;
+	let isdlCul = false;
 	if(pl[0]>pm[0]){
 		pr = pl;
 		pl =  setVector2(pm[0],pm[2]);
         let er = vec3notYMinus(pb,pt);
-        drDeltaXZ =  delta_Noy_xz(er,topDistance);
+        dr =  delta_Noy_xz(er,topDistance);
 	}else{
 		pr = setVector2(pm[0],pm[2]);
         let el = vec3notYMinus(pb,pt);
-        dlDeltaXZ =  delta_Noy_xz(el,topDistance);
+        dl =  delta_Noy_xz(el,topDistance);
+		isdlCul = true;
 	}
 
 	//mid=0はlowerで対応
     if(mid>0){//upper
-		let dl,dr;
-		if(drDeltaXZ != null){
-			let el = vec2NoYVec3Minus(pl,pt);//pt->pl
-			let deltaY = mid - pt[1];
-			dl = delta_Noy_xz(el,deltaY);
-			dr = drDeltaXZ;
-		}
-		if(dlDeltaXZ != null){
+		if(isdlCul == true){
 			let er = vec2NoYVec3Minus(pr,pt);//pt->pr
 			let deltaY = mid - pt[1];
 			dr = delta_Noy_xz(er,deltaY);
-			dl = dlDeltaXZ;
+		}		
+		if(isdlCul == false){
+			let el = vec2NoYVec3Minus(pl,pt);//pt->pl
+			let deltaY = mid - pt[1];
+			dl = delta_Noy_xz(el,deltaY);
 		}
         //start position
 		if(triangleNotEndXOver(pt,dr) && triangleNotStartXOver(pt,dl,screen_size_w)){
@@ -774,18 +772,15 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 		}
     }
     if(mid<screen_size_h){//lower
-		let dl,dr;
-		if(drDeltaXZ != null){
-			let el = vec3NoYVec2Minus(pb,pl);//pl->pb
-			let deltaY = pb[1] - mid;
-			dl = delta_Noy_xz(el,deltaY);
-			dr = drDeltaXZ;
-		}
-		if(dlDeltaXZ != null){
+		if(isdlCul == true){
 			let er = vec3NoYVec2Minus(pb,pr);//pr->pb
 			let deltaY =  pb[1] - mid;
 			dr = delta_Noy_xz(er,deltaY);
-			dl = dlDeltaXZ;
+		}
+		if(isdlCul == false){
+			let el = vec3NoYVec2Minus(pb,pl);//pl->pb
+			let deltaY = pb[1] - mid;
+			dl = delta_Noy_xz(el,deltaY);
 		}
 		if(triangleNotEndXOver(pr,dr) && triangleNotStartXOver(pl,dl,screen_size_w)){
 			let deltaStartXIsPlusMinus = deltaXIsZeroPlus(dl[0]);
@@ -1077,36 +1072,34 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 	}
 
 	let mid = pm[1];
-	let drDeltaXZ = null;
-	let dlDeltaXZ = null;
 	//tmp[0]がpm[0]より大きい時の初期値
 	let pl = branchNoY(pt,pb,mid);//pt->mid
 	let pr;
+	let dl,dr;
+	let isdlCul = false;
 	if(pl[0]>pm[0]){
 		pr = pl;
 		pl =  setVector2(pm[0],pm[2]);
         let er = vec3notYMinus(pb,pt);
-        drDeltaXZ =  delta_Noy_xz(er,topDistance);
+        dr =  delta_Noy_xz(er,topDistance);
 	}else{
 		pr = setVector2(pm[0],pm[2]);
         let el = vec3notYMinus(pb,pt);
-        dlDeltaXZ =  delta_Noy_xz(el,topDistance);
+        dl =  delta_Noy_xz(el,topDistance);
+		isdlCul = true;
 	}
 
 	//mid=0はlowerで対応
     if(mid>0){//upper
-		let dl,dr;
-		if(drDeltaXZ != null){
-			let el = vec2NoYVec3Minus(pl,pt);//pt->pl
-			let deltaY = mid - pt[1];
-			dl = delta_Noy_xz(el,deltaY);
-			dr = drDeltaXZ;
-		}
-		if(dlDeltaXZ != null){
+		if(isdlCul == true){
 			let er = vec2NoYVec3Minus(pr,pt);//pt->pr
 			let deltaY = mid - pt[1];
 			dr = delta_Noy_xz(er,deltaY);
-			dl = dlDeltaXZ;
+		}		
+		if(isdlCul == false){
+			let el = vec2NoYVec3Minus(pl,pt);//pt->pl
+			let deltaY = mid - pt[1];
+			dl = delta_Noy_xz(el,deltaY);
 		}
         //start position
 		if(triangleNotEndXOver(pt,dr) && triangleNotStartXOver(pt,dl,screen_size_w)){
@@ -1182,18 +1175,15 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 		}
     }
     if(mid<screen_size_h){//lower
-		let dl,dr;
-		if(drDeltaXZ != null){
-			let el = vec3NoYVec2Minus(pb,pl);//pl->pb
-			let deltaY = pb[1] - mid;
-			dl = delta_Noy_xz(el,deltaY);
-			dr = drDeltaXZ;
-		}
-		if(dlDeltaXZ != null){
+		if(isdlCul == true){
 			let er = vec3NoYVec2Minus(pb,pr);//pr->pb
 			let deltaY =  pb[1] - mid;
 			dr = delta_Noy_xz(er,deltaY);
-			dl = dlDeltaXZ;
+		}
+		if(isdlCul == false){
+			let el = vec3NoYVec2Minus(pb,pl);//pl->pb
+			let deltaY = pb[1] - mid;
+			dl = delta_Noy_xz(el,deltaY);
 		}
 		if(triangleNotEndXOver(pr,dr) && triangleNotStartXOver(pl,dl,screen_size_w)){
 			let deltaStartXIsPlusMinus = deltaXIsZeroPlus(dl[0]);
