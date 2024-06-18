@@ -181,6 +181,10 @@ export function sort_YPoint(pos1,pos2,pos3){
 	return verts;
 }
 export function branch(a,b,Y){
+	//高校数学内分点の座礁。tは分母がM+N,頂点からYを引いた値に分母で割ればM,
+	//逆数はNになる。(invt)
+	//内分点の公式(na+mb)/(m+n)
+	//この内分点で三角形を上下に分割する。
 	let  t = (Y-a[1])/(b[1]-a[1]);
 	let invt = (1-t);
 	return setVector3(a[0]*invt+b[0]*t,Y,a[2]*invt+b[2]*t);
