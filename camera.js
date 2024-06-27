@@ -1946,16 +1946,15 @@ function slerpQuaternionArray(out,t,q,tNum,currentTime){
 function slerpQuaternion(out,q1,q2,t) {
   // 角度算出
   let dot = q1[0] * q2[0] + q1[1] * q2[1] + q1[2] * q2[2] + q1[3] * q2[3];
-  //sin2+cos2 = 1^2
-  let pow2Sin = 1.0 - dot * dot;
-  if (pow2Sin <= 0.0) {
+  let angle = Math.acos(dot);
+  let sin = Math.cos(1.5708 - angle);//sinx = cos(90-x) 
+  if (sin <= 0.0) {
     out[0] = q1[0];
     out[1] = q1[1];
     out[2] = q1[2];
     out[3] = q1[3];
     return;
   }else{
-    let sin = NewtonMethod(1,pow2Sin);
     //０で割らせないようにする。
     if(sin == 0){
       out[0] = q1[0];
@@ -1964,7 +1963,6 @@ function slerpQuaternion(out,q1,q2,t) {
       out[3] = q1[3];
       return;
     }
-    let  angle = Math.acos(dot);
     let  anglet = angle * t;
     let angleMinusAnglet = angle-anglet;
     let angleMinusAngletSin;
