@@ -1,7 +1,7 @@
 //４行目は使わないので消去しました
 //行列計算ループアンローリング
 //演算結果をreturnsしてその結果をもう一回関数に入れると重たくなるみたい。
-import {setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize,round, setVector2, XYRound} from './vector.js';
+import {setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize,round, setVector2, XYRound, cul3dVecLength} from './vector.js';
 import {sinLut,cosLut} from './camera.js';
 //一次元配列
 export function matCopy(m){
@@ -268,13 +268,20 @@ export function matCamera(camPos,lookat,up) {
         let z = vecMinus(lookat,camPos);
         culVecNormalize(z);
         let x = culVecCross(up, z)
-        culVecNormalize(x);
         let y = culVecCross(z, x);
         return [x[0], x[1], x[2], -(x[0] * camPos[0] + x[1] * camPos[1] + x[2] * camPos[2]),
                 y[0], y[1], y[2], -(y[0] * camPos[0] + y[1] * camPos[1] + y[2] * camPos[2]),
                 z[0], z[1], z[2], -(z[0] * camPos[0] + z[1] * camPos[1] + z[2] * camPos[2])];
 
-    }
+}
+export function matShadowCamera(camPos,z,up) {
+    let x = culVecCross(up, z)
+    let y = culVecCross(z, x);
+    return [x[0], x[1], x[2], -(x[0] * camPos[0] + x[1] * camPos[1] + x[2] * camPos[2]),
+            y[0], y[1], y[2], -(y[0] * camPos[0] + y[1] * camPos[1] + y[2] * camPos[2]),
+           - z[0], -z[1], -z[2], (z[0] * camPos[0] + z[1] * camPos[1] + z[2] * camPos[2])];
+
+}
 export function matMulVertsZCamera(matCamera,verts) {
     let  ViewZ = verts[0]*matCamera[8] + verts[1] * matCamera[9] + verts[2] * matCamera[10] +  matCamera[11];
     return ViewZ;
@@ -652,7 +659,7 @@ export function getInverseMatrix(matrix){
     let buf; //一時的なデータを蓄える
     //掃き出し法ループアンローリングa行列を１or０にする演算は行わない,inv_aは単位行列
     //1行目
-    if(a[0][0] == 0) a[0][0] = 0.001;
+    if(a[0][0] == 0) {console.log(333); a[0][0] = 0.001};
     buf = 1/a[0][0];
     a[0][1] *= buf;
     a[0][2] *= buf;

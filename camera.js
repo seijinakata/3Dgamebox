@@ -1,7 +1,7 @@
 //頂点にクラスを使うと重たくなる頂点演算のせい？
 //javascriptのクラス、関数を使うと重くなりがち、いっそ自分で作れるものは作る。Ｃ言語みたいになってくる。
 import {setVector2,setVector3,vecMul,vecDiv, vecPlus,vecMinus,culVecCross,culVecCrossZ,culVecDot,culVecNormalize, round,round100,NewtonMethod, cul3dVecLength, XYRound, minCul, maxCul, minXCul, maxXCul, minYCul, maxYCul, vec3CrossZMinus, mul1000Round, minXPosCul, maxXPosCul, minYPosCul, maxYPosCul, affineRound} from './vector.js';
-import {matIdentity,matDirectMul,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera, makeScalingMatrix, matWaightAndPlus, matRound, getTextureInvert} from './matrix.js';
+import {matIdentity,matDirectMul,mulMatScaling, matMul,matVecMul,matPers,matCamera,mulMatRotateX,mulMatRotatePointX,mulMatRotateY,mulMatRotatePointY,mulMatRotateZ,mulMatRotatePointZ,getInverseMatrix, matRound4X4, protMatVecMul, CalInvMat4x4, matWaight, matPlus, matCopy, getInvert2, matMulVertsZCamera, matMulVertsXYZCamera, makeScalingMatrix, matWaightAndPlus, matRound, getTextureInvert, matShadowCamera} from './matrix.js';
 import {waistVerts,spineVerts,headVerts,orgPlaneVerts, orgCubeVerts, RightLeg1Verts, RightLeg2Verts, LeftLeg1Verts, LeftLeg2Verts, rightArm1Verts, rightArm2Verts, leftArm1Verts, leftArm2Verts} from './orgverts.js';
 import {setPixel,renderBuffer,pixel,bufferPixelInit,bufferInit,pictureToPixelMap,dotPaint,branch, vertsCopy, top_int, sort_YPoint, scan_ShadowVertical, scan_vertical} from './paint.js';
 import {pixel_B, pixel_SunCosin, pixel_G, pixel_R, pixel_Z,SUNCOSIN, position_X, position_Y, position_Z, rot_X, rot_Y, rot_Z, scale_X, scale_Y, scale_Z, obj_Image, poly_List,obj_BackCulling_Flag, pixel_shadow_Flag, obj_Shadow_Flag, obj_LightShadow_Flag, PT, PM, PB, AFFINE_A, AFFINE_C, AFFINE_B, AFFINE_D, AFFINE_F, AFFINE_E } from './enum.js';
@@ -2272,6 +2272,7 @@ for(let j=0;j<steves.length;j++){
 
   //プロジェクション
   viewMatrix = matCamera(cameraPos,lookat,up);
+  inverseViewMatrix = getInverseMatrix(viewMatrix);
   // let cameraSort = [];
   // let current = 0;
   // if(cameraSort.length == 0){
@@ -2303,13 +2304,11 @@ for(let j=0;j<steves.length;j++){
   // }
   //inverseViewMatrix = CalInvMat4x4(viewMatrix);
 
-  inverseViewMatrix = getInverseMatrix(viewMatrix);
-  sunViewMatrix = matCamera(sunPos,sunLookat,up);
-
   let sunVec = vecMinus(sunPos,sunLookat);
   culVecNormalize(sunVec);
   round100(sunVec[0]);
   round100(sunVec[1]);
+  sunViewMatrix = matShadowCamera(sunPos,sunVec,up);
   //ピクセル処理がボトルネック、ラスタライズ
   setZmaxShdowBufferInit(shadowMap,screen_size_h,screen_size_w);
   setZmaxRenderBuffer(zBuffering,screen_size_h,screen_size_w);
