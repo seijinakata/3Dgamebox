@@ -244,7 +244,6 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             }
             meshVerts.push(tempMeshVerts);
           }
-          daeLoadPack.meshVerts = meshVerts[0];
           for(let i=0;i<daeLoadPack.objectNumber;i++){
             daeLoadpack[i].meshVerts = meshVerts[i];
           }
@@ -291,7 +290,6 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             }
             meshVertsFaceIndex.push(tempMeshVertsFaceIndex);
           }
-          daeLoadPack.meshVertsFaceIndex = meshVertsFaceIndex[0];
           for(let i=0;i<daeLoadPack.objectNumber;i++){
             daeLoadpack[i].meshVertsFaceIndex = meshVertsFaceIndex[i];
           }
@@ -352,7 +350,6 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             }
             faceIndexMeshUV.push(tempFaceIndexMeshUV);
           }
-          daeLoadPack.faceIndexMeshUV = faceIndexMeshUV[0];
           for(let i=0;i<daeLoadPack.objectNumber;i++){
             daeLoadpack[i].faceIndexMeshUV = faceIndexMeshUV[i];
           }
@@ -383,7 +380,7 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             }
             bonesNameList.push(tempBonesNameList);
           }
-
+          ////////////////////////////
           daeLoadPack.bonesNameList = bonesNameList[0];
           for(let i=0;i<armatures.length;i++){
             daeLoadpack[i].bonesNameList = bonesNameList[i];
@@ -464,7 +461,6 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             }
             bindPosePack.push(tempBindPosePack)         
           }
-          daeLoadPack.bindPosePack = bindPosePack[0];
           for(let i=0;i<armatures.length;i++){
             daeLoadpack[i].bindPosePack = bindPosePack[i];
           }
@@ -526,7 +522,6 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             } 
             blendBoneIndex.push(tempBlendBoneIndex);          
           }
-          daeLoadPack.blendBoneIndex = blendBoneIndex[0];
           for(let i=0;i<armatures.length;i++){
             daeLoadpack[i].blendBoneIndex = blendBoneIndex[i];
           }
@@ -560,7 +555,6 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             }
             bonesWeight.push(tempBonesWeight);
           }
-          daeLoadPack.bonesWeight = bonesWeight[0];
           for(let i=0;i<armatures.length;i++){
             daeLoadpack[i].bonesWeight = bonesWeight[i];
           }
@@ -573,7 +567,6 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             getAllChildNodesDepth(boneJointList[j].children.length, boneJointList[j].children,tempResult,tempBoneParentRelation,daeLoadPack.bonesNameList);
             boneParentRelation.push(tempBoneParentRelation);
           }
-          daeLoadPack.boneParentRelation = boneParentRelation[0];
           for(let i=0;i<armatures.length;i++){
             daeLoadpack[i].boneParentRelation = boneParentRelation[i];
           }
@@ -591,7 +584,6 @@ function daeLoader(fileName,daeLoadPack,daeLoadpack){
             }
             bones.push(tempBones);     
           }
-          daeLoadPack.bones = bones[0];
           for(let i=0;i<armatures.length;i++){
             daeLoadpack[i].bones = bones[i];
           }
