@@ -1191,21 +1191,7 @@ function objectSkinMeshPolygonPush(object,zBuffering,shadowMap,viewMatrix,shadow
         matWaightAndPlus(mixMatrix,objectBones[objectBlendBoneIndex_i[j]].skinmeshBone,objectBonesWeight[i][j])
       }
       let boneWeightVerts = matVecMul(mixMatrix,objectMeshVerts[i]);
-      let viewZ = matMulVertsZCamera(viewMatrix,boneWeightVerts);
-      if(viewZ > 0){
-        worldVerts[i] = boneWeightVerts;
-        let projectionMatrix =  matPers(viewZ);
-        let cameraBoneWeightVerts = matMulVertsXYZCamera(viewMatrix,boneWeightVerts,viewZ);
-        protMatVecMul(projectionMatrix,cameraBoneWeightVerts);
-        //boneWeightVerts = matVecMul(viewPortMatrix,boneWeightVerts);
-        cameraBoneWeightVerts[0] = ((cameraBoneWeightVerts[0] + 0.5)*screen_size_w)|0;
-        cameraBoneWeightVerts[1] = ((cameraBoneWeightVerts[1] + 0.5)*screen_size_h)|0;
-        projectedVerts[i] = cameraBoneWeightVerts;
-      }else{
-        //ラスタライズしないのでnull、ポリゴンのuv値を合わせたいので飛ばさない。
-        projectedVerts[i] = null;
-        worldVerts[i] = null;
-      }
+
       let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,boneWeightVerts);
       if(shadowViewZ > 0){
           let shadowProjectionMatrix =  matPers(shadowViewZ);
@@ -1217,6 +1203,22 @@ function objectSkinMeshPolygonPush(object,zBuffering,shadowMap,viewMatrix,shadow
       }else{
         shadowProjectedVerts[i] = null;
       }
+
+      let viewZ = matMulVertsZCamera(viewMatrix,boneWeightVerts);
+      if(viewZ <= 0){
+        //ラスタライズしないのでnull、ポリゴンのuv値を合わせたいので飛ばさない。
+        projectedVerts[i] = null;
+        worldVerts[i] = null;
+        continue;
+      }
+      worldVerts[i] = boneWeightVerts;
+      let projectionMatrix =  matPers(viewZ);
+      let cameraBoneWeightVerts = matMulVertsXYZCamera(viewMatrix,boneWeightVerts,viewZ);
+      protMatVecMul(projectionMatrix,cameraBoneWeightVerts);
+      //boneWeightVerts = matVecMul(viewPortMatrix,boneWeightVerts);
+      cameraBoneWeightVerts[0] = ((cameraBoneWeightVerts[0] + 0.5)*screen_size_w)|0;
+      cameraBoneWeightVerts[1] = ((cameraBoneWeightVerts[1] + 0.5)*screen_size_h)|0;
+      projectedVerts[i] = cameraBoneWeightVerts;
     }
   }else{
     for (let i=0; i < meshVerts_Length; i++) {
@@ -1230,20 +1232,20 @@ function objectSkinMeshPolygonPush(object,zBuffering,shadowMap,viewMatrix,shadow
       }
       let boneWeightVerts = matVecMul(mixMatrix,objectMeshVerts[i]);
       let viewZ = matMulVertsZCamera(viewMatrix,boneWeightVerts);
-      if(viewZ > 0){
-        worldVerts[i] = boneWeightVerts;
-        let projectionMatrix =  matPers(viewZ);
-        let cameraBoneWeightVerts = matMulVertsXYZCamera(viewMatrix,boneWeightVerts,viewZ);
-        protMatVecMul(projectionMatrix,cameraBoneWeightVerts);
-        //boneWeightVerts = matVecMul(viewPortMatrix,boneWeightVerts);
-        cameraBoneWeightVerts[0] = ((cameraBoneWeightVerts[0] + 0.5)*screen_size_w)|0;
-        cameraBoneWeightVerts[1] = ((cameraBoneWeightVerts[1] + 0.5)*screen_size_h)|0;
-        projectedVerts[i] = cameraBoneWeightVerts;
-      }else{
+      if(viewZ <= 0){
         //ラスタライズしないのでnull、ポリゴンのuv値を合わせたいので飛ばさない。
         projectedVerts[i] = null;
         worldVerts[i] = null;
+        continue;   
       }
+      worldVerts[i] = boneWeightVerts;
+      let projectionMatrix =  matPers(viewZ);
+      let cameraBoneWeightVerts = matMulVertsXYZCamera(viewMatrix,boneWeightVerts,viewZ);
+      protMatVecMul(projectionMatrix,cameraBoneWeightVerts);
+      //boneWeightVerts = matVecMul(viewPortMatrix,boneWeightVerts);
+      cameraBoneWeightVerts[0] = ((cameraBoneWeightVerts[0] + 0.5)*screen_size_w)|0;
+      cameraBoneWeightVerts[1] = ((cameraBoneWeightVerts[1] + 0.5)*screen_size_h)|0;
+      projectedVerts[i] = cameraBoneWeightVerts;
     }
   }
   
@@ -1353,22 +1355,7 @@ function objectPolygonPush(object,zBuffering,shadowMap,viewMatrix,shadowViewMatr
       Vector3QuaternionMul(worldTranslationSQuaternion,verts);
       vecPlus(verts,worldTranslationPosition);
       //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
-      let viewZ = matMulVertsZCamera(viewMatrix,verts);
 
-      if(viewZ > 0){
-        worldVerts[i] = verts;
-        let projectionMatrix =  matPers(viewZ);
-        let cameraVerts = matMulVertsXYZCamera(viewMatrix,verts,viewZ);
-        protMatVecMul(projectionMatrix,cameraVerts);
-        //normalVerts = matVecMul(viewPortMatrix,normalVerts);
-        cameraVerts[0] = ((cameraVerts[0] + 0.5)*screen_size_w)|0;
-        cameraVerts[1] = ((cameraVerts[1] + 0.5)*screen_size_h)|0;
-        projectedVerts[i] = cameraVerts;    
-      }else{
-        //ラスタライズしないのでnull、ポリゴンのuv値を合わせたいので飛ばさない。
-        projectedVerts[i] = null;
-        worldVerts[i] = null;
-      }
       let shadowViewZ = matMulVertsZCamera(shadowViewMatrix,verts);
       if(shadowViewZ > 0){
         let shadowProjectionMatrix =  matPers(shadowViewZ);
@@ -1380,6 +1367,22 @@ function objectPolygonPush(object,zBuffering,shadowMap,viewMatrix,shadowViewMatr
       }else{
         shadowProjectedVerts[i] = null;
       }
+
+      let viewZ = matMulVertsZCamera(viewMatrix,verts);
+      if(viewZ <= 0){
+        //ラスタライズしないのでnull、ポリゴンのuv値を合わせたいので飛ばさない。
+        projectedVerts[i] = null;
+        worldVerts[i] = null;
+        continue;      
+      }
+      worldVerts[i] = verts;
+      let projectionMatrix =  matPers(viewZ);
+      let cameraVerts = matMulVertsXYZCamera(viewMatrix,verts,viewZ);
+      protMatVecMul(projectionMatrix,cameraVerts);
+      //normalVerts = matVecMul(viewPortMatrix,normalVerts);
+      cameraVerts[0] = ((cameraVerts[0] + 0.5)*screen_size_w)|0;
+      cameraVerts[1] = ((cameraVerts[1] + 0.5)*screen_size_h)|0;
+      projectedVerts[i] = cameraVerts;    
     }
   }else{
     for (let i=0; i < meshVerts_Length; i++) {
@@ -1389,22 +1392,22 @@ function objectPolygonPush(object,zBuffering,shadowMap,viewMatrix,shadowViewMatr
       Vector3QuaternionMul(worldTranslationSQuaternion,verts);
       vecPlus(verts,worldTranslationPosition);
       //let verts =  matVecMul(worldMatrix,object.meshVerts[i]);
+
       let viewZ = matMulVertsZCamera(viewMatrix,verts);
-      
-      if(viewZ > 0){
-        worldVerts[i] = verts;
-        let projectionMatrix =  matPers(viewZ);
-        let cameraVerts = matMulVertsXYZCamera(viewMatrix,verts,viewZ);
-        protMatVecMul(projectionMatrix,cameraVerts);
-        //normalVerts = matVecMul(viewPortMatrix,normalVerts);
-        cameraVerts[0] = ((cameraVerts[0] + 0.5)*screen_size_w)|0;
-        cameraVerts[1] = ((cameraVerts[1] + 0.5)*screen_size_h)|0;
-        projectedVerts[i] = cameraVerts;    
-      }else{
+      if(viewZ <= 0){
         //ラスタライズしないのでnull、ポリゴンのuv値を合わせたいので飛ばさない。
         projectedVerts[i] = null;
         worldVerts[i] = null;
+        continue;
       }
+      worldVerts[i] = verts;
+      let projectionMatrix =  matPers(viewZ);
+      let cameraVerts = matMulVertsXYZCamera(viewMatrix,verts,viewZ);
+      protMatVecMul(projectionMatrix,cameraVerts);
+      //normalVerts = matVecMul(viewPortMatrix,normalVerts);
+      cameraVerts[0] = ((cameraVerts[0] + 0.5)*screen_size_w)|0;
+      cameraVerts[1] = ((cameraVerts[1] + 0.5)*screen_size_h)|0;
+      projectedVerts[i] = cameraVerts;
     }
   }
 
