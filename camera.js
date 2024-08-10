@@ -1787,6 +1787,7 @@ function QuaternionMul(a,b)
       a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2]
   );
 }
+
 function outputVector3QuaternionMul(a,b)
 {
   // Quaternion同士の積の計算w=a[3]は無視
@@ -1848,6 +1849,39 @@ function quaternionYRoll(angle){
   }
   return Quaternion(0,sin,0,cos);
 }
+function quaternionXYRoll(angleX,angleY){
+  let  halfRad = top_int(angleX * 0.5);
+  let sinX;
+  let cosX;
+  if(halfRad<0){
+    halfRad = 360 + halfRad;
+    cosX = cosLut[halfRad];
+    sinX = sinLut[halfRad];        
+  }else{
+    cosX = cosLut[halfRad];
+    sinX = sinLut[halfRad]; 
+  }
+  halfRad = top_int(angleY * 0.5);
+  let sinY;
+  let cosY;
+  if(halfRad<0){
+    halfRad = 360 + halfRad;
+    cosY = cosLut[halfRad];
+    sinY = sinLut[halfRad];        
+  }else{
+    cosY = cosLut[halfRad];
+    sinY = sinLut[halfRad]; 
+  }
+  return Quaternion(sinX*cosY,cosX*sinY,sinX*sinY,cosX*cosY);
+  //０をはじいた
+  // Quaternion同士の積の計算
+  //  Quaternion(
+  //   a[0] * b[3],
+  //   a[3] * b[1],
+  //   a[0] * b[1],
+  //   a[3] * b[3]
+  // );
+}
 function quaternionZRoll(angle){
   let  halfRad = top_int(angle * 0.5);
   let sin;
@@ -1863,12 +1897,11 @@ function quaternionZRoll(angle){
   return Quaternion(0,0,sin,cos);
 }
 function quaternionXYZRoll(XAngle,YAngle,ZAngle){
-  let quaternionx = quaternionXRoll(XAngle);
-  let quaterniony = quaternionYRoll(YAngle);
+  let quaternionxy = quaternionXYRoll(XAngle,YAngle);
   let quaternionz = quaternionZRoll(ZAngle);
-  let quaternionxy = QuaternionMul(quaternionx,quaterniony);
   return QuaternionMul(quaternionxy,quaternionz)
 }
+
 function quaternionMatrixTranstation(quaternionMatrix,x,y,z){
   quaternionMatrix[3] = x;
   quaternionMatrix[7] = y;
