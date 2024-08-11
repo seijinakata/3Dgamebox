@@ -1882,6 +1882,17 @@ function quaternionXYRoll(angleX,angleY){
   //   a[3] * b[3]
   // );
 }
+function QuaternionXYZRollMul(a,b)
+{
+  //０をはじいた
+  // Quaternion同士の積の計算
+  return Quaternion(
+      a[0] * b[3] + a[1] * b[2],
+      a[1] * b[3] - a[0] * b[2],
+      a[2] * b[3] + a[3] * b[2],
+      a[3] * b[3] - a[2] * b[2]
+  );
+}
 function quaternionZRoll(angle){
   let  halfRad = top_int(angle * 0.5);
   let sin;
@@ -1899,7 +1910,7 @@ function quaternionZRoll(angle){
 function quaternionXYZRoll(XAngle,YAngle,ZAngle){
   let quaternionxy = quaternionXYRoll(XAngle,YAngle);
   let quaternionz = quaternionZRoll(ZAngle);
-  return QuaternionMul(quaternionxy,quaternionz)
+  return QuaternionXYZRollMul(quaternionxy,quaternionz)
 }
 
 function quaternionMatrixTranstation(quaternionMatrix,x,y,z){
