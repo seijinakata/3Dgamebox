@@ -935,8 +935,14 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 			//let selectOrgy = startX * iA[2] + y * iA[3]
 			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-			if(selectOrgy>=imageHeight) {startZ+=dz; continue;}
-			if(selectOrgy<=-1) {startZ+=dz; continue;}
+			if(selectOrgy>=imageHeight) {
+				if(b>=0) return;
+				startZ+=dz; continue;
+			}
+			if(selectOrgy<=-1) {
+				if(b<=0) return;
+				startZ+=dz; continue;
+			}
 			/* 最近傍補間した元画像の座標 */
 			selectOrgy |= 0;			
 			
@@ -946,8 +952,14 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 			//let selectOrgx = startX * iA[0] + y * iA[1]
 			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-			if(selectOrgx>=imageWidth) {startZ+=dz; continue;}
-			if(selectOrgx<=-1) {startZ+=dz; continue;}
+			if(selectOrgx>=imageWidth) {
+				if(a>=0) return;
+				startZ+=dz; continue;
+			}
+			if(selectOrgx<=-1) {
+				if(a<=0) return;
+				startZ+=dz; continue;
+			}
 			/* 最近傍補間した元画像の座標 */
 			selectOrgx |= 0;				
 			
@@ -1050,8 +1062,14 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			/* アフィン後の座標に対応した元画像の座標 超重要な式 */
 			//let selectOrgy = startX * iA[2] + y * iA[3]
 			//- e * iA[2] - f * iA[3];// +  orgTexture[Image_Height] / 2;
-			if(selectOrgy>=imageHeight) {startZ+=dz; continue;}
-			if(selectOrgy<=-1) {startZ+=dz; continue;}
+			if(selectOrgy>=imageHeight) {
+				if(b>=0) return;
+				startZ+=dz; continue;
+			}
+			if(selectOrgy<=-1) {
+				if(b<=0) return;
+				startZ+=dz; continue;
+			}
 			/* 最近傍補間した元画像の座標 */
 			selectOrgy |= 0;			
 			
@@ -1061,8 +1079,14 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			/* アフィン後の座標に対応した元画像の座標 超重要な式*/
 			//let selectOrgx = startX * iA[0] + y * iA[1]
 			//	- e * iA[0] - f * iA[1];// + orgTexture[0].length / 2;
-			if(selectOrgx>=imageWidth) {startZ+=dz; continue;}
-			if(selectOrgx<=-1) {startZ+=dz; continue;}
+			if(selectOrgx>=imageWidth) {
+				if(a>=0) return;
+				startZ+=dz; continue;
+			}
+			if(selectOrgx<=-1) {
+				if(a<=0) return;
+				startZ+=dz; continue;
+			}
 			/* 最近傍補間した元画像の座標 */
 			selectOrgx |= 0;							
 			//zBuffering[y][startX].splice(0,1,setPixel(startZ,imageData.data[index],imageData.data[index + 1],imageData.data[index + 2],imageData.data[index + 3],crossWorldVector3))
