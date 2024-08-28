@@ -733,8 +733,8 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 				vec2OffsetMulAfterMinus(sl,dl,triangleTop);
 				vec2OffsetMulAfterMinus(sr,dr,triangleTop);
 				triangleTop = 0;
-			}
-			if(triangleTop == pt[position_Y]){
+			}else{
+				//上の三角形の最初は点。
 				let zBufferingY = zBuffering[triangleTop];
 				let startX = top_int(sl[0]);
 				let startZ = sl[1];
@@ -743,7 +743,6 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 					zBufferingY[startX] = startZ;
 				}
 				vec2Plus(sl,dl);//
-				//endX,startXが画面外でも増分では画面内に入ってくる。
 				if(triangleStartXOver(sl,deltaStartXIsPlusMinus,screen_size_w)){
 					return;
 				}
@@ -751,8 +750,9 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 				if(triangleEndXOver(sr,deltaEndXIsPlusMinus)){
 					return;
 				}
-				triangleTop++;
+				triangleTop++;				
 			}
+			//returnなのは外に出ていくなら下部の三角形の下の頂点も外に出る。
 			if(screen_size_h<mid)mid=screen_size_h;
 			for(;triangleTop<mid;triangleTop++){
 				if(sl[0]<screen_size_w && sr[0]>=0){
@@ -764,13 +764,12 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 					scan_ShadowHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ);	
 				}
 				vec2Plus(sl,dl);//
-				//endX,startXが画面外でも増分では画面内に入ってくる。
 				if(triangleStartXOver(sl,deltaStartXIsPlusMinus,screen_size_w)){
-					break;
+					return;
 				}
 				vec2Plus(sr,dr);//
 				if(triangleEndXOver(sr,deltaEndXIsPlusMinus)){
-					break;
+					return;
 				}
 			}			
 		}
@@ -1136,15 +1135,14 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 			let triangleTop = pt[position_Y];
 			let sl = setVector2(pt[position_X],pt[position_Z]);
 			let sr = setVector2(pt[position_X],pt[position_Z]);
+			let tmpOrgy = triangleTop * d + f;
+			let tmpOrgx = triangleTop * c + e;
 			if(triangleTop<0){
 				//horizonのXのoffsetと同じ考え方。
 				vec2OffsetMulAfterMinus(sl,dl,triangleTop);
 				vec2OffsetMulAfterMinus(sr,dr,triangleTop);
 				triangleTop = 0;
-			}
-			let tmpOrgy = triangleTop * d + f;
-			let tmpOrgx = triangleTop * c + e;
-			if(triangleTop == pt[position_Y]){
+			}else{
 				let zBufferingY = zBuffering[triangleTop];
 				let startX = top_int(sl[0]);
 				let startZ = sl[1];
@@ -1179,6 +1177,7 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 				tmpOrgy += d;
 				tmpOrgx += c;	
 			}
+			//returnなのは外に出ていくなら下部の三角形の下の頂点も外に出る。
 			if(screen_size_h<mid)mid=screen_size_h;
 			for(;triangleTop<mid;triangleTop++){
 				if(sl[0]<screen_size_w && sr[0]>=0){
@@ -1191,11 +1190,11 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 				vec2Plus(sl,dl);//
 				//endX,startXが画面外でも増分では画面内に入ってくる。
 				if(triangleStartXOver(sl,deltaStartXIsPlusMinus,screen_size_w)){
-					break;
+					return;
 				}
 				vec2Plus(sr,dr);//
 				if(triangleEndXOver(sr,deltaEndXIsPlusMinus)){
-					break;
+					return;
 				}
 				tmpOrgy += d;
 				tmpOrgx += c;		
