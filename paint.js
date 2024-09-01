@@ -752,7 +752,6 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 				}
 				triangleTop++;				
 			}
-			//returnなのは外に出ていくなら下部の三角形の下の頂点も外に出る。
 			if(screen_size_h<mid)mid=screen_size_h;
 			for(;triangleTop<mid;triangleTop++){
 				if(sl[0]<screen_size_w && sr[0]>=0){
@@ -763,6 +762,7 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 					let endZ = sr[1];	
 					scan_ShadowHorizontal(zBuffering,screen_size_w,triangleTop,startX,endX,startZ,endZ);	
 				}
+				//endX,startXが画面外に出たら下の三角形の一番下の頂点も外になるので、下の三角形は画面外で作られる。
 				vec2Plus(sl,dl);//
 				if(triangleStartXOver(sl,deltaStartXIsPlusMinus,screen_size_w)){
 					return;
@@ -805,7 +805,6 @@ export function scan_ShadowVertical(zBuffering,screen_size_h,screen_size_w,pt,pm
 					scan_ShadowHorizontal(zBuffering,screen_size_w,mid,startX,endX,startZ,endZ);
 				}
 				vec2Plus(pl,dl);//
-				//endX,startXが画面外でも増分では画面内に入ってくる。
 				if(triangleStartXOver(pl,deltaStartXIsPlusMinus,screen_size_w)){
 					return;
 				}
@@ -1165,7 +1164,7 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 					}
 				}
 				vec2Plus(sl,dl);//
-				//endX,startXが画面外でも増分では画面内に入ってくる。
+				//endX,startXが画面外に出たら下の三角形の一番下の頂点も外になるので、下の三角形は画面外で作られる。
 				if(triangleStartXOver(sl,deltaStartXIsPlusMinus,screen_size_w)){
 					return;
 				}
@@ -1177,7 +1176,6 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 				tmpOrgy += d;
 				tmpOrgx += c;	
 			}
-			//returnなのは外に出ていくなら下部の三角形の下の頂点も外に出る。
 			if(screen_size_h<mid)mid=screen_size_h;
 			for(;triangleTop<mid;triangleTop++){
 				if(sl[0]<screen_size_w && sr[0]>=0){
@@ -1188,7 +1186,6 @@ export function scan_vertical(zBuffering,screen_size_h,screen_size_w,pt,pm,pb,a,
 					scan_horizontal(zBuffering,screen_size_w,triangleTop,tmpOrgy,tmpOrgx,startX,endX,startZ,endZ,a,b,imageData,imageHeight,imageWidth,shadowFlag,sunCosin,pt[position_Y]);
 				}
 				vec2Plus(sl,dl);//
-				//endX,startXが画面外でも増分では画面内に入ってくる。
 				if(triangleStartXOver(sl,deltaStartXIsPlusMinus,screen_size_w)){
 					return;
 				}
