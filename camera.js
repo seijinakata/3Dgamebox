@@ -623,6 +623,15 @@ for(let i = 0; i < 360; i++) {
   sinLut.push(round(Math.sin(i * DEG_TO_RAD)));
   cosLut.push(round(Math.cos(i * DEG_TO_RAD)));
 }
+sinLut[30] = 0.5;
+cosLut[60] = 0.5;
+sinLut[150] = 0.5;
+cosLut[120] = -0.5;
+sinLut[210] = -0.5;
+cosLut[240] = -0.5;
+sinLut[330] = -0.5;
+cosLut[300] = 0.5;
+
 let c = document.getElementById("myCanvas");
 let ctx = c.getContext("2d");
 c.width = SCREEN_SIZE_W;
