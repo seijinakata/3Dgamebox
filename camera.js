@@ -2421,7 +2421,7 @@ for(let j=0;j<steves.length;j++){
 //(x'',y'') = {B*A}*(x,y)
 //B行列とA行列を掛けると合成される。　後に掛けるものB行列を先に置くのはこのため。
 //ピクセル時の処理A,Bが2X2処理ピクセルが(x,y)だと(4*2+4*2)*縦(640)*横(480)=4915200掛け算
-//あらかじめ合成すると 8+(4*2)*縦(640)*横(480)=2457608掛け算、処理が半減する。
+//あらかじめ合成すると 16+(4*2)*縦(640)*横(480)=2457616掛け算、処理が半減する。
 matDirectMul(sunViewMatrix,inverseViewMatrix);
 for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   let basearrayY = basearray[pixelY];
