@@ -2318,7 +2318,18 @@ for(let j=0;j<steves.length;j++){
 
   //プロジェクション
   viewMatrix = matCamera(cameraPos,lookat,up);
+
+  //逆行列を掛けると行列を掛ける前に戻せる理由。P:プロジェクション行列
+  //プロジェクションからワールドに戻す行列(逆行列)を作る。
+  //この(x,y)をSun方向のプロジェクションを掛けてシャドウマップのZ値と比較シャドウマッピングをする。
+  //sunViewMatrix = matShadowCamera(sunPos,sunVec,up);このコード
+  //(x',y') = P*(x,y)
+  //(P-1)*(x',y') = (P-1)*P*(x,y)
+  //(P-1)*(x',y') = E*(x,y)
+  //反対にして
+  //(x,y) = (P-1)*(x',y')
   inverseViewMatrix = getInverseMatrix(viewMatrix);
+
   // let cameraSort = [];
   // let current = 0;
   // if(cameraSort.length == 0){
