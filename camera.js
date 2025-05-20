@@ -2424,7 +2424,7 @@ for(let j=0;j<steves.length;j++){
   	}
   }*/
 
-//cameraView => sunView 合成関数shadowMap用
+//cameraView => sunView 合成変換shadowMap用
 //行列をかけ合わせると合成される意味。
 //(x',y') = A*(x,y)
 //(x'',y'') = B*(x',y')
@@ -2433,6 +2433,13 @@ for(let j=0;j<steves.length;j++){
 //B行列とA行列を掛けると合成される。　後に掛けるものB行列を先に置くのはこのため。
 //ピクセル時の処理A,Bが2X2処理ピクセルが(x,y)だと(4*2+4*2)*縦(640)*横(480)=4915200掛け算
 //あらかじめ合成すると 16+(4*2)*縦(640)*横(480)=2457616掛け算、処理が半減する。
+//inverseViewMatrix = V-1 でViewからWorldに戻し,sunViewMatrix=Sでsun方向へのViewに変換シャドウマップのZ値と照らし合わせる。
+//ラスタライズしているピクセルをviewPortからViewに戻す。
+//合成する式は
+//(Worldx,Worldy,Worldz) = V-1*(Viewx,Viewy,Viewz)
+//(sunx,suny,sunz) = S*(Worldx,Worldy,Worldz)
+//よって(sunx,suny,sunz) = {S*V-1}*(Viewx,Viewy,Viewz) 後に作用させる行列先に作用させる行列の順になっている。
+//これは旧課程高校数学C行列白チャートに載ってます。これもbranch関数内の内分点と同じ高校数学です。
 matDirectMul(sunViewMatrix,inverseViewMatrix);
 for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   let basearrayY = basearray[pixelY];
