@@ -2319,15 +2319,16 @@ for(let j=0;j<steves.length;j++){
   //プロジェクション
   viewMatrix = matCamera(cameraPos,lookat,up);
 
-  //逆行列を掛けると行列を掛ける前に戻せる理由。P:プロジェクション行列
-  //プロジェクションからワールドに戻す行列(逆行列)を作る。
-  //この(x,y)をSun方向のプロジェクションを掛けてシャドウマップのZ値と比較シャドウマッピングをする。
+  //逆行列を掛けると行列を掛ける前に戻せる理由。V:ビュー行列
+  //プロジェクションからワールドに戻す行列(逆行列)を吐き出し法で作った。
+  //この(x,y)をSun方向のビューを掛けてシャドウマップのZ値と比較シャドウマッピングをする。
   //matDirectMul(sunViewMatrix,inverseViewMatrix);このコード
-  //(x',y') = P*(x,y)
-  //(P-1)*(x',y') = (P-1)*P*(x,y)
-  //(P-1)*(x',y') = E*(x,y)
+  //(x',y') = V*(x,y)
+  //(V-1)*(x',y') = (V-1)*V*(x,y)
+  //(V-1)*(x',y') = E*(x,y)
   //反対にして
-  //(x,y) = (P-1)*(x',y')
+  //(x,y) = (V-1)*(x',y')
+  //これは旧課程高校数学C行列白チャート逆変換。
   inverseViewMatrix = getInverseMatrix(viewMatrix);
 
   // let cameraSort = [];
@@ -2433,13 +2434,13 @@ for(let j=0;j<steves.length;j++){
 //B行列とA行列を掛けると合成される。　後に掛けるものB行列を先に置くのはこのため。
 //ピクセル時の処理A,Bが2X2処理ピクセルが(x,y)だと(4*2+4*2)*縦(640)*横(480)=4915200掛け算
 //あらかじめ合成すると 16+(4*2)*縦(640)*横(480)=2457616掛け算、処理が半減する。
-//inverseViewMatrix = V-1 でViewからWorldに戻し,sunViewMatrix=Sでsun方向へのViewに変換シャドウマップのZ値と照らし合わせる。
+//inverseViewMatrix = V-1 でViewからWorldに戻し,sunViewMatrix　=　S　でsun方向へのViewに変換シャドウマップのZ値と照らし合わせる。
 //ラスタライズしているピクセルをviewPortからViewに戻す。
 //合成する式は
 //(Worldx,Worldy,Worldz) = V-1*(Viewx,Viewy,Viewz)
 //(sunx,suny,sunz) = S*(Worldx,Worldy,Worldz)
 //よって(sunx,suny,sunz) = {S*V-1}*(Viewx,Viewy,Viewz) 後に作用させる行列先に作用させる行列の順になっている。
-//これは旧課程高校数学C行列白チャートに載ってます。これもbranch関数内の内分点と同じ高校数学です。
+//これは旧課程高校数学C行列白チャートに載ってます。合成変換と逆変換です。これもbranch関数内の内分点と同じ高校数学です。
 matDirectMul(sunViewMatrix,inverseViewMatrix);
 for (let pixelY=0; pixelY<screen_size_h;pixelY++) {
   let basearrayY = basearray[pixelY];
